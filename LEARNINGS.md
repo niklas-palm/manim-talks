@@ -107,3 +107,6 @@ Agents:
 - Two-line labels beat wrapping beside a box.
 - Switching a deck from its own helpers to the library versions is cheap to verify: compare the end frames of every
   step before and after (mean pixel difference), not the code. Kafka's migration measured under 2/255 everywhere.
+- Uneven letter spacing and vanished spaces in small labels, seen in every deck, came from Pango rounding glyph
+  positions to pixels at the requested size. Laying out at 48 and scaling down fixed it everywhere at once; the lesson
+  is that text must always go through the library, never `Text()` directly, so a fix like this lands in one place.

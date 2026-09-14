@@ -11,7 +11,8 @@ What lives here
   layout        the frame constants and the bands titles, pictures and captions live in
 
 Rules the helpers encode (see docs/principles.md for the why):
-  * text never below font size 12; small text is rendered at 20 and scaled, because Pango's layout breaks at 6 pt
+  * all text is laid out at BASE_SIZE (48) and scaled to its size, because Pango rounds glyph positions to pixels at
+    small sizes (spaces vanish, letters crowd); text below size 12 is still too small to read from the back row
   * grey text uses MUTED, never DIM: DIM is for shapes out of focus and is unreadable as text on a projector
   * captions are a quiet footnote pinned to the frame bottom; one per step, set before the animation, never swapped
     while something moves
@@ -41,6 +42,8 @@ BG = "#0f1116"                     # the background; also set in manim.cfg; need
 HI = "#F4F6FA"                     # the momentary highlight of a cell being read or a line being run: neutral, never a meaning
 FONT = "Helvetica"                 # Helvetica Neue through Pango had uneven word spacing at small sizes
 CODE_FONT = "Menlo"                # code: renders cleanly through Pango; about 0.13 units per character at size 18
+BASE_SIZE = 48                     # every text is laid out at this size and scaled down: Pango rounds glyph positions to whole
+                                   # pixels at small sizes, so 14 to 20 pt text drawn directly loses its spaces and crowds letters
 
 # ------------------------------------------------------------------------------------------------ layout
 # The frame is 14.22 by 8 scene units, centred on the origin. Fixed furniture goes in fixed bands so scenes look alike.
@@ -110,7 +113,7 @@ def label(s: str, size: float = 30, color: str = TEXT, width: float = 0.0, threa
         s = "\n".join(textwrap.fill(par, chars) for par in s.split("\n"))
     if thread:
         kw["t2c"] = thread_colours(s)
-    t = Text(s, font=FONT, font_size=size, color=color, line_spacing=1.1, **kw)
+    t = Text(s, font=FONT, font_size=BASE_SIZE, color=color, line_spacing=1.1, disable_ligatures=True, **kw).scale(size / BASE_SIZE)
     if t.width > config.frame_width - 0.6:
         t.scale_to_fit_width(config.frame_width - 0.6)
     return t
@@ -505,5 +508,9 @@ def code_lines(lines, size: float = 18, color: str = TEXT) -> VGroup:
     """Code as a VGroup of monospaced lines, left-aligned, for a walk-through that highlights one line at a time
     while the picture does the step. About 0.13 units per character at size 18: shorten identifiers before shrinking
     the font. Highlight a line with a BG-toned rectangle behind it or by recolouring the line to HI."""
-    g = VGroup(*[Text(l if l.strip() else " ", font=CODE_FONT, font_size=size, color=color) for l in lines])
-    return g.arrange(DOWN, aligned_edge=LEFT, buff=0.08)
+    mk = lambda t: Text(t, font=CODE_FONT, font_size=BASE_SIZE, color=color, disable_ligatures=True).scale(size / BASE_SIZE)
+    char_w = mk("0000000000").width / 10
+    g = VGroup(*[mk(l.strip() or " ") for l in lines]).arrange(DOWN, aligned_edge=LEFT, buff=0.08)
+    for t, l in zip(g, lines):   # Manim aligns on the glyphs, so leading spaces vanish; put the indentation back by measure
+        t.shift(RIGHT * char_w * (len(l) - len(l.lstrip(" "))))
+    return g

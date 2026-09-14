@@ -72,7 +72,12 @@ Manim Community Edition 0.21, Python 3.12, macOS, ffmpeg 7, no LaTeX. Each entry
 
 - **Font.** Helvetica through Pango renders cleanly; Helvetica Neue had uneven word spacing at small sizes. Set one
   font in one place (`FONT` in the library).
-- **Never set tiny font sizes.** `Text(font_size=6)` has broken kerning; render at 20 and `.scale(0.3)` (`small()`).
+- **Pango rounds glyph positions to whole pixels at small sizes.** Text drawn directly at 14 to 20 pt loses its
+  spaces ("offsetback", "newgroup") and crowds or spreads letters unevenly; it showed in every deck's labels. The
+  library lays out every `Text` at `BASE_SIZE` (48) with ligatures disabled and scales the geometry to the requested
+  size, which is exact. Never construct `Text` directly in a scene; go through `label()`, `small()` or `code_lines()`.
+- **Leading spaces vanish in `Text`** because Manim aligns on the glyphs' bounding box; `code_lines()` puts indentation
+  back by shifting each line by its indent times a measured character width.
 - **Text does not wrap.** `label(width=...)` wraps with `textwrap` at about 185 / font_size characters per scene
   unit and scales to the frame if still too wide. Every caption goes through it.
 - **Frame is 14.22 by 8.** Text at size 15 is about 0.09 units per character, at 13 about 0.077, at 22 about 0.13;

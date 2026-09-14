@@ -4,7 +4,8 @@
 The standard library's `python3 -m http.server` answers every request with the whole file and no Accept-Ranges header.
 Chrome then treats a video as unseekable: setting currentTime is ignored, so the player replayed each scene from its
 start on every step and the hold at a step boundary left the element blank. This handler honours Range requests, which
-is all a <video> needs to seek. Usage: python3 serve.py [port] [folder]   (serves the current folder by default)"""
+is all a <video> needs to seek. Usage: python3 serve.py [port] [folder]   (serves the current folder by default;
+bin/serve.sh serves the repository root, so every talk is reachable under /talks/<name>/ from one server)"""
 import os
 import re
 import sys
@@ -19,8 +20,11 @@ class RangeHandler(SimpleHTTPRequestHandler):
             return super().send_head()
         size = os.path.getsize(path)
         m = re.match(r"bytes=(\d*)-(\d*)", rng)
-        start = int(m.group(1)) if m and m.group(1) else 0
-        end = int(m.group(2)) if m and m.group(2) else size - 1
+        if m and not m.group(1) and m.group(2):          # a suffix range, "bytes=-500": the last 500 bytes
+            start, end = max(0, size - int(m.group(2))), size - 1
+        else:
+            start = int(m.group(1)) if m and m.group(1) else 0
+            end = int(m.group(2)) if m and m.group(2) else size - 1
         end = min(end, size - 1)
         if start > end:
             self.send_error(416, "Range Not Satisfiable")

@@ -82,7 +82,7 @@ bin/render.sh <talk> ql [Scene ...]     # preview render (480p), then build the 
 bin/shots.py <talk> ql                  # the frame every step holds on, tiled per scene: media/shots/<Scene>.png
 bin/review.sh <talk> ql                 # a frame every two seconds per scene, for motion and collisions mid-step
 bin/check.py <talk> ql                  # structural checks: files, set_thread, notes per step, text sizes, sentences on screen
-bin/serve.sh <talk>                     # serve over localhost with byte ranges and open the presenter window
+bin/serve.sh <talk>                     # one local server for the repository; opens the talk's presenter window
 bin/export_pptx.py <talk> qh            # optional: one PowerPoint slide per step, clip autoplaying, note in the notes
 ```
 

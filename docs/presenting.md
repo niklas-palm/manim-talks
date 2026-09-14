@@ -8,7 +8,7 @@ keep the presenter on your own screen.
 
 ```bash
 bin/render.sh <talk> qh        # renders and builds the pages
-bin/serve.sh <talk>            # serves talks/<talk> on http://localhost:8765 and opens the presenter
+bin/serve.sh <talk>            # serves the repository on http://localhost:8765 and opens talks/<talk>/presenter.html
 ```
 
 In the presenter click **open audience window**, move that window to the shared screen, press `f` in it for full
@@ -26,7 +26,11 @@ in step whichever one you drive.
 - **A third, paused video for the next-step preview**, seeked to the next boundary minus a few milliseconds.
 - **The two windows talk over a `BroadcastChannel` and a direct `postMessage`** to the window the presenter opened.
   Two `file://` pages have opaque origins and may not share a channel, so the pages must be served over http.
-- **The server answers byte-range requests** (`bin/serve.py`). Python's `http.server` does not, and Chrome then
+- **One server for all talks.** `bin/serve.sh` serves the repository root and opens the talk's page under
+  `/talks/<name>/`; starting it for a second talk reuses the running server, so the first talk's windows keep
+  working. (An earlier version served one talk folder per port, and starting a second talk turned the first one's
+  windows black after the current scene: every later video request was a 404.)
+- **The server answers byte-range requests** (`bin/serve.py`), including suffix ranges. Python's `http.server` does not, and Chrome then
   treats the video as unseekable: every `currentTime` assignment is ignored, each step replays the scene from its
   start, and the hold at the boundary leaves a blank frame. Forty lines of standard library fix it.
 - **Browsers block autoplay without a click**, so the audience page has a start screen; the first click starts it.
