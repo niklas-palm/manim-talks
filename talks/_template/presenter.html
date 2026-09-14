@@ -1,0 +1,53 @@
+<!doctype html><meta charset="utf-8"><title>Presenter</title>
+<style>html,body{margin:0;height:100%;background:#15181f;color:#e8e8e8;font:18px/1.5 Helvetica,sans-serif}
+#top{display:flex;gap:24px;align-items:center;padding:14px 22px;border-bottom:1px solid #2a2e38;color:#9aa0ad}
+#top b{color:#e8e8e8;font-weight:500} #clock{margin-left:auto;font-variant-numeric:tabular-nums;font-size:22px}
+#main{display:grid;grid-template-columns:1.25fr 1fr;gap:22px;padding:22px}
+#nextstage{position:relative;aspect-ratio:16/9;background:#0f1116;border-radius:8px;overflow:hidden;width:62%;margin-bottom:16px} #nextstage video{position:absolute;inset:0;width:100%;height:100%} #nextlabel{font-size:12px;color:#9aa0ad;letter-spacing:.04em;margin-bottom:4px}
+#stage{position:relative;aspect-ratio:16/9;background:#0f1116;border-radius:8px;overflow:hidden} #stage video{position:absolute;inset:0;width:100%;height:100%}
+#note{font-size:21px;line-height:1.55;color:#f2f2f2} #note h3{margin:0 0 10px;font-weight:500;color:#58c4dd;font-size:16px;letter-spacing:.02em}
+#nextnote{margin-top:22px;color:#9aa0ad;font-size:15px;border-top:1px solid #2a2e38;padding-top:14px}
+#keys{padding:0 22px 16px;color:#5b6070;font-size:14px} button{background:#242833;color:#e8e8e8;border:1px solid #3a3f4b;border-radius:6px;padding:6px 14px;font:16px Helvetica;cursor:pointer}</style>
+<div id="top"><button onclick="open_audience()">open audience window</button><button onclick="send(-1)">back</button><button onclick="send(1)">next</button><span id="pos"></span><b id="scene"></b><span id="clock">00:00</span></div>
+<div id="main"><div id="stage"><video id="a" muted playsinline preload="auto"></video><video id="b" muted playsinline preload="auto"></video></div>
+<div><div id="nextlabel">NEXT: WHERE THE CLICK ENDS UP</div><div id="nextstage"><video id="n" muted playsinline preload="auto"></video></div><div id="note"><h3></h3><div id="txt"></div></div><div id="nextnote"></div></div></div>
+<div id="keys">Keys: right or space next, left back, Home first step, t reset timer. The audience window follows this one.</div>
+<script>
+const ch=new BroadcastChannel('talk');const t0=[Date.now()];let aud=null;
+const tell=m=>{ch.postMessage(m);if(aud&&!aud.closed)aud.postMessage(m,'*');};
+let onstep=k=>{const s=ST[k],n=ST[k+1];document.getElementById('pos').textContent=(k+1)+' / '+ST.length;document.getElementById('scene').textContent=s.scene;
+document.querySelector('#note h3').textContent=s.scene.replace(/([a-z])([A-Z])/g,'$1 $2');document.getElementById('txt').textContent=s.note;
+document.getElementById('nextnote').textContent=n?('next: '+n.scene+(n.scene!==s.scene?' (new scene)':'')+'. '+n.note.slice(0,240)+(n.note.length>240?'...':'')):'end of talk';
+preview(n);};
+function preview(n){const nv=document.getElementById('n');if(!n){nv.removeAttribute('src');nv.load();return;}const sc=S[n.si],at=Math.max(0,sc.ends[n.k]-0.05);   // the last frame of the next step: where 'next' will end up
+  const seek=()=>{nv.pause();nv.currentTime=at;};if(nv.dataset.si!==String(n.si)){nv.dataset.si=n.si;nv.src=sc.src;nv.addEventListener('loadedmetadata',seek,{once:true});nv.load();}else seek();}
+
+const D={"scenes": [{"name": "Opening", "src": "media/videos/s00_title/480p15/Opening.mp4", "ends": [7.933], "notes": ["Who the talk is for and what they will be able to do afterwards. The spine sentence, said once, slowly. Then the map: the moves in order, one line each, so the audience knows where they are for the next forty minutes."]}, {"name": "Example", "src": "media/videos/s01_example/480p15/Example.mp4", "ends": [3.333, 5.6, 7.333, 14.866], "notes": ["The simplest picture: one client, one server, one request. The request travels, the server takes it into a slot, the load gauge moves a little, the counter says one. Everything the talk will say is a change to this picture.", "Five requests arrive together. Same picture, more of it: each takes a slot, the gauge climbs with every one, and the fifth fills the server. The problem the next scene solves is now visible: the gauge is red.", "Zoom in and the box opens: this is what one request occupies while it is being served. Small text here is rendered large and scaled down, so it stays crisp.", "Back out, and the picture grows to the right: a store, and every served request leaves a record in it as its slot empties. The caption is one quiet line, set before the animation. The next scene starts from exactly this frame."]}], "steps": [{"scene": "Opening", "si": 0, "k": 0, "note": "Who the talk is for and what they will be able to do afterwards. The spine sentence, said once, slowly. Then the map: the moves in order, one line each, so the audience knows where they are for the next forty minutes."}, {"scene": "Example", "si": 1, "k": 0, "note": "The simplest picture: one client, one server, one request. The request travels, the server takes it into a slot, the load gauge moves a little, the counter says one. Everything the talk will say is a change to this picture."}, {"scene": "Example", "si": 1, "k": 1, "note": "Five requests arrive together. Same picture, more of it: each takes a slot, the gauge climbs with every one, and the fifth fills the server. The problem the next scene solves is now visible: the gauge is red."}, {"scene": "Example", "si": 1, "k": 2, "note": "Zoom in and the box opens: this is what one request occupies while it is being served. Small text here is rendered large and scaled down, so it stays crisp."}, {"scene": "Example", "si": 1, "k": 3, "note": "Back out, and the picture grows to the right: a store, and every served request leaves a record in it as its slot empties. The caption is one quiet line, set before the animation. The next scene starts from exactly this frame."}]};const S=D.scenes,ST=D.steps;let i=-1;
+const vids=[document.getElementById('a'),document.getElementById('b')];let cur=0;   // vids[cur] is on top
+function other(){return 1-cur}
+function load(v,si){if(v.dataset.si!==String(si)){v.dataset.si=si;v.src=S[si].src;v.load();}}
+function show(k){                     // play from the start of step k to its end, then hold the frame
+  if(k<0||k>=ST.length)return;const st=ST[k],sc=S[st.si],prev=i>=0?ST[i]:null;i=k;
+  const start=st.k?sc.ends[st.k-1]:0,end=sc.ends[st.k];
+  if(!prev||prev.si!==st.si){            // new scene: bring up the preloaded element
+    if(vids[other()].dataset.si!==String(st.si))load(vids[other()],st.si);
+    const v=vids[other()];v.currentTime=start;cur=other();
+    vids[cur].style.zIndex=2;vids[1-cur].style.zIndex=1;
+    v.play().catch(()=>{});if(ST[k+1]&&ST[k+1].si!==st.si)load(vids[1-cur],ST[k+1].si);
+    if(S[st.si+1])load(vids[1-cur],st.si+1);
+  }else{const v=vids[cur];if(Math.abs(v.currentTime-start)>0.25)v.currentTime=start;v.play().catch(()=>{});}
+  hold(vids[cur],end);onstep&&onstep(k);
+}
+let holdId=0;
+function hold(v,end){cancelAnimationFrame(holdId);const tick=()=>{if(v.currentTime>=end-0.03){v.pause();v.currentTime=end-0.001;return;}holdId=requestAnimationFrame(tick);};holdId=requestAnimationFrame(tick);}
+function next(){show(i+1)} function prev(){show(i-1)}
+
+load(vids[0],0);if(S[1])load(vids[1],1);
+function open_audience(){aud=window.open('present.html','audience','width=1280,height=720');setTimeout(()=>tell({go:Math.max(0,i)}),1500);}
+function send(d){const k=Math.max(0,Math.min(ST.length-1,i+d));tell({go:k});show(k);}
+const handle=d=>{if(d&&d.at!==undefined&&d.at!==i)show(d.at);};
+ch.onmessage=e=>handle(e.data);window.addEventListener('message',e=>handle(e.data));
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' ')send(1);else if(e.key==='ArrowLeft')send(-1);else if(e.key==='Home'){tell({go:0});show(0);}else if(e.key==='t')t0[0]=Date.now();});
+setInterval(()=>{const s=Math.floor((Date.now()-t0[0])/1000);document.getElementById('clock').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');},500);
+show(0);tell({hello:1});
+</script>
