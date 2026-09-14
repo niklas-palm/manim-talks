@@ -2,10 +2,12 @@
 """The styles a deck can be presented in: list them, check one is fit to present, see them side by side, or take one
 from a PowerPoint file.
 
-    bin/themes.py list                            every theme with its mode and one line about it
-    bin/themes.py check [name ...]                contrast, accent distance and installed fonts; the default is all
-    bin/themes.py preview <talk> <Scene>          the same frame in every theme -> media/themes/<talk>-<Scene>.png
-    bin/themes.py from-pptx <file.pptx> <name>    a company's theme -> themes/local/<name>.json, never committed
+    .venv/bin/python bin/themes.py list                          every theme with its mode and one line about it
+    .venv/bin/python bin/themes.py check [name ...]              contrast, accent distance, installed fonts; all by default
+    .venv/bin/python bin/themes.py preview <talk> <Scene>        the same frame in every theme -> media/themes/
+    .venv/bin/python bin/themes.py from-pptx <file> <name>       a company's theme -> themes/local/<name>.json
+
+Run them with the project's interpreter: under another one the font check cannot ask Pango and says so instead.
 
 A theme is chosen with THEME=<name> for one render, a `.theme` file in a talk folder for that talk, or `.theme` at the
 repository root for the project. AGENTS.md, "Choosing the look", is the guide an agent reads.
@@ -25,7 +27,7 @@ import zipfile
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib import theme as _theme
-from lib.talks import dir_of
+from lib.talks import dir_of, scenes_of
 
 REPO = _theme.REPO
 NS_DRAWING = "{http://schemas.openxmlformats.org/drawingml/2006/main}"        # a:  colours and fonts
@@ -35,7 +37,10 @@ NS_PRESENT = "{http://schemas.openxmlformats.org/presentationml/2006/main}"   # 
 def cmd_list():
     print(f"{'theme':22s} {'mode':6s} description")
     for n in _theme.names():
-        t = _theme.load(n)
+        try:                                    # a half-written theme is a normal thing to have while editing one
+            t = _theme.load(n)
+        except (SystemExit, Exception) as e:
+            print(f"{n:22s} {'?':6s} {e}"); continue
         print(f"{n:22s} {t['mode']:6s} {t['description']}")
     print(f"\nactive: {_theme.active_name()}   (THEME=<name>, a talk's .theme, or .theme at the repository root)")
 
@@ -45,7 +50,7 @@ def cmd_check(which):
     for n in which or _theme.names():
         try:                                        # one half-written theme must not hide the verdict on the others
             t = _theme.load(n)
-        except SystemExit as e:
+        except (SystemExit, Exception) as e:    # SystemExit is not an Exception; name both, or one theme hides the rest
             print(f"{n:22s} FAIL"); print("   -", e); ok = False; continue
         bad = _theme.validate(t)
         missing = _theme.missing_fonts(t)
@@ -65,8 +70,9 @@ def cmd_preview(talk: str, scene: str):
     sheet of both styles, and any imported one, takes well under a minute. Look at it before choosing; a palette that reads on a screen can lose a
     colour on a projector."""
     root = dir_of(talk)
-    src = next((f for f in sorted(glob.glob(f"{root}/scenes/s*.py"))
-                if re.search(rf"^class {scene}\(", open(f).read(), re.M)), None)
+    # Asked of the library, so "a scene" means the same thing here as everywhere else, and a name typed by hand is not
+    # treated as a regular expression.
+    src = next((f"{root}/scenes/{stem}.py" for stem, sc in scenes_of(root) if sc == scene), None)
     if not src:
         sys.exit(f"no scene {scene} in {root}/scenes")
     from PIL import Image, ImageDraw, ImageFont
@@ -79,7 +85,7 @@ def cmd_preview(talk: str, scene: str):
             r = subprocess.run([".venv/bin/manim", "-ql", "-s", "--media_dir", out, src, scene],
                                env=env, capture_output=True, text=True)
             if r.returncode:
-                sys.exit(f"rendering {scene} in {n} failed:\n{(r.stdout or '')[-2000:]}")
+                sys.exit(f"rendering {scene} in {n} failed:\n{((r.stdout or '') + (r.stderr or ''))[-2000:]}")
             png = sorted(glob.glob(f"{out}/images/*/{scene}*.png"))
             if png:
                 shots.append((n, png[-1]))
@@ -91,9 +97,9 @@ def cmd_preview(talk: str, scene: str):
         tw, th = w // 2, h // 2
         band = 26
         rows = (len(shots) + cols - 1) // cols
-        deck = _theme.load(_theme.active_name(root))
+        deck = _theme.of(root)
         sheet = Image.new("RGB", (cols * tw, rows * (th + band)), _theme.sheet_rgb(root))
-        ink = tuple(round(v * 255) for v in _theme.rgb(deck["text"]))   # the labels sit on the padding, so they follow it
+        ink = _theme.rgb255(deck["text"])          # the labels sit on the padding, so they follow it
         try:
             font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 15)
         except Exception:
@@ -139,6 +145,8 @@ def _scheme(zf) -> dict:
         key = child.tag.split("}")[1]
         cols[key] = _colour(child)
     fs = root.find(f".//{NS_DRAWING}fontScheme")
+    if fs is None:
+        return cols, {}
     fonts = {}
     for which in ("majorFont", "minorFont"):
         latin = fs.find(f"{NS_DRAWING}{which}/{NS_DRAWING}latin")
@@ -187,14 +195,17 @@ def cmd_from_pptx(path: str, name: str):
     What is not imported, on purpose: logos, picture backgrounds, slide layouts. A talk here is a picture that unfolds,
     not a slide with a brand frame; the colours and the type are what carry a house style into it. The result goes to
     themes/local, which git ignores: a company's palette is theirs, not this repository's."""
-    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", name):
-        sys.exit(f"not a theme name: {name!r} (letters, digits, dot, dash, underscore: it becomes a file name)")
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}", name):   # the same bound lib/theme.py loads by
+        sys.exit(f"not a theme name: {name!r} (letters, digits, dot, dash and underscore, up to 64: it becomes a file "
+                 f"name, and a name this repository cannot load again is no use)")
     try:
         zf = zipfile.ZipFile(path)
     except FileNotFoundError:
         sys.exit(f"no such file: {path}")
     except zipfile.BadZipFile:
         sys.exit(f"{path} is not a .pptx (a .pptx is a zip; a .ppt or an alias is not)")
+    except (IsADirectoryError, PermissionError) as e:
+        sys.exit(f"cannot read {path}: {e}")
     with zf:
         cols, fonts = _scheme(zf)
         bg, note = _master_bg(zf, cols)
@@ -206,7 +217,7 @@ def cmd_from_pptx(path: str, name: str):
             ink = cand
             break
     acc = [cols.get(f"accent{i}") or ink for i in range(1, 7)]
-    slots = _assign(acc, bg, dark)
+    slots = _assign(acc, bg)
     # A style is not only its palette: a pale ground wants thinner lines and smaller corners. Without these four an
     # imported light theme would inherit the dark style's weights, which is what a white template least wants.
     feel = _theme.load("dark" if dark else "bright")
@@ -230,22 +241,27 @@ def cmd_from_pptx(path: str, name: str):
     dst = f"{_theme.THEME_DIR}/local/{name}.json"
     # Validate before replacing anything: the file at dst may be a hand-edited theme, and an import that turns out to be
     # unusable must not be what is left of it. The temporary name is a real theme name so it can be loaded and merged.
-    tmp_name = f"importing{os.getpid()}"
+    # The temporary name starts with a dot, which theme.names() skips, so a process killed here cannot leave something
+    # that looks like a style; and the finally clause means it does not outlive this function either way.
+    tmp_name = f".importing{os.getpid()}"
     tmp = f"{_theme.THEME_DIR}/local/{tmp_name}.json"
-    with open(tmp, "w") as f:
-        json.dump(t, f, indent=2)
-        f.write("\n")
-    loaded = _theme.load(f"local/{tmp_name}")
-    bad = _theme.validate(loaded)
-    if bad:
-        os.remove(tmp)
-        print(f"{os.path.basename(path)} does not make a theme that can be presented:")
-        for b in bad:
-            print("   -", b)
-        sys.exit(f"nothing written{'' if not os.path.exists(dst) else f'; {dst} is untouched'}. "
-                 f"Its accents are too close to each other or to its background; pick a different template, or write "
-                 f"themes/local/{name}.json by hand from themes/bright.json.")
-    os.replace(tmp, dst)
+    try:
+        with open(tmp, "w") as f:
+            json.dump(t, f, indent=2)
+            f.write("\n")
+        loaded = _theme.load(f"local/{tmp_name}")
+        bad = _theme.validate(loaded)
+        if bad:
+            print(f"{os.path.basename(path)} does not make a theme that can be presented:")
+            for b in bad:
+                print("   -", b)
+            sys.exit(f"nothing written{'' if not os.path.exists(dst) else f'; {dst} is untouched'}. "
+                     f"Fix what is listed above, pick a different template, or write themes/local/{name}.json by hand "
+                     f"from themes/bright.json.")
+        os.replace(tmp, dst)
+    finally:
+        if os.path.exists(tmp):
+            os.remove(tmp)
     print(f"-> {dst}   THEME=local/{name} bin/render.sh <talk> ql")
     if note:
         print(f"   note: {note}")
@@ -262,6 +278,7 @@ def cmd_from_pptx(path: str, name: str):
 # palette is matched to these rather than taken in the template's own order, so a deck that calls its model "the deep
 # accent" still looks like itself in a company's colours.
 SLOT_HUES = {"a1": 191, "a2": 41, "a3": 260, "a4": 174, "a5": 111, "a6": 15}
+FLOOR = _theme.SEEN + 0.2   # what an imported accent must clear: a little above the bar, so a later nudge stays over it
 
 
 def _hue(c: str) -> float:
@@ -269,7 +286,7 @@ def _hue(c: str) -> float:
     return colorsys.rgb_to_hls(r, g, b)[0] * 360
 
 
-def _assign(acc: list, bg: str, dark: bool) -> dict:
+def _assign(acc: list, bg: str) -> dict:
     """Six imported accents onto the six slots, by the closest match of hue to what each slot means, then an alert red
     of their own character, then everything lifted off the background and pushed apart."""
 
@@ -285,8 +302,8 @@ def _assign(acc: list, bg: str, dark: bool) -> dict:
     sat = sorted(h[2] for h in hls)[len(hls) // 2]
     lit = sorted(h[1] for h in hls)[len(hls) // 2]
     alert = _theme.hex_of(colorsys.hls_to_rgb(2 / 360, min(0.72, max(0.3, lit)), max(0.55, sat)))
-    out = {"alert": _theme.lift(alert, bg, 3.2)}            # first, so spreading moves the other slots and "wrong" stays red
-    out.update({k: _theme.lift(v, bg, 3.2) for k, v in slots.items()})
+    out = {"alert": _theme.lift(alert, bg, FLOOR)}          # first, so spreading moves the other slots and "wrong" stays red
+    out.update({k: _theme.lift(v, bg, FLOOR) for k, v in slots.items()})
     return _spread(out, bg)
 
 
@@ -316,7 +333,7 @@ def _spread(slots: dict, bg: str) -> dict:
                 for dl in (0, 0.1, -0.1, 0.2, -0.2):
                     c = _theme.hex_of(colorsys.hls_to_rgb((h + dh) % 1.0, min(0.92, max(0.08, l + dl)),
                                                           min(1.0, max(0.45, s * 1.15))))
-                    if _theme.contrast(c, bg) < 3.2:
+                    if _theme.contrast(c, bg) < FLOOR:
                         continue
                     gap = min(_theme.distance(c, o) for o in others)
                     if gap > best_gap + 0.5:

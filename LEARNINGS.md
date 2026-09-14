@@ -359,3 +359,24 @@ First principles that the passes confirmed, written to outlast the decks they ca
   must say which it is and that it could not answer, never pass by default.
 - Write down the threshold once. The same perceptual distance was a literal in the validator and a default argument in
   the repair routine; either could drift from the other and the drift would be invisible.
+
+## What the third round found, and where a loop should stop
+
+- An escape that covers one way out of a construct covers one way out. Text placed inside a script element needs both
+  the closing sequence and the comment-opening sequence escaped: the second puts the parser in a state where the
+  closing tag is read as text, the page loads looking correct, and nothing works after the first click. The browser
+  logs nothing. Verify a generated page by driving it, not by reading it.
+- A helper that picks the better of two options should also check that the better one is good enough. Ink chosen as
+  "the ground or the body colour, whichever reads" still fell under the bar for small text on a mid-toned mark; the
+  choice now has a floor, and both styles clear it everywhere.
+- A partial render is a different failure from no render. Pairing a scene with the one after the gap and calling the
+  difference a jump sends a reviewer after a defect that does not exist; a tool that reads a render should say what is
+  missing before it says what is wrong.
+- Shell arithmetic reads a leading zero as octal, so a range check on a port can pass a value the program then refuses.
+  Anchor numeric patterns to exclude it, and remember that a process match on a number matches longer numbers too.
+- `export X=$(cmd)` returns success even when the command fails. Assign, then export, or the failure is invisible.
+- SystemExit is not an Exception; catching Exception around a call that exits leaves the exit unhandled, which is how a
+  survey command stopped surveying at its first bad input.
+- Stop when the findings change character. Three rounds took the same target from "silently writes the wrong artefact"
+  to "raises an ugly traceback on a file corrupted on purpose". That second kind is worth a sentence in the code and
+  not another round: convergence is the goal, not the absence of imperfection.

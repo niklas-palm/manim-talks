@@ -66,7 +66,7 @@ def sweep(scene, vec, vcolor, jobs, cols: int = 8, rt: float = 0.14):
             on += [m.animate.set_fill(OUTPUT, 1.0) for m in row] + [out[i].animate.set_fill(color, 0.95)]
         scene.play(*on, run_time=rt)
         # The dim-again builders are made only now: .animate generates a mobject's target when the builder is created, and a
-        # second builder on the same cell would overwrite the first one's target, so the highlight would animate to violet.
+        # second builder on the same cell would overwrite the first one's target, so the highlight would animate to the WEIGHTS colour.
         off = [m.animate.set_fill(WEIGHTS, 0.6) for row in rows for m in row]
         scene.play(*off, *restore(vec, ops, vcolor), run_time=rt * 0.4)
 

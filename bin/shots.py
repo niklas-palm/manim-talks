@@ -3,19 +3,20 @@
 and one tiled sheet per scene, <Scene>.png. The presenter holds on exactly these frames, so this is what the audience
 sits with while the speaker talks: the fastest review of captions, spacing and colour there is. Frames are taken 0.08 s
 before each step ends, so a fade that is the step's last animation is finished; end every step on a settled picture.
-Usage: bin/shots.py <talk> [ql|qm|qh]"""
+Usage: bin/shots.py <talk> [ql|qm|qh]   the quality is inferred when the talk has only one rendered"""
 import glob, os, subprocess, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib import theme as _theme
-from lib.talks import dir_of, duration, quality, read_json, rendered_or_exit
+from lib.talks import dir_of, duration, quality, read_index, rendered_or_exit, report_unrendered
 
 talk = sys.argv[1] if len(sys.argv) > 1 else sys.exit(__doc__)
 root = dir_of(talk)
 Q = quality(sys.argv[2] if len(sys.argv) > 2 else None, root)
 items = rendered_or_exit(root, Q, talk)     # before the delete below: an unrendered quality used to wipe the sheets and report success
 PAD = _theme.sheet_hex(root)               # the padding follows the deck's own style
-plan = [(scene, video, duration(video), read_json(idx)) for _stem, scene, video, idx, _n in items]   # every clip probed
+report_unrendered(root, items)
+plan = [(scene, video, duration(video), read_index(idx)) for _stem, scene, video, idx, _n in items]   # every clip and index checked first
 out_dir = f"{root}/media/shots"
 os.makedirs(out_dir, exist_ok=True)
 for old in glob.glob(f"{out_dir}/*.png"):   # a frame ffmpeg cannot produce must not leave last run's file in its place

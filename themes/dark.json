@@ -2,18 +2,7 @@
   "mode": "dark",
   "description": "Dark: near-black blue-grey, six saturated accents, Helvetica and Menlo. The default, for a room with the lights down.",
   "font": "Helvetica",
-  "font_fallbacks": [
-    "Helvetica Neue",
-    "Arial",
-    "Liberation Sans",
-    "DejaVu Sans"
-  ],
   "code_font": "Menlo",
-  "code_font_fallbacks": [
-    "Monaco",
-    "DejaVu Sans Mono",
-    "Liberation Mono"
-  ],
   "code_style": "monokai",
   "bg": "#0F1116",
   "text": "#E8E8E8",

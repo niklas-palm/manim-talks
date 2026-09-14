@@ -2,7 +2,7 @@
 number; fewer bits means fewer levels it can take; every weight moves a little; every score moves a little; where two
 choices were close the pick flips, where one was sure nothing happens. Then the measurement: a grid of one hundred scored
 items shows flip rates, first for two identical deployments (the noise floor), then for each precision against bf16.
-Green dots got better, red got worse, grey did not change."""
+A dot in the CACHE colour got better, one in HOT got worse, a DIM one did not change."""
 from lib.palette import *
 from objects import *
 import random
@@ -11,7 +11,7 @@ W_VALUE = 0.7342
 
 
 def flip(scene, grid, gains: int, losses: int, seed: int, run_time: float = 1.2):
-    """Colour `gains` dots green and `losses` red at random positions; returns the chosen indices."""
+    """Colour `gains` dots with CACHE and `losses` with HOT at random positions; returns the chosen indices."""
     rnd = random.Random(seed)
     idx = rnd.sample(range(len(grid)), gains + losses)
     anims = [grid[i].animate.set_color(CACHE) for i in idx[:gains]] + [grid[i].animate.set_color(HOT) for i in idx[gains:]]

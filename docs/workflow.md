@@ -95,8 +95,10 @@ Keep tool output short; renders are chatty. Pipe to a log and `grep -c Traceback
 
 ## 6. Audit the pictures
 
-Run `bin/check.py <talk> ql` first: it flags missing files, an `objects.py` without `set_thread`, scenes whose note
-count differs from their step count, labels under size 12, and sentences of more than 14 words on screen. Fix those,
+Run `.venv/bin/python bin/check.py <talk> ql` first: it names the style the talk presents in and whether that style is
+fit to present, and it flags any colour a scene named itself, missing files, an `objects.py` without `set_thread`,
+scenes whose note count differs from their step count, two scenes with one class name, a scene in a file that is not
+`s*.py`, labels under size 12, and sentences of more than 14 words on screen. Fix those,
 then do the part only eyes can do.
 
 

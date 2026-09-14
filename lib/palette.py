@@ -3,7 +3,8 @@ Community Edition. Import it in every scene file with `from lib.palette import *
 
 What lives here
   theme         the active theme's colours, fonts, corners and strokes (lib/theme.py); a talk maps its nouns onto
-                the accent slots A1..A6 and ALERT and never names a hue
+                the accent slots A1..A6 and ALERT and never names a hue; identity(n) for colours that only tell things
+                apart, ink_on(colour) for a label written on a solid mark
   TalkSlide     a Scene whose steps are clicks; each step carries a speaker note (next_slide / finish)
   text          label, title, title_still, retitle, small, caption, swap_caption, pin, thread colouring of a talk's nouns
   objects       tokens, box, node, arrow, dashed, column, grid, dot_grid, Counter, Gauge, Bars, travel
@@ -39,8 +40,13 @@ A1, A2, A3, A4, A5, A6 = (THEME["accents"][k] for k in ("a1", "a2", "a3", "a4", 
 ALERT = THEME["accents"]["alert"]             # wrong, hot, refused, over a limit; never a second meaning
 ACCENT = [A1, A2, A3, A4, A5, A6]
 # Each slot has a character every theme keeps: a1 cool, a2 warm, a3 deep, a4 fresh, a5 growth, a6 spice, alert wrong.
-# There are no BLUE/YELLOW/... aliases: a scene that names a hue is refused by bin/check.py, so the library does not
-# offer one to reach for.
+# There are no BLUE/YELLOW/... aliases: a scene that names a hue is refused by bin/check.py. Manim's own colour
+# constants arrive through the star import above, and a scene reaching for one would silently get a hard-coded hue that
+# ignores the theme (Manim's RED is not this deck's ALERT), so they are removed from this namespace: the render then
+# fails loudly instead of drawing the wrong colour.
+for _n in [k for k, v in list(globals().items()) if isinstance(v, ManimColor) and k.isupper()]:
+    del globals()[_n]
+del _n
 
 DIM = THEME["dim"]                 # shapes that are not in focus (outlines, empty slots, faded members)
 MUTED = THEME["muted"]             # small text: names, units, axis labels
@@ -90,10 +96,11 @@ def identity(n: int) -> list:
 
 def ink_on(color: str, opacity: float = None) -> str:
     """The legible ink for a label written on a solid mark of `color`: the ground or the body colour, whichever the eye
-    can read against that mark. The ground alone was right on a dark theme and marginal on a bright one, where an
-    accent at full strength is already mid-toned."""
+    can read against that mark, pushed further if neither clears the 4.5:1 that small text needs. The ground alone was
+    right on a dark theme and marginal on a bright one, where an accent at full strength is already mid-toned."""
     face = _theme.blend(BG, color, SOLID if opacity is None else opacity)
-    return TEXT if _theme.contrast(TEXT, face) >= _theme.contrast(BG, face) else BG
+    ink = TEXT if _theme.contrast(TEXT, face) >= _theme.contrast(BG, face) else BG
+    return _theme.lift(ink, face, 4.5)
 
 
 def rad(k: float = 1.0) -> float:
@@ -122,7 +129,7 @@ def guides() -> VGroup:
     """The alignment grid as faint lines, for review renders only: GUIDES=1 bin/render.sh <talk> ql <Scene>.
     Titles, content band, caption band, the five columns. Nothing in a deck should sit a little off these lines."""
     g = VGroup(*[Line([x, -4, 0], [x, 4, 0], color=MUTED, stroke_width=1, stroke_opacity=0.5) for x in COLS],
-               *[Line([-7.1, y, 0], [7.1, y, 0], color=MUTED, stroke_width=1, stroke_opacity=0.5) for y in ROWS + [CAPTION_Y, 3.3]])
+               *[Line([-7.1, y, 0], [7.1, y, 0], color=MUTED, stroke_width=1, stroke_opacity=0.5) for y in ROWS + [CAPTION_Y, TITLE_Y]])
     return g.set_z_index(-5)
 
 # ------------------------------------------------------------------------------------------------ the scene

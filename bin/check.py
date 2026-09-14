@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-"""Structural checks for a talk, the things a review should not have to find by eye. Usage: bin/check.py <talk> [ql|qm|qh]
+"""Structural checks for a talk, the things a review should not have to find by eye. Usage: .venv/bin/python bin/check.py <talk> [ql|qm|qh]   (the quality is inferred when only one is rendered)
 Reports, per talk: the style it presents in and whether that style is fit to present (contrast, accents that can be
 told apart, fonts installed); any colour a scene names itself instead of taking from objects.py; the files a talk must
 have; that objects.py declares its vocabulary with set_thread; that scene names are unique; that every scene class
 wrote as many notes as it rendered steps, text sizes below 12, on-screen strings that look like sentences (more
-than 14 words in a label), captions swapped more than once in a step, and a group animated together with one of its
-members in one play (the trap that leaves the member behind). Exit code 1 if anything is
+than 14 words in a label), captions swapped more than once in a step, a scene in a file that is not scenes/s*.py, two
+scenes with one class name, and a group animated together with one of its members in one play (the trap that leaves the
+member behind). Exit code 1 if anything is
 flagged. It is a checklist helper, not a judge: docs/review.md is the review."""
-import glob, json, os, re, sys
+import glob, os, re, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib import theme as _theme
-from lib.talks import RES, SCENE_RE, dir_of, quality, qualities_present, read_json, scenes_of
+from lib.talks import RES, SCENE_RE, dir_of, quality, qualities_present, read_json, rendered, scenes_of
 
 talk = sys.argv[1] if len(sys.argv) > 1 else sys.exit(__doc__)
 root = dir_of(talk)
@@ -62,6 +63,7 @@ if os.path.exists(f"{root}/script.md") and not any(l.startswith("# ") for l in o
 if os.path.exists(f"{root}/scenes/objects.py") and "set_thread(" not in open(f"{root}/scenes/objects.py").read():
     flags.append("objects.py does not call set_thread: titles and captions will not colour the talk's nouns")
 
+_done = {scene: (index, notes) for _stem, scene, _v, index, notes in rendered(root, Q)}   # the library owns these paths
 for f in sorted(glob.glob(f"{root}/scenes/s*.py")):
     src = open(f).read()
     name = os.path.basename(f)
@@ -74,14 +76,13 @@ for f in sorted(glob.glob(f"{root}/scenes/s*.py")):
         if len(m.group(1).split()) > 14:
             flags.append(f"{name}: an on-screen sentence of {len(m.group(1).split())} words; move it to the note: \"{m.group(1)[:50]}...\"")
     # notes versus steps, per class
-    classes = list(re.finditer(r"^class (\w+)\(TalkSlide\):", src, re.M))
+    classes = list(re.finditer(SCENE_RE, src, re.M))
     for i, c in enumerate(classes):
         body = src[c.end(): classes[i + 1].start() if i + 1 < len(classes) else len(src)]
         if not re.search(r"self\.finish\(", body):
             flags.append(f"{name}: {c.group(1)} has no finish(): the last step has no note")
-        idx = f"{root}/media/videos/{name[:-3]}/{Q}/sections/{c.group(1)}.json"
-        notes_file = f"{root}/media/notes/{c.group(1)}.json"
-        if os.path.exists(idx) and os.path.exists(notes_file):   # both written by the render, so loops and branches are counted right
+        idx, notes_file = _done.get(c.group(1), (None, None))
+        if idx and os.path.exists(notes_file):   # both written by the render, so loops and branches are counted right
             steps, notes = len(read_json(idx)), len(read_json(notes_file))
             if steps != notes:
                 flags.append(f"{name}: {c.group(1)} rendered {steps} steps but wrote {notes} notes")

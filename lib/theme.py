@@ -39,6 +39,7 @@ ACCENTS = ["a1", "a2", "a3", "a4", "a5", "a6", "alert"]
 NUMBERS = ["radius", "stroke", "fill", "solid"]   # the feel: a corner, a line weight, a container fill, a solid mark
 STRINGS = ["font", "code_font", "code_style", "mode", "description"]
 ACCENT_GAP = 22.0   # the Lab distance two accents must keep: closer than this and an audience reads them as one colour
+SEEN = 3.0          # the contrast an accent needs against the ground to be seen from the back row
 
 # ------------------------------------------------------------------------------------------------ colour maths
 # Enough of CIE to answer two questions: can the audience see this against the background (contrast ratio), and can
@@ -101,11 +102,10 @@ def lift(c: str, bg: str, ratio: float = 3.0) -> str:
     extreme it was heading for when the ratio cannot be reached at all (a mid grey ground caps every colour); the
     caller learns that from validate(), which is where an unusable theme is refused.
 
-    The direction is whichever of black and white has more contrast to give against this background. That crossover is
-    at a relative luminance of about 0.18, not at 0.5: a light grey ground wants dark ink."""
+    The direction is whichever of black and white has more contrast to give against this background (see is_dark)."""
     if contrast(c, bg) >= ratio:
         return c
-    target = "#000000" if contrast("#000000", bg) > contrast("#FFFFFF", bg) else "#FFFFFF"
+    target = "#FFFFFF" if is_dark(bg) else "#000000"
     best = c
     for i in range(1, 61):
         best = blend(c, target, i / 60)
@@ -124,10 +124,12 @@ def is_dark(bg: str) -> bool:
 
 def names() -> list:
     """Every theme that ships, plus anything under themes/local (extracted from a PowerPoint file, never committed)."""
-    out = sorted(f[:-5] for f in os.listdir(THEME_DIR) if f.endswith(".json"))
+    def named(d):
+        return sorted(f[:-5] for f in os.listdir(d) if f.endswith(".json") and not f.startswith("."))
+    out = named(THEME_DIR)
     local = os.path.join(THEME_DIR, "local")
     if os.path.isdir(local):
-        out += sorted("local/" + f[:-5] for f in os.listdir(local) if f.endswith(".json"))
+        out += ["local/" + n for n in named(local)]
     return out
 
 
@@ -174,6 +176,8 @@ def _read(path: str) -> dict:
             t = json.load(f)
     except json.JSONDecodeError as e:
         raise SystemExit(f"theme: {path} is not valid JSON: {e}")
+    except OSError as e:
+        raise SystemExit(f"theme: cannot read {path}: {e}")
     if not isinstance(t, dict):
         raise SystemExit(f"theme: {path} must be a JSON object, not {type(t).__name__}")
     return t
@@ -185,14 +189,24 @@ def sheet_bg(t: dict) -> str:
     return blend(t["bg"], t["text"], 0.10)
 
 
+def of(root: str = None) -> dict:
+    """The theme a talk presents in, loaded. Every tool asks this question; nobody should have to spell the two calls."""
+    return load(active_name(root))
+
+
+def rgb255(c: str) -> tuple:
+    """A colour as the 0..255 triple PIL and the page chrome want."""
+    return tuple(round(v * 255) for v in rgb(c))
+
+
 def sheet_rgb(root: str = None) -> tuple:
     """The sheet padding for a talk, as the 0..255 triple PIL wants."""
-    return tuple(round(v * 255) for v in rgb(sheet_bg(load(active_name(root)))))
+    return rgb255(sheet_bg(of(root)))
 
 
 def sheet_hex(root: str = None) -> str:
     """The sheet padding for a talk, as the 0xRRGGBB literal ffmpeg wants."""
-    return "0x" + sheet_bg(load(active_name(root)))[1:]
+    return "0x" + sheet_bg(of(root))[1:]
 
 
 def missing_fonts(t: dict):
@@ -209,7 +223,7 @@ def load(name: str = None) -> dict:
     """The theme as a flat dict: the seven roles, the seven accents, the four numbers, the fonts, the code style,
     plus `name`, `mode` and `description`. Unknown keys are kept, missing ones inherited from the default."""
     name = name or active_name()
-    if not re.fullmatch(r"(local/)?[A-Za-z0-9][A-Za-z0-9._-]*", name):
+    if not re.fullmatch(r"(local/)?\.?[A-Za-z0-9][A-Za-z0-9._-]{0,63}", name):   # a leading dot is a tool's own scratch
         raise SystemExit(f"not a theme name: {name!r} (a name, or local/<name>: it is a file under themes/)")
     t = _read(_path_of(DEFAULT))
     if name != DEFAULT:
@@ -229,7 +243,7 @@ def load(name: str = None) -> dict:
 def validate(t: dict) -> list:
     """What makes a theme unusable on a stage, as a list of sentences. Empty means the theme is fit to present."""
     bad = []
-    for k in ROLES + NUMBERS + ["font", "code_font", "code_style", "mode", "description"]:
+    for k in ROLES + NUMBERS + STRINGS:
         if k not in t:
             bad.append(f"missing key '{k}'")
     for k in ACCENTS:
@@ -237,8 +251,7 @@ def validate(t: dict) -> list:
             bad.append(f"missing accent '{k}'")
     if bad:
         return bad
-    for k in ROLES + list(t["accents"]):
-        v = t["accents"].get(k, t.get(k))
+    for k, v in [(k, t[k]) for k in ROLES] + [(f"accent {k}", v) for k, v in t["accents"].items()]:
         if not (isinstance(v, str) and re.fullmatch(r"#(?:[0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})", v)):
             bad.append(f"{k} is {v!r}, not a hex colour like #1A2B3C")
     for k in NUMBERS:
@@ -262,8 +275,8 @@ def validate(t: dict) -> list:
     keys = sorted(acc, key=lambda k: (k not in ACCENTS, k))   # every slot the theme defines, not only the seven expected
     for k in keys:
         r = contrast(acc[k], bg)
-        if r < 3.0:
-            bad.append(f"accent {k} {acc[k]} has {r:.1f}:1 against the background, needs 3:1")
+        if r < SEEN:
+            bad.append(f"accent {k} {acc[k]} has {r:.1f}:1 against the background, needs {SEEN:.0f}:1")
     for i, a in enumerate(keys):
         for b in keys[i + 1:]:
             d = distance(acc[a], acc[b])

@@ -19,6 +19,7 @@ ROOTS = ["out", "talks"]
 
 
 RES = {"ql": "480p15", "qm": "720p30", "qh": "1080p60"}   # the folder Manim renders into, per quality flag
+
 SCENE_RE = r"^class (\w+)\(TalkSlide\)"                 # what a scene is, in one place: the tools disagreed before
 
 def dir_of(talk: str) -> str:
@@ -61,8 +62,10 @@ def scenes_of(root: str) -> list:
 
 
 def qualities_present(root: str) -> list:
-    """Which qualities this talk has actually been rendered at, for an error message worth reading."""
-    have = {os.path.basename(d) for d in glob.glob(os.path.join(REPO, root, "media", "videos", "*", "*"))}
+    """Which qualities this talk has a rendered scene at. An interrupted render leaves an empty quality folder behind,
+    and counting that as a render made the tools offer a choice that could not be taken."""
+    have = {os.path.basename(os.path.dirname(f))
+            for f in glob.glob(os.path.join(REPO, root, "media", "videos", "*", "*", "*.mp4"))}
     return [q for q, folder in RES.items() if folder in have]
 
 
@@ -95,10 +98,10 @@ def rendered_or_exit(root: str, q: str, talk: str) -> list:
 def report_unrendered(root: str, items: list):
     """Name the scenes a talk defines that this render does not have; the tools that build from a render say so rather
     than quietly leaving them out."""
-    have = {scene for _, scene, _, _, _ in items}
-    for _stem, scene in scenes_of(root):
-        if scene not in have:
-            print(f"not rendered: {scene}")
+    have = {(stem, scene) for stem, scene, _, _, _ in items}
+    for stem, scene in scenes_of(root):
+        if (stem, scene) not in have:
+            print(f"not rendered: {scene} ({stem}.py)")
 
 
 def title_of(root: str, talk: str) -> str:
@@ -120,6 +123,26 @@ def read_json(path: str):
             return json.load(f)
     except json.JSONDecodeError as e:
         raise SystemExit(f"{path} is not valid JSON ({e}); re-render this talk")
+    except OSError as e:
+        raise SystemExit(f"cannot read {path}: {e}")
+
+
+def read_index(path: str) -> list:
+    """A scene's section index: one entry per step, each with a duration and the clip it names. Checked here rather than
+    trusted, because the tools that read it delete or overwrite their own output, and a file of the wrong shape used to
+    take that output with it."""
+    index = read_json(path)
+    if not isinstance(index, list) or not index:
+        raise SystemExit(f"{path} is not a list of steps; re-render this talk")
+    for i, sec in enumerate(index):
+        if not isinstance(sec, dict) or not isinstance(sec.get("duration", None), (int, float, str)):
+            raise SystemExit(f"{path}: step {i + 1} has no duration; re-render this talk")
+        try:
+            if float(sec["duration"]) < 0:
+                raise ValueError
+        except (TypeError, ValueError):
+            raise SystemExit(f"{path}: step {i + 1} has duration {sec['duration']!r}; re-render this talk")
+    return index
 
 
 def duration(video: str) -> float:
@@ -127,9 +150,12 @@ def duration(video: str) -> float:
     is the traceback two tools used to end in."""
     r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", video],
                        capture_output=True, text=True)
-    if r.returncode or not r.stdout.strip():
-        raise SystemExit(f"{video} is missing or unreadable: re-render this talk")
-    return float(r.stdout)
+    try:
+        if r.returncode:
+            raise ValueError
+        return float(r.stdout)
+    except ValueError:
+        raise SystemExit(f"{video} is missing or unreadable ({r.stdout.strip() or 'no duration'}): re-render this talk")
 
 
 def names() -> list:

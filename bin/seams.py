@@ -4,12 +4,12 @@ Scenes are separate videos, so this is where a deck can cut to a fresh picture; 
 first frame of a scene must be the last frame of the previous one, and the title changes in place as the picture
 starts to change. Writes <talk>/media/seams/seams.png and prints a mean pixel difference per seam (0 is identical;
 under 4 is a title change on an unchanged picture; more means the picture jumped).
-Usage: bin/seams.py <talk> [ql|qm|qh]"""
+Usage: bin/seams.py <talk> [ql|qm|qh]   the quality is inferred when the talk has only one rendered"""
 import os, subprocess, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib import theme as _theme
-from lib.talks import dir_of, duration, quality, rendered_or_exit
+from lib.talks import dir_of, duration, quality, rendered_or_exit, report_unrendered, scenes_of
 
 talk = sys.argv[1] if len(sys.argv) > 1 else sys.exit(__doc__)
 root = dir_of(talk)
@@ -18,7 +18,11 @@ PAD = _theme.sheet_rgb(root)
 out_dir = f"{root}/media/seams"   # its own folder: bin/shots.py clears media/shots before writing
 os.makedirs(out_dir, exist_ok=True)
 
-scenes = [(scene, video) for _, scene, video, _, _ in rendered_or_exit(root, Q, talk)]
+items = rendered_or_exit(root, Q, talk)
+report_unrendered(root, items)
+if len(items) != len(scenes_of(root)):    # a gap would pair two scenes that are not neighbours and call it a jump
+    sys.exit("some scenes are missing from this render: the seams between them cannot be judged. Re-render the talk.")
+scenes = [(scene, video) for _, scene, video, _, _ in items]
 
 
 def frame(video: str, t: float, png: str):

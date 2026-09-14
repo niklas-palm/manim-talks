@@ -29,8 +29,9 @@ What a scene may use:
 Two rules follow, and `bin/check.py` enforces the first:
 
 - **A scene never names a hue.** `objects.py` maps the talk's nouns onto slots (`USER, MODEL = A1, A3`) and the scenes
-  use those names. There are no `BLUE`/`YELLOW`/... aliases any more, and `bin/check.py` refuses both a hue name and a
-  literal `"#RRGGBB"`: either one is a colour that will not follow the theme.
+  use those names. `bin/check.py` refuses both a hue name and a literal `"#RRGGBB"`: either one is a colour that will
+  not follow the theme. The library deletes Manim's own colour constants from its namespace as well, so a scene that
+  reaches for `RED` fails to render rather than drawing a hue that ignores the theme.
 - **A scene never invents a corner, a stroke or a fill.** Use `rad()`, `sw()`, `FILL`, `SOLID`, scaled if it must be
   smaller: `rad(0.4)`, `sw(0.56)`, `FILL * 1.6`. A literal `0.06` is what stops a style from reaching a drawing.
 
@@ -70,12 +71,6 @@ set_thread({"prefill": PROMPT, "decode": OUTPUT, "weights": WEIGHTS, "cache": CA
 `GAP_WIDE` 0.5. `GUIDES=1 bin/render.sh <talk> ql <Scene>` draws the grid into the render so shots show what is
 off. Put fixed furniture on the grid with `move_to([x, y, 0], aligned_edge=LEFT)`; attach labels to objects with
 `next_to(obj, DOWN, buff=GAP_TIGHT).align_to(obj, LEFT)`.
-
-## Layout constants (detail)
-
-`FRAME_W, FRAME_H = 14.22, 8.0`; the origin is the centre. Titles sit at the top edge (`title()`), content between
-`CONTENT_TOP = 2.6` and `CONTENT_BOTTOM = -2.3`, captions around `CAPTION_Y = -3.3`. Put fixed furniture at fixed
-coordinates with `move_to([x, y, 0], aligned_edge=LEFT)`; use `next_to` only for a label attached to an object.
 
 ## `TalkSlide`
 
