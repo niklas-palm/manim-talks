@@ -74,6 +74,8 @@ control plane and its loops; teal = the machines (nodes, kubelet, kube-proxy, an
 ## Simplifications (named in labels or notes)
 - Controllers are drawn as separate boxes; in a real cluster they run inside kube-controller-manager as one process.
 - Three pod slots per node and one memory bar stand for a node's capacity; real filtering checks many resources and rules.
+- The manifest on screen is trimmed to the lines the talk uses (kind, replicas, image); the label says so; apiVersion and
+  metadata are in the note.
 - The scheduler's score is drawn as free memory in percent (one common plugin); real scoring sums several plugins.
 - The etcd write is drawn as one card reaching two of three members; Raft's leader and log are not drawn.
 - The eviction timeline is drawn as one counter: 40 s grace, then 300 s toleration; the node-monitor-period (5 s) is

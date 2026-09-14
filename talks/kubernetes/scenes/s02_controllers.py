@@ -20,7 +20,7 @@ class Controllers(TalkSlide):
         self.add(*S.base(S.cards["deploy"]))
         # --- the title changes as the Deployment controller appears: no cut
         c1, w1 = S.ctrl["deploy"], S.watches["deploy"]
-        t = retitle(self, t, "Controllers: loops that chase the gap", "2  loops that chase the gap", extra=[FadeIn(c1), Create(w1[:3]), FadeIn(w1[3])])
+        t = retitle(self, t, "Controllers: loops that chase the gap", "2  loops that chase the gap", extra=[FadeIn(c1), Create(w1[0]), FadeIn(w1[1])])
         self.next_slide("""Where the last scene ended: the Deployment record sits in etcd, the nodes are empty, three desired and
         none running. One new thing on screen, and it is not moving yet: the Deployment controller, a box with a loop drawn in
         it, hanging over the API server on a dashed line labelled watch. It has not done anything. Next click, it does.""")
@@ -51,11 +51,11 @@ class Controllers(TalkSlide):
                   c2[0].animate.stretch_to_fit_height(OPEN_H).stretch_to_fit_width(OPEN_W).shift(DOWN * (OPEN_H - H_ROW) / 2),
                   c2[1].animate.shift(LEFT * (OPEN_W - W_CTRL) / 2), run_time=1.2)
         lx = cx - OPEN_W / 2 + 0.15
-        verbs = label("observe, compare, act", 15, MUTED).scale(0.6).move_to([lx, top - 0.72, 0], aligned_edge=LEFT)   # the three verbs, named once, on the loop that is open
-        wants = Counter("wants", 3, "", DESIRED, size=16).move_to([lx, top - 1.25, 0], aligned_edge=LEFT)
-        has = Counter("has", 0, "", ACTUAL, size=16).move_to([lx + 0.95, top - 1.25, 0], aligned_edge=LEFT)
-        gap = Counter("gap", 3, "", HOT, size=16).move_to([lx + 1.9, top - 1.25, 0], aligned_edge=LEFT)
-        act = label("act: 3 Pod records", 20, CONTROL).scale(0.5).move_to([lx, top - 1.9, 0], aligned_edge=LEFT)
+        verbs = label("observe, compare, act", 15, MUTED).scale(0.6).move_to([lx, top - 1.02, 0], aligned_edge=LEFT)   # the three verbs, named once, on the loop that is open
+        wants = Counter("wants", 3, "", DESIRED, size=16).move_to([lx, top - 1.5, 0], aligned_edge=LEFT)
+        has = Counter("has", 0, "", ACTUAL, size=16).move_to([lx + 0.95, top - 1.5, 0], aligned_edge=LEFT)
+        gap = Counter("gap", 3, "", HOT, size=16).move_to([lx + 1.9, top - 1.5, 0], aligned_edge=LEFT)
+        act = label("act: 3 Pod records", 20, CONTROL).scale(0.5).move_to([lx, top - 2.0, 0], aligned_edge=LEFT)
         self.play(FadeIn(verbs), run_time=0.4)
         self.play(FadeIn(wants), FadeIn(has), FadeIn(gap), run_time=0.5)
         self.play(FadeIn(act), run_time=0.4)

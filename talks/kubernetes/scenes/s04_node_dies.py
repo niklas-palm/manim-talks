@@ -48,7 +48,7 @@ class NodeDies(TalkSlide):
         since = Counter("since node 2's last heartbeat", 0, "s", HOT, size=22).move_to([3.4, Y_LABELS, 0], aligned_edge=LEFT)
         self.play(FadeIn(since), run_time=0.3)
         self.play(since.to(40), run_time=1.2)
-        nr = label("NotReady, tainted", 15, HOT).move_to(n2[0].get_bottom() + UP * 0.26).align_to(n2[0].get_left() + RIGHT * 0.15, LEFT)   # the free row under the memory bar
+        nr = label("NotReady, tainted", 15, HOT).move_to(n2[0].get_bottom() + UP * 0.24).align_to(n2[0].get_left() + RIGHT * 0.15, LEFT)   # the free row under the memory bar
         self.play(FadeIn(nr), n2[0].animate.set_fill(HOT, 0.08), run_time=0.4)
         tol = label("tolerated 300 s", 15, MUTED).next_to(pods["b"], DOWN, buff=0.06).align_to(pods["b"], LEFT)
         self.play(FadeIn(tol), run_time=0.3)

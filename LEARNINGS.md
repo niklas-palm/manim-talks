@@ -197,3 +197,26 @@ First principles that the passes confirmed, written to outlast the decks they ca
   name, read `count of slides`, `media type` and `play on entry of play settings of animation settings` of the movie
   shape, close that presentation by name. `active presentation` is never used.
 - `--click` exports clips that start on click, for speakers who want to talk over the still first.
+
+## Containment and routing pass (2026-09-14, afternoon)
+
+- Manim's `get_boundary_point(direction)` returns the extreme point in that direction, a corner for any diagonal, so
+  every arrow between two boxes not on one axis looked skewed. `edge_point()` in the library now meets the box where
+  the centre-to-centre line crosses it, and `arrow`, `dashed` and `travel(edges=True)` use it. Better still: put the two
+  objects on one axis and draw the line horizontal or vertical.
+- A picture with many relations wants a bus, not a fan: Kubernetes' API server became a full-width bar with the loops
+  above and the store and nodes below, so every watch is one vertical dashed line into the bar and no line crosses a
+  box. Fleet's balancer fan became a trunk, a rail and vertical drops. Routing along a shared rail is how a dense
+  system picture stays legible.
+- Things that arrive land inside the box that receives them, with padding, never on its border; a loop arc, a memory
+  bar, a card, a pull all needed their container enlarged or themselves shrunk. Reserve the row inside the box where
+  they will land.
+- A code highlighting style must keep plain identifiers neutral; one-dark paints them red and a whole loop read as
+  an error. Monokai is the library default now, for every language Pygments knows.
+- An exceptional object drawn differently (a taller block for a long tool result) reads as a mistake; draw it like its
+  peers and let its words and where it lands carry the point.
+- Zoom frames computed from the content they open (box width from the matrices inside it) stop the contents from
+  touching the box; hide the tail of a row a zoom never reaches rather than let the frame cut it.
+- Fresh agents with a written brief did this pass as well as forks with the whole session in context, and the forks
+  started to fail once the session grew past the model's input limit. Long sessions should hand work to fresh agents
+  with `AGENTS.md` and the docs as their context; that is what the docs are for.

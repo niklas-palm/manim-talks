@@ -80,11 +80,11 @@ class SchedulerKubelet(TalkSlide):
         wide2 = VGroup(t, S.client, S.api, S.store, S.desired, S.running, S.nodes[1], S.nodes[2], *S.ctrl.values(), *S.watches.values(), *S.cards.values(), wk)
         self.play(frame.animate.scale(ZK).move_to(n1.get_center()), FadeOut(wide2), run_time=1.0)
         bar = Rectangle(width=0.01, height=0.06, fill_color=ACTUAL, fill_opacity=0.9, stroke_width=0).next_to(n1[2][0], DOWN, buff=0.05).align_to(n1[2][0], LEFT)
-        bl = label("pull image", 15, MUTED).scale(ZK).next_to(bar, DOWN, buff=0.04).align_to(n1[2][0], LEFT)   # under the slot, inside the node
+        bl = label("pull image", 18, MUTED).scale(ZK).next_to(bar, DOWN, buff=0.04).align_to(n1[2][0], LEFT)   # under the slot, inside the node
         self.add(bar)
         self.play(bar.animate.stretch_to_fit_width(n1[2][0].width).align_to(n1[2][0], LEFT), FadeIn(bl), run_time=1.0)
         p1 = S.place_pod(0, 0)
-        sl = label("start container", 15, MUTED).scale(ZK).move_to(bl, aligned_edge=LEFT)
+        sl = label("start container", 18, MUTED).scale(ZK).move_to(bl, aligned_edge=LEFT)
         self.play(FadeOut(bar), FadeOut(bl), FadeIn(sl), FadeIn(p1, scale=0.5), mem(n1, 0.55), run_time=0.6)
         self.wait(0.3)
         self.play(FadeOut(sl), run_time=0.2)

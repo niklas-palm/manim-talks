@@ -24,10 +24,10 @@ set_thread({"desired": DESIRED, "record": DESIRED, "records": DESIRED, "running"
 X_L, X_R = -6.4, 6.4                                 # the stage's outer edges, on the outer column lines
 H_ROW, H_API, H_NODE = 1.1, 0.8, 2.0                 # the three bands: 2.6..1.5, 1.0..0.2, -0.3..-2.3, with GAP_WIDE between
 Y_ROW, Y_API, Y_NODE = 2.05, 0.6, -1.3               # their centres; the bottom band is centred on the -1.3 row line
-W_CLIENT, W_CTRL, W_STORE, W_NODE = 1.3, 2.0, 5.6, 1.7
+W_CLIENT, W_CTRL, W_STORE, W_NODE = 1.3, 2.2, 5.6, 1.7
 X_CLIENT = X_L + W_CLIENT / 2
 CTRL_X0 = X_CLIENT + W_CLIENT / 2 + GAP_WIDE + W_CTRL / 2
-CTRL_XS = {k: CTRL_X0 + i * (W_CTRL + GAP) for i, k in enumerate(("deploy", "rs", "sched", "extra"))}   # -3.6, -1.35, 0.9, 3.15
+CTRL_XS = {k: CTRL_X0 + i * (W_CTRL + GAP) for i, k in enumerate(("deploy", "rs", "sched", "extra"))}   # -3.5, -1.05, 1.4, 3.85
 X_STORE = X_L + W_STORE / 2                          # etcd: x -6.4 .. -0.8
 NODE_XS = [X_R - W_NODE / 2 - i * (W_NODE + GAP) for i in (2, 1, 0)]                                   # x 0.8 .. 6.4
 X_NODES_L = NODE_XS[0] - W_NODE / 2
@@ -100,12 +100,12 @@ def node_box(name: str, used: float = 0.3) -> VGroup:
     [0] box, [1] name, [2] slots, [3] mem frame, [4] mem used, [5] kubelet, [6] mem label."""
     g = box(W_NODE, H_NODE, "", NODE)
     left, right, top = g[0].get_left()[0] + 0.15, g[0].get_right()[0] - 0.15, g[0].get_top()[1]
-    name = label(name, 16, TEAL).move_to([left, top - 0.24, 0], aligned_edge=LEFT)
-    kub = label("kubelet", 16, MUTED).move_to([right, top - 0.24, 0], aligned_edge=RIGHT)
+    name = label(name, 15, TEAL).move_to([left, top - 0.24, 0], aligned_edge=LEFT)
+    kub = label("kubelet", 15, MUTED).move_to([right, top - 0.24, 0], aligned_edge=RIGHT)
     slots = VGroup(*[Rectangle(width=0.38, height=0.38, stroke_color=DIM, stroke_width=1.3, fill_opacity=0) for _ in range(3)]).arrange(RIGHT, buff=0.13)
     slots.move_to([left, top - 0.64, 0], aligned_edge=LEFT)
-    ml = label("memory", 13, MUTED).move_to([left, top - 1.2, 0], aligned_edge=LEFT)
-    frame = Rectangle(width=right - left - 0.05, height=0.16, stroke_color=DIM, stroke_width=1.3, fill_opacity=0).move_to([left, top - 1.4, 0], aligned_edge=LEFT)
+    ml = label("memory", 13, MUTED).move_to([left, top - 1.26, 0], aligned_edge=LEFT)
+    frame = Rectangle(width=right - left - 0.05, height=0.16, stroke_color=DIM, stroke_width=1.3, fill_opacity=0).move_to([left, top - 1.45, 0], aligned_edge=LEFT)
     fill = Rectangle(width=max(0.01, frame.width * used), height=0.14, fill_color=DIM, fill_opacity=0.9, stroke_width=0).align_to(frame, LEFT).set_y(frame.get_y())
     g.add(name, slots, frame, fill, kub, ml)
     return g

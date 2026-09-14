@@ -17,9 +17,12 @@ forever.
 | 5. A stable address, and change | `ServiceRollout` | 8 | 3 |
 
 No title slide: the deck opens on the first move's still picture. Every scene begins on the previous scene's last frame and
-changes its title as the first thing moves, so nothing ever cuts; 27 clicks in all. One picture for the whole talk: kubectl at the left, the API server with its three gates, etcd under it holding the
-records, a column of control loops, three nodes at the right, and two counters, pods desired and pods running. Blue
-is a record, yellow is what runs, violet is a loop, teal is a machine, red is a gap.
+changes its title as the first thing moves, so nothing ever cuts; 27 clicks in all. One picture for the whole talk: the API
+server as a bar across the middle with its three gates, the one door everything passes through; above it kubectl and the
+row of control loops, each on a short dashed line down to the bar; below it etcd at the left holding the records, three
+nodes at the right, each kubelet on a short dashed line up to the bar, and between them two counters, pods desired and
+pods running. Every relation is vertical and nothing crosses anything. Blue is a record, yellow is what runs, violet is
+a loop, teal is a machine, red is a gap.
 
 ```bash
 bin/render.sh kubernetes ql      # preview; qh for the talk itself

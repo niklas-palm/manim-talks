@@ -86,7 +86,7 @@ class ServiceRollout(TalkSlide):
         Services and Pods, and derives another record: the list of ready pod addresses that match the selector, right now.
         Every time a pod comes or goes, this list is rewritten. Nothing routes yet; a list exists.""")
         # --- kube-proxy on every node
-        chips = VGroup(*[Rectangle(width=0.5, height=0.14, fill_color=TEAL, fill_opacity=0.8, stroke_width=0).move_to(n[0].get_corner(DL) + RIGHT * 0.15 + UP * 0.26, aligned_edge=LEFT) for n in S.nodes])   # the free row under the memory bar
+        chips = VGroup(*[Rectangle(width=0.5, height=0.14, fill_color=TEAL, fill_opacity=0.8, stroke_width=0).move_to(n[0].get_corner(DL) + RIGHT * 0.15 + UP * 0.24, aligned_edge=LEFT) for n in S.nodes])   # the free row under the memory bar
         kp = label("kube-proxy on every node", 15, TEAL).move_to([X_NODES_L, Y_LABELS, 0], aligned_edge=LEFT)
         self.play(LaggedStart(*[FadeIn(c) for c in chips], lag_ratio=0.2), FadeIn(kp), run_time=0.6)
         for target in ("c", "a"):
