@@ -12,9 +12,9 @@ class Opening(TalkSlide):
         self.play(Write(t), run_time=1.0)
         self.play(FadeIn(s, shift=UP * 0.15))
         self.play(FadeOut(s), t.animate.to_edge(UP, buff=0.4).scale(0.65))
-        spine = VGroup(label("An agent is a model called in a loop over a growing list of messages.", 30, TEXT),
-                       label("The model may answer with a request to run a tool instead of an answer;", 26, TOOL),
-                       label("the application runs it, appends the result, and calls the model again.", 26, RESULT)).arrange(DOWN, buff=0.28).shift(UP * 0.5)
+        spine = VGroup(label("A model, called in a loop, over a growing list of messages.", 30, TEXT),
+                       label("It may answer with a tool request instead of an answer;", 26, TOOL),
+                       label("the application runs the tool, appends the result, calls again.", 26, RESULT)).arrange(DOWN, buff=0.28).shift(UP * 0.5)
         for line in spine:
             self.play(FadeIn(line, shift=UP * 0.15))
         col = VGroup(*[label(f"{i + 1}   {x}", 21, MUTED) for i, x in enumerate(MOVES)]).arrange(DOWN, aligned_edge=LEFT, buff=0.14).next_to(spine, DOWN, buff=0.55)

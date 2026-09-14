@@ -70,3 +70,11 @@ short "vectors and matrices" section in `docs/library.md`, parameterising cell s
 Consider adding to `docs/library.md` a short "vectors and matrices" pattern block: a vector is a shaded column, a
 matrix is a grid, one output number is a row lighting against the vector (dot_product), the whole output is the row
 sweep, and a distribution is softmax_bars. Both decks built their central pictures from exactly these.
+
+## For the parent: bin/shots.py at ql
+
+After the seek moved from 0.15 s to 0.05 s before a step's end, `bin/shots.py <talk> ql` produces no frames at 480p15:
+0.05 s is under one frame interval at 15 fps, ffmpeg exits 0 without writing a file, and the tiling step then fails with
+exit 234 on the empty glob. It works at qh (60 fps). Either clamp the seek to at least one frame interval for the
+quality (1/15 s at ql) or keep 0.15 s for ql. I did not touch bin/; the ql review here was done with a hand-rolled
+ffmpeg extraction at t - 0.15.

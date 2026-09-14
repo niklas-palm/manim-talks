@@ -36,11 +36,11 @@ class OneCall(TalkSlide):
     def construct(self):
         t = title(self, "One model call can only talk", "1  one model call can only talk")
         user, app, model, req, rep, req_l, rep_l, calls, tcalls = furniture()
-        msgs = Messages(LIST_X, LIST_TOP)
+        msgs = Stack(LIST_X, LIST_TOP, gap=GAP)
         self.play(FadeIn(user), FadeIn(app), FadeIn(model), run_time=0.6)
         self.play(Create(req), Create(rep), FadeIn(req_l), FadeIn(rep_l), FadeIn(calls), run_time=0.6)
         # the question becomes the first message; the list goes into the model; words come back
-        q = block("user", "user · anyone in the backyard?")
+        q = block("user · anyone in the backyard?", KIND["user"])
         msgs.append(self, q, frm=user, run_time=0.6)
         call_model(self, msgs, model, run_time=0.8)
         a = reply(self, msgs, model, "assistant", "assistant · I cannot see the backyard")
@@ -63,7 +63,7 @@ class OneCall(TalkSlide):
         the other side of a wall the model cannot cross. Every agent framework exists to get across that wall, and the way
         across is not to make the model do more; it is to change what goes into the call.""")
         # what a call carries
-        sysb = block("system", "system · home surveillance assistant …").move_to([LIST_X, SYS_Y, 0])
+        sysb = block("system · home surveillance assistant …", KIND["system"]).move_to([LIST_X, SYS_Y, 0])
         req_l2 = label("system prompt + all messages", 13, MUTED).move_to(req_l)
         self.play(FadeIn(sysb, shift=DOWN * 0.1), FadeOut(req_l), FadeIn(req_l2), run_time=0.5)
         call_model(self, msgs, model, run_time=0.7, extra=[sysb])

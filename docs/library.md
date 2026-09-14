@@ -69,7 +69,8 @@ fade the old label out and a new one in, or `Transform` to a new label of the sa
 | `box(w, h, name, color, name_align)` | rounded box with a name inside its top edge | a machine, an engine, a service; `box[0]` is the rectangle; `name_align="left"` frees the top-right corner for markers |
 | `node(name, color, w, h, sub)` | a named component with an optional subtitle | system diagrams; `node[0]` rectangle, `node[1]` name |
 | `arrow(a, b, text, color)` | an arrow between two objects' edges with a small label | build it after both ends are in place |
-| `travel(scene, a, b, color, flash=..., carry=...)` | a dot travels from a to b and vanishes, optionally flashing b; `carry=cell` sends a shrunken copy of an object instead | the unit of motion in every system picture |
+| `travel(scene, a, b, color, flash=..., carry=..., text=..., edges=...)` | a dot travels from a to b and vanishes, optionally flashing b; `carry=cell` sends a shrunken copy of an object, `text` rides above the dot, `edges=True` goes edge to edge | the unit of motion in every system picture: a request, a query and its answer, an observe and an act |
+| `dashed(a, b, text, color)` | a dashed line between two objects with a small label | a watch, a subscription, a heartbeat; hub-and-spoke systems are one hub and several of these |
 | `column(n, color, cell, op)` | a vector: a thin column of cells | shades vary per cell to look like numbers (see the reference deck's `vector()`) |
 | `grid(rows, cols, color, cell, op)` | a matrix or a memory | indexed `grid[row * cols + col]` |
 | `dot_grid(n, cols, color, radius)` | n dots in rows | a population whose members change one by one |
@@ -109,6 +110,15 @@ Budget 0.45 units under a Log's offsets for a pointer and its tag, and 1.4 units
 one. Code at size 18 is about 0.13 units per character: shorten identifiers before shrinking the font.
 
 ## Patterns from the reference deck
+
+**The stage.** Give each talk one function in `objects.py` that builds the whole fixed picture at fixed coordinates
+(the machines, the store, the loops, the counters) and returns its parts by name. Every scene calls it, adds the parts
+it starts from, and grows from there: six scene files, one continuous picture, no shared Manim state. See
+`talks/_template/scenes/objects.py` and `talks/kubernetes/scenes/objects.py`.
+
+**A timer as a shrinking bar.** A lease, a TTL, a timeout: a bar under the object that shrinks to zero
+(`bar.animate.stretch_to_fit_width(w).align_to(left_edge, LEFT)`), refilled when renewed. The audience sees "how much
+time is left" without a number; a counter beside it carries the unit when the number matters.
 
 **Grow, never replace.** Keep every object in a variable; later steps add to the same picture. To make room, move
 or shrink what is there with an animation the audience can follow, never by removing and redrawing.

@@ -21,7 +21,7 @@ class Partitions(TalkSlide):
         t = title(self, "One log cannot take the load: partitions", "2  partitions")
         prod = producer("producer").move_to([0.0, 2.55, 0])
         brokers = VGroup(*[broker(f"broker {i + 1}", 4.0, 2.1).move_to([x, BY, 0]) for i, x in enumerate(XS)])
-        logs = [Log(x - 1.75, BY - 0.2, capacity=7, name=f"partition {i}") for i, x in enumerate(XS)]
+        logs = [Log(x - 1.75, BY - 0.2, capacity=7, name=f"partition {i}", gap=GAP) for i, x in enumerate(XS)]
         load = Gauge("write\nload", FAIL, 1.8).move_to([-6.75, BY, 0])
         self.play(FadeIn(prod), FadeIn(brokers[0]), FadeIn(logs[0]), FadeIn(load), *[FadeIn(b.copy().set_opacity(0.25)) for b in brokers[1:]], run_time=0.6)
         ghosts = [m for m in self.mobjects if isinstance(m, VGroup) and m not in (prod, brokers[0], logs[0], load, t)]
@@ -54,12 +54,12 @@ class Partitions(TalkSlide):
         cons = [consumer(f"consumer {i + 1}").move_to([x, CY, 0]) for i, x in enumerate(XS)]
         grp = SurroundingRectangle(VGroup(*cons), color=READER, buff=0.25, corner_radius=0.1, stroke_width=1.5)
         gl = label("consumer group: one partition per member", 16, READER).next_to(grp, UP, buff=0.08).align_to(grp, LEFT)
-        ptrs = [Pointer(f"c{i + 1}").place(logs[i], 0) for i in range(3)]
+        ptrs = [Pointer(f"c{i + 1}", READER).place(logs[i], 0) for i in range(3)]
         self.play(FadeIn(VGroup(*cons)), Create(grp), FadeIn(gl), *[FadeIn(p) for p in ptrs], run_time=0.6)
         for step in range(3):
             for i in range(3):
                 if step < len(logs[i].cells):
-                    read_flash(self, logs[i].cells[step], ptrs[i], cons[i], rt=0.15)
+                    travel(self, logs[i].cells[step], cons[i], run_time=0.15, carry=logs[i].cells[step])
             self.play(*[ptrs[i].to(logs[i], min(step + 1, len(logs[i].cells))) for i in range(3)], run_time=0.2)
         self.play(FadeOut(l2), run_time=0.3)
         self.next_slide("""Now the readers. A consumer group is a set of consumers that share the work of a topic: each partition is read by
@@ -76,7 +76,7 @@ class Partitions(TalkSlide):
         for step in range(3, 6):
             for i in range(3):
                 if step < len(logs[i].cells):
-                    read_flash(self, logs[i].cells[step], ptrs[i], cons[min(i, 1)], rt=0.15)
+                    travel(self, logs[i].cells[step], cons[min(i, 1)], run_time=0.15, carry=logs[i].cells[step])
             self.play(*[ptrs[i].to(logs[i], min(step + 1, len(logs[i].cells))) for i in range(3)], run_time=0.2)
         l3 = label("rebalance: a leaving member's partition moves to another (KIP-848: one at a time)", 17, READER).move_to([-6.3, -1.0, 0], aligned_edge=LEFT)
         self.play(FadeIn(l3), run_time=0.4)
@@ -88,7 +88,7 @@ class Partitions(TalkSlide):
         It is enabled per group with group.protocol=consumer and becomes the default in 5.0.""")
         # --- committed offsets are a log too
         self.play(FadeOut(l3), run_time=0.3)
-        olog = Log(-2.9, -3.4, capacity=12, name="__consumer_offsets: committed positions, a compacted topic of 50 partitions")
+        olog = Log(-2.9, -3.4, capacity=12, name="__consumer_offsets: committed positions, a compacted topic of 50 partitions", gap=GAP)
         self.play(FadeIn(olog), run_time=0.5)
         for i, src in enumerate([cons[0], cons[1], cons[1], cons[0]]):
             d = Dot(color=READER, radius=0.09).move_to(src.get_bottom())

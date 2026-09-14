@@ -17,12 +17,12 @@ class TheState(TalkSlide):
         t = title(self, "The list is the only state", "4  the list is the only state")
         user, app, model, req, rep, req_l, rep_l, calls, tcalls = furniture()
         req_l = label("system prompt + tools + all messages", 13, MUTED).move_to(req_l)
-        msgs = Messages(LIST_X, LIST_TOP)
-        sysb = block("system", "system · home surveillance assistant …").move_to([LIST_X, SYS_Y, 0])
+        msgs = Stack(LIST_X, LIST_TOP, gap=GAP)
+        sysb = block("system · home surveillance assistant …", KIND["system"]).move_to([LIST_X, SYS_Y, 0])
         start = [("user", "user · anyone in the backyard?"), ("tool_use", 'assistant · tool_use query_camera(2, …)'),
                  ("tool_result", "user · tool_result: a person by the shed"), ("assistant", "assistant · yes, one person by the shed")]
         for kind, text in start:
-            b = block(kind, text).move_to(msgs.slot(len(msgs.blocks))); msgs.blocks.append(b); msgs.add(b)
+            b = block(text, KIND[kind]).move_to(msgs.slot(len(msgs.blocks))); msgs.blocks.append(b); msgs.add(b)
         cards = VGroup(*[tool_card(*spec).move_to([CARD_X, y, 0]) for spec, y in zip(TOOLS, CARD_YS)])
         devs = VGroup(*[device(n).move_to([DEV_X, y, 0]) for n, y in zip(DEVICES, DEV_YS)])
         calls.tracker.set_value(2); tcalls.tracker.set_value(1)
@@ -37,11 +37,11 @@ class TheState(TalkSlide):
         call_model(self, msgs, model, run_time=0.7, extra=[sysb, cards])
         turns = [("user · warm enough to open the door?", "assistant · tool_use query_temperature()", "user · tool_result: 19 °C", "assistant · 19 °C: yes, open it", 1)]
         for uq, tu, tr, ans, k in turns:
-            msgs.append(self, block("user", uq), frm=user, run_time=0.3)
+            msgs.append(self, block(uq, KIND["user"]), frm=user, run_time=0.3)
             call_model(self, msgs, model, run_time=0.35, extra=[sysb, cards]); self.play(calls.to(calls.tracker.get_value() + 1), sent.to(len(msgs.blocks) + 1), run_time=0.2)
             reply(self, msgs, model, "tool_use", tu, run_time=0.3)
             travel(self, cards[k], devs[k], TOOL, run_time=0.3, flash=RESULT)
-            msgs.append(self, block("tool_result", tr), frm=cards[k], run_time=0.3); self.play(tcalls.to(tcalls.tracker.get_value() + 1), run_time=0.15)
+            msgs.append(self, block(tr, KIND["tool_result"]), frm=cards[k], run_time=0.3); self.play(tcalls.to(tcalls.tracker.get_value() + 1), run_time=0.15)
             call_model(self, msgs, model, run_time=0.35, extra=[sysb, cards]); self.play(calls.to(calls.tracker.get_value() + 1), sent.to(len(msgs.blocks) + 1), run_time=0.2)
             reply(self, msgs, model, "assistant", ans, run_time=0.3)
         self.wait(0.3)   # the step's end frame must show the last block in place
@@ -52,11 +52,11 @@ class TheState(TalkSlide):
         more question go round: four more messages, and the window is nearly full.""")
         # --- 2 overflow
         over = []
-        msgs.append(self, block("user", "user · who was here yesterday afternoon?"), frm=user, run_time=0.3)
+        msgs.append(self, block("user · who was here yesterday afternoon?", KIND["user"]), frm=user, run_time=0.3)
         call_model(self, msgs, model, run_time=0.35, extra=[sysb, cards]); self.play(calls.to(calls.tracker.get_value() + 1), sent.to(len(msgs.blocks) + 1), run_time=0.2)
         over.append(reply(self, msgs, model, "tool_use", 'assistant · tool_use camera_history(1, …)', run_time=0.3))
         travel(self, cards[2], devs[2], TOOL, run_time=0.3, flash=RESULT)
-        over.append(msgs.append(self, block("tool_result", "user · tool_result: 3 recordings, 14 min …"), frm=cards[2], run_time=0.3))
+        over.append(msgs.append(self, block("user · tool_result: 3 recordings, 14 min …", KIND["tool_result"]), frm=cards[2], run_time=0.3))
         self.play(tcalls.to(tcalls.tracker.get_value() + 1), run_time=0.15)
         ghost = VGroup(msgs.copy(), sysb.copy(), cards.copy()).set_opacity(0.55)
         self.play(ghost.animate.scale(0.22).move_to(model[0].get_center()), run_time=0.6)
@@ -84,7 +84,7 @@ class TheState(TalkSlide):
         # --- 4 summarisation: the oldest become one block
         old = msgs.blocks[:3]
         rest = msgs.blocks[3:]
-        summ = block("summary", "assistant · summary of the door question").move_to(msgs.slot(0))
+        summ = block("assistant · summary of the door question", KIND["summary"]).move_to(msgs.slot(0))
         summ[0].set_stroke(MODEL).set_fill(MODEL, 0.28)
         self.play(ReplacementTransform(VGroup(*old), summ), run_time=0.7)
         msgs.blocks = [summ, *rest]

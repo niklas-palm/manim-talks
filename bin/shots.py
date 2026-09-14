@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """End-state screenshots of every step of one talk, from the rendered videos: talks/<talk>/media/shots/<Scene>-<k>.png
 and one tiled sheet per scene, <Scene>.png. The presenter holds on exactly these frames, so this is what the audience
-sits with while the speaker talks: the fastest review of captions, spacing and colour there is. Frames are taken 0.05 s
+sits with while the speaker talks: the fastest review of captions, spacing and colour there is. Frames are taken 0.08 s
 before each step ends, so a fade that is the step's last animation is finished; end every step on a settled picture.
 Usage: bin/shots.py <talk> [ql|qm|qh]"""
 import glob, json, os, re, subprocess, sys
@@ -25,7 +25,7 @@ for f in sorted(glob.glob(f"{root}/scenes/s*.py")):
         for k, sec in enumerate(json.load(open(idx))):
             t += float(sec["duration"])
             out = f"{out_dir}/{scene}-{k:02d}.png"
-            subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-ss", f"{max(0, min(t - 0.05, dur - 0.05)):.3f}", "-i", video,
+            subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-ss", f"{max(0, min(t - 0.08, dur - 0.08)):.3f}", "-i", video,
                             "-frames:v", "1", "-vf", "scale=960:-1", out], check=True)
             frames.append(out)
         rows = (len(frames) + 1) // 2

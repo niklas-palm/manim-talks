@@ -5,7 +5,7 @@ What lives here
   colours       a small palette; a talk assigns each colour one meaning and keeps it for the whole deck
   TalkSlide     a Scene whose steps are clicks; each step carries a speaker note (next_slide / finish)
   text          label, title, small, caption, swap_caption, pin, thread colouring of a talk's nouns
-  objects       tokens, box, node, arrow, column, grid, dot_grid, Counter, Gauge, Bars, travel
+  objects       tokens, box, node, arrow, dashed, column, grid, dot_grid, Counter, Gauge, Bars, travel
   vectors       vector, shades, restore, dot_product, sweep: the picture of a matrix multiplication
   lists         Log and Pointer (a row of cells with offsets and a reader), Stack and block (a list that grows), code_lines
   layout        the frame constants and the bands titles, pictures and captions live in
@@ -211,17 +211,40 @@ def arrow(a: Mobject, b: Mobject, text: str = "", color: str = MUTED, buff: floa
     return g
 
 
-def travel(scene, path_from: Mobject, path_to: Mobject, color: str = BLUE, radius: float = 0.09, run_time: float = 0.5, flash: str = "", carry: Mobject = None):
+def travel(scene, path_from: Mobject, path_to: Mobject, color: str = BLUE, radius: float = 0.09, run_time: float = 0.5, flash: str = "",
+           carry: Mobject = None, text: str = "", edges: bool = False):
     """A dot travels from one object to another and vanishes; optionally the destination flashes. The unit of
     motion in every system picture: a request, a packet, a message, a token on its way. `carry` sends a shrunken copy
-    of that object instead of a dot (a record travelling to its reader keeps its colour)."""
-    d = carry.copy().scale(0.6) if carry is not None else Dot(color=color, radius=radius).move_to(path_from.get_center())
+    of that object instead of a dot (a record travelling to its reader keeps its colour); `text` rides above the dot
+    (a question, an answer, a call name); `edges=True` starts at the sender's near edge and stops at the receiver's,
+    for objects that sit side by side."""
+    start, end = path_from.get_center(), path_to.get_center()
+    if edges:
+        direction = end - start
+        start = path_from.get_boundary_point(direction) + direction / max(np.linalg.norm(direction), 1e-6) * 0.1
+        end = path_to.get_boundary_point(-direction) - direction / max(np.linalg.norm(direction), 1e-6) * 0.1
+    d = carry.copy().scale(0.6) if carry is not None else Dot(color=color, radius=radius)
+    d.move_to(start)
+    if text:
+        d = VGroup(d, label(text, 13, color).next_to(d, UP, buff=0.06))
     scene.add(d)
-    scene.play(d.animate.move_to(path_to.get_center()), run_time=run_time)
+    scene.play(d.animate.move_to(end + (UP * 0.12 if text else 0)), run_time=run_time)
     anims = [FadeOut(d, run_time=0.15)]
     if flash:
         anims.append(Flash(path_to, color=flash, flash_radius=max(path_to.width, path_to.height) / 2 + 0.15, num_lines=8, run_time=0.3))
     scene.play(*anims)
+
+
+def dashed(a: Mobject, b: Mobject, text: str = "", color: str = MUTED) -> VGroup:
+    """A dashed line between two objects' edges with a small label at its middle: a watch, a subscription, a
+    heartbeat, any standing relation that is not a flow. Hub-and-spoke systems (a control plane, a broker) are drawn
+    as one hub and several of these."""
+    ln = DashedLine(a.get_boundary_point(b.get_center() - a.get_center()), b.get_boundary_point(a.get_center() - b.get_center()),
+                    color=color, stroke_width=1.6, dash_length=0.1, stroke_opacity=0.7)
+    g = VGroup(ln)
+    if text:
+        g.add(label(text, 12, MUTED).move_to(ln.get_center() + UP * 0.14))
+    return g
 
 
 def column(n: int = 8, color: str = BLUE, cell: float = 0.08, op: float = 0.9) -> VGroup:

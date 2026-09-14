@@ -98,7 +98,7 @@ Manim Community Edition 0.21, Python 3.12, macOS, ffmpeg 7, no LaTeX. Each entry
 
 - **Preview at `ql` (480p15)** while building: seconds to a couple of minutes per scene. **`qh` (1080p60)** for the
   talk: a rich scene takes five to ten minutes; a full deck the better part of an hour.
-- **Shots are taken 0.05 s before each step's end**, which is the frame the presenter holds. A label swap or a move as
+- **Shots are taken 0.08 s before each step's end** (one frame at 15 fps), which is the frame the presenter holds. A label swap or a move as
   the very last animation of a step used to show as a ghost at the earlier 0.15 s; if the sheet still shows one, the
   step itself ends mid-animation and needs a settling wait.
 - **Sections are indexed from `_0000`.** `Scene_0000_autocreated.mp4` is the first step; the JSON index lists

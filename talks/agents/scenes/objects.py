@@ -14,49 +14,7 @@ USER, MODEL, TOOL, RESULT, PROBLEM = BLUE, VIOLET, YELLOW, TEAL, RED
 set_thread({"user": USER, "model": MODEL, "tool": TOOL, "tools": TOOL, "result": RESULT, "results": RESULT})
 
 KIND = {"user": USER, "assistant": MODEL, "tool_use": TOOL, "tool_result": RESULT, "system": MUTED, "summary": MODEL}
-BW, BH, GAP = 3.4, 0.35, 0.05          # a message block: width, height, gap in the list
-CODE_FONT = "Menlo"
-
-
-def block(kind: str, text: str, s: float = 1.0, bare: bool = False) -> VGroup:
-    """One message in the list: a rounded block in the colour of its kind, a solid bar at its left edge, one line of
-    text. block[0] frame, block[1] bar, block[2] text. `s` scales the whole block (the code scene draws a small list)."""
-    c = KIND[kind]
-    r = RoundedRectangle(corner_radius=0.06, width=BW, height=BH, fill_color=c, fill_opacity=0.16, stroke_color=c, stroke_width=1.4)
-    bar = Rectangle(width=0.09, height=BH, fill_color=c, fill_opacity=0.95, stroke_width=0).move_to(r.get_left(), aligned_edge=LEFT)
-    if bare:                               # a small reminder picture: colour says the kind, no text
-        return VGroup(r, bar).scale(s)
-    role = text.split(" · ")[0] if " · " in text else ""
-    t = label(text, 14, TEXT, **({"t2c": {f"[0:{len(role)}]": c}} if role else {}))   # the role in the block's colour
-    if t.width > BW - 0.3:
-        t.scale_to_fit_width(BW - 0.3)
-    t.move_to(r).align_to(r.get_left() + RIGHT * 0.2, LEFT)
-    return VGroup(r, bar, t).scale(s)
-
-
-class Messages(VGroup):
-    """The list of messages: blocks stacked downward from `top` at `x`. append() animates a block flying from a source
-    into its slot. The list is a VGroup, so a copy of it can travel into the model as one thing."""
-
-    def __init__(self, x: float, top: float, s: float = 1.0, **kw):
-        super().__init__(**kw)
-        self.x, self.top, self.s, self.blocks = x, top, s, []
-
-    def slot(self, i: int):
-        return [self.x, self.top - self.s * (BH / 2 + i * (BH + GAP)), 0]
-
-    def append(self, scene, b: VGroup, frm=None, run_time: float = 0.45):
-        target = self.slot(len(self.blocks))
-        if frm is not None:
-            b.move_to(frm.get_center())
-            scene.add(b)
-            scene.play(b.animate.move_to(target), run_time=run_time)
-        else:
-            b.move_to(target)
-            scene.play(FadeIn(b, shift=DOWN * 0.15), run_time=run_time)
-        self.blocks.append(b)
-        self.add(b)
-        return b
+BW, BH, GAP = 3.4, 0.35, 0.05          # a message block in this deck: width, height, gap in the Stack (the library's block and Stack draw them)
 
 
 def app_box(w: float = 5.6, h: float = 4.7, s: float = 1.0) -> VGroup:
@@ -84,7 +42,7 @@ def device(name: str, s: float = 1.0) -> VGroup:
     return node(name, MUTED, w=1.8, h=0.55, size=15).scale(s)
 
 
-def call_model(scene, msgs: Messages, model: VGroup, run_time: float = 0.7, extra=None):
+def call_model(scene, msgs: Stack, model: VGroup, run_time: float = 0.7, extra=None):
     """Every call sends the whole list: a copy of it (and of anything in `extra`, the system prompt and tools) shrinks
     into the model box, the box lights while it works, then dims."""
     ghost = VGroup(msgs.copy(), *(m.copy() for m in (extra or []))).set_opacity(0.55)
@@ -93,13 +51,6 @@ def call_model(scene, msgs: Messages, model: VGroup, run_time: float = 0.7, extr
     scene.play(model[0].animate.set_fill(MODEL, 0.10), run_time=0.2)
 
 
-def reply(scene, msgs: Messages, model: VGroup, kind: str, text: str, run_time: float = 0.5) -> VGroup:
+def reply(scene, msgs: Stack, model: VGroup, kind: str, text: str, run_time: float = 0.5) -> VGroup:
     """The model's reply comes out of the box and joins the list."""
-    return msgs.append(scene, block(kind, text, msgs.s), frm=model[0], run_time=run_time)
-
-
-def code_lines(lines, size: float = 16) -> VGroup:
-    """Code as left-aligned monospaced lines; code[i] is line i."""
-    g = VGroup(*[Text(l if l.strip() else " ", font=CODE_FONT, font_size=size, color=TEXT) for l in lines])
-    g.arrange(DOWN, aligned_edge=LEFT, buff=0.12)
-    return g
+    return msgs.append(scene, block(text, KIND[kind]), frm=model[0], run_time=run_time)

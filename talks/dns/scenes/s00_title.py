@@ -14,7 +14,7 @@ class Opening(TalkSlide):
         self.play(FadeIn(s, shift=UP * 0.15))
         self.play(FadeOut(s), t.animate.to_edge(UP, buff=0.4).scale(0.65))
         spine = VGroup(label("Every answer is the address, or a pointer to who to ask next,", 32, TEXT, thread=True),
-                       label("and every level remembers what it heard for exactly as long as it was told to.", 32, TEXT, thread=True),
+                       label("and every level remembers an answer exactly as long as it was told to.", 32, TEXT, thread=True),
                        label("The whole system, its speed and its failures, follow from those two rules.", 24, MUTED)).arrange(DOWN, buff=0.3).shift(UP * 0.5)
         for line in spine:
             self.play(FadeIn(line, shift=UP * 0.15))

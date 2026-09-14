@@ -21,10 +21,10 @@ class TheLoop(TalkSlide):
         t = title(self, "Tools, and the loop", "2  tools, and the loop")
         user, app, model, req, rep, req_l, rep_l, calls, tcalls = furniture()
         req_l = label("system prompt + all messages", 13, MUTED).move_to(req_l)
-        msgs = Messages(LIST_X, LIST_TOP)
-        sysb = block("system", "system · home surveillance assistant …").move_to([LIST_X, SYS_Y, 0])
+        msgs = Stack(LIST_X, LIST_TOP, gap=GAP)
+        sysb = block("system · home surveillance assistant …", KIND["system"]).move_to([LIST_X, SYS_Y, 0])
         for kind, text in (("user", "user · anyone in the backyard?"), ("assistant", "assistant · I cannot see the backyard")):
-            b = block(kind, text).move_to(msgs.slot(len(msgs.blocks))); msgs.blocks.append(b); msgs.add(b)
+            b = block(text, KIND[kind]).move_to(msgs.slot(len(msgs.blocks))); msgs.blocks.append(b); msgs.add(b)
         calls.tracker.set_value(2)
         cam = device(DEVICES[0]).move_to([DEV_X, DEV_YS[0], 0])
         gap = DashedLine(model[0].get_right() + RIGHT * 0.1, cam.get_left() + LEFT * 0.1, color=DIM, stroke_width=2)
@@ -56,7 +56,7 @@ class TheLoop(TalkSlide):
         it as you would for a new colleague: what it does, when to use it, what the arguments mean.""")
         self.play(FadeOut(code), FadeOut(cl), run_time=0.4)
         # --- 3 the reply is a tool call
-        q = block("user", "user · anyone in the backyard?")
+        q = block("user · anyone in the backyard?", KIND["user"])
         msgs.append(self, q, frm=user, run_time=0.5)
         call_model(self, msgs, model, run_time=0.8, extra=[sysb, cards])
         self.play(cards[0][2].animate.set_color(TOOL), run_time=0.3)     # the description is what the model matched
@@ -71,7 +71,7 @@ class TheLoop(TalkSlide):
         # --- 4 the application runs it
         travel(self, cards[0], devs[0], TOOL, run_time=0.45, flash=RESULT)
         travel(self, devs[0], cards[0], RESULT, run_time=0.45)
-        tr = msgs.append(self, block("tool_result", "user · tool_result: a person by the shed"), frm=cards[0], run_time=0.5)
+        tr = msgs.append(self, block("user · tool_result: a person by the shed", KIND["tool_result"]), frm=cards[0], run_time=0.5)
         rl = label("the application ran it;\nthe model never does", 13, RESULT).move_to(tl)
         self.play(tcalls.to(1), FadeOut(tl), FadeIn(rl), run_time=0.4)
         self.next_slide("""The application reads the request, runs the real function against the real camera, and gets an answer back: a
@@ -95,13 +95,13 @@ class TheLoop(TalkSlide):
         ll = label("tool_use: run it, append the result, call again", 13, TOOL).move_to([MODEL_L, -0.9, 0], aligned_edge=LEFT)
         ll2 = label("end_turn: stop", 13, MODEL).next_to(ll, DOWN, buff=0.06).align_to(ll, LEFT)
         self.play(Create(loop), FadeIn(ll), FadeIn(ll2), run_time=0.6)
-        q2 = block("user", "user · warm enough to open the door?")
+        q2 = block("user · warm enough to open the door?", KIND["user"])
         msgs.append(self, q2, frm=user, run_time=0.3)
         call_model(self, msgs, model, run_time=0.4, extra=[sysb, cards])
         reply(self, msgs, model, "tool_use", "assistant · tool_use query_temperature()", run_time=0.3)
         self.play(calls.to(5), FadeOut(stop2), FadeIn(stop), run_time=0.2)
         travel(self, cards[1], devs[1], TOOL, run_time=0.3, flash=RESULT)
-        msgs.append(self, block("tool_result", "user · tool_result: 19 °C"), frm=cards[1], run_time=0.3)
+        msgs.append(self, block("user · tool_result: 19 °C", KIND["tool_result"]), frm=cards[1], run_time=0.3)
         self.play(tcalls.to(2), run_time=0.2)
         call_model(self, msgs, model, run_time=0.4, extra=[sysb, cards])
         a2 = reply(self, msgs, model, "assistant", "assistant · 19 °C: yes, open it", run_time=0.3)

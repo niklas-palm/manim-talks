@@ -90,7 +90,7 @@ class Caching(TalkSlide):
         stack.next_to(client, UP, buff=0.3).align_to(client, LEFT)
         marks = VGroup(*[Rectangle(width=0.1, height=0.2, fill_color=REMEMBERED, fill_opacity=0.9, stroke_width=0).next_to(s_, LEFT, buff=0.1) for s_ in stack])
         self.play(FadeIn(stack, lag_ratio=0.2), FadeIn(marks, lag_ratio=0.2), run_time=0.8)
-        cd = label("one record, its TTL counting down in every cache: 300 s here, 281 s in the browser", 16, MUTED).move_to([0.6, -3.3, 0])
+        cd = label("the same TTL, counting down in every cache: 300 s, then 281 s", 16, MUTED).move_to([0.6, -3.3, 0])
         self.play(FadeOut(cost), FadeIn(cd), run_time=0.4)
         self.finish("""The resolver is not the only cache. The browser keeps answers, the operating system's stub keeps answers, and
         each of them counts the same time to live down from where it received it: a record that left the resolver with

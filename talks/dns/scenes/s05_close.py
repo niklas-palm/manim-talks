@@ -50,7 +50,7 @@ class Standing(TalkSlide):
         for i, m in enumerate(ans[1:]):
             m.move_to(ans[0].get_center() + UP * (0.45 - 0.45 * i))
         ans.move_to([0, -0.6, 0])
-        limit = label("512 bytes in the classic UDP answer; longer sets the TC flag, and the client asks again over TCP", 16, MUTED).next_to(ans, DOWN, buff=0.2)
+        limit = label("512 bytes over UDP; longer sets TC and the client retries over TCP", 16, MUTED).next_to(ans, DOWN, buff=0.2)
         self.play(FadeIn(ans), run_time=0.6)
         self.play(FadeIn(limit), run_time=0.4)
         self.next_slide("""The messages themselves are small. A question is a single UDP packet to port 53: a header with an id and a few
@@ -68,7 +68,7 @@ class Standing(TalkSlide):
         res = resolver_box(-0.1)
         self.play(FadeIn(root), FadeIn(tld), FadeIn(auth), FadeIn(client), FadeIn(res), run_time=0.7)
         rules = VGroup(label("every answer is the address, or a pointer to who to ask next", 20, TEXT, thread=True),
-                       label("every level remembers what it heard for exactly as long as it was told to", 20, TEXT, thread=True)).arrange(DOWN, aligned_edge=LEFT, buff=0.12).move_to([0, -2.95, 0])
+                       label("every level remembers an answer exactly as long as it was told to", 20, TEXT, thread=True)).arrange(DOWN, aligned_edge=LEFT, buff=0.12).move_to([0, -2.95, 0])
         self.play(FadeIn(rules[0]), run_time=0.5)
         for a, b, col in ((res, root, ZONE), (res, tld, ZONE), (res, auth, ADDRESS)):
             question(self, a, b, run_time=0.25)

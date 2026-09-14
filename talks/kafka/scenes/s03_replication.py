@@ -21,7 +21,7 @@ class Replication(TalkSlide):
         boxes = VGroup(*[box(7.4, 1.5).move_to([0.0, y, 0]) for y in YS])
         for b, n in zip(boxes, names):   # names at the top left, so the high-water mark label has the top right
             b.add(label(n, 17, LOGC).move_to(b[0].get_corner(UL) + RIGHT * 0.18 + DOWN * 0.14, aligned_edge=UL))
-        logs = [Log(X0, y - 0.18, capacity=CAP) for y in YS]
+        logs = [Log(X0, y - 0.18, capacity=CAP, gap=GAP) for y in YS]
         prod = producer().move_to([-5.85, YS[0], 0])
         cons = consumer("consumer", w=1.9).move_to([5.85, YS[0], 0])
         isr = label("in-sync: 1  2  3", 17, SYNC).move_to([3.95, YS[1] + 0.2, 0], aligned_edge=LEFT)
@@ -33,7 +33,7 @@ class Replication(TalkSlide):
         hwm[1].next_to(hwm[0], UP, buff=0.04)
         hwm.move_to([logs[0].slot(0)[0] - PITCH / 2, logs[0].y + 0.17, 0])
         self.play(FadeIn(hwm), run_time=0.3)
-        ptr = Pointer("consumer").place(logs[0], 0, dy=0.55)
+        ptr = Pointer("consumer", READER).place(logs[0], 0, dy=0.55)
         self.add(ptr)
 
         def hwm_to(i):
@@ -58,7 +58,7 @@ class Replication(TalkSlide):
         for c in (KEY_A, KEY_B, KEY_C):
             replicate(c)
         for i in range(3):
-            read_flash(self, logs[0].cells[i], ptr, cons, rt=0.18)
+            travel(self, logs[0].cells[i], cons, run_time=0.18, carry=logs[0].cells[i])
             self.play(ptr.to(logs[0], i + 1, dy=0.55), run_time=0.15)
         l1 = label("committed = on every in-sync replica; consumers read up to the HWM", 17, SYNC).move_to([-6.3, -3.0, 0], aligned_edge=LEFT)
         self.play(FadeIn(l1), run_time=0.4)
@@ -125,7 +125,7 @@ class Replication(TalkSlide):
         self.play(FadeOut(boxes[1][1]), FadeIn(newname), Transform(a_in, a_in2), Transform(a_out, a_out2), FadeIn(hwm2), run_time=0.8)
         isr5 = label("in-sync: 2  3", 17, SYNC).move_to(isr, aligned_edge=LEFT)
         self.play(FadeOut(isr4), FadeIn(isr5), run_time=0.3)
-        ptr2 = Pointer("consumer").place(logs[1], 3, dy=0.55)
+        ptr2 = Pointer("consumer", READER).place(logs[1], 3, dy=0.55)
         self.add(ptr2)
         for c in (KEY_A, KEY_C):
             cell = logs[1].append(self, c, source=prod, rt=0.25)

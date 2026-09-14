@@ -18,16 +18,16 @@ class Retention(TalkSlide):
     def construct(self):
         t = title(self, "Disks fill: retention and compaction", "4  retention and compaction")
         segs = VGroup(*[broker(n, 4.4, 1.7).move_to([x, SY, 0]) for n, x in zip(("00000000000000000000.log", "00000000000000000008.log", "00000000000000000016.log"), SEGX)])
-        logs = [Log(x - 2.0, SY - 0.22, capacity=8, base=b) for x, b in zip(SEGX, (0, 8, 16))]
+        logs = [Log(x - 2.0, SY - 0.22, capacity=8, base=b, gap=GAP) for x, b in zip(SEGX, (0, 8, 16))]
         for i, l in enumerate(logs):
             for k in range(8 if i < 2 else 5):
                 l.put(SEQ[(i * 8 + k) % len(SEQ)])
         pl = label("one partition on disk", 17, LOGC).move_to([-6.7, 2.5, 0], aligned_edge=LEFT)
         active = label("active segment: appends go here", 15, LOGC).next_to(segs[2], DOWN, buff=0.1)
         self.play(FadeIn(segs), *[FadeIn(l) for l in logs], FadeIn(pl), FadeIn(active), run_time=0.7)
-        ptr = Pointer("consumer, slow").place(logs[0], 3, dy=0.95)
+        ptr = Pointer("consumer, slow", READER).place(logs[0], 3, dy=0.95)
         self.play(FadeIn(ptr), run_time=0.3)
-        l1 = label("segments: files named by their first offset; a new one at 1 GiB or 168 h", 17, LOGC).move_to([-6.7, -0.5, 0], aligned_edge=LEFT)
+        l1 = label("segment files named by first offset; a new one at 1 GiB or 168 h", 17, LOGC).move_to([-6.7, -0.5, 0], aligned_edge=LEFT)
         self.play(FadeIn(l1), run_time=0.4)
         self.next_slide("""Zoom in on one partition's directory. The log is not one file but a sequence of segment files, each named by the
         offset of the first record it holds, so finding offset twelve is a binary search over file names and then an index
@@ -50,7 +50,7 @@ class Retention(TalkSlide):
         an offset that no longer exists; it is reset by auto.offset.reset, to the oldest remaining record with earliest or
         to the end with latest, and either way it has lost data. Lag against retention is the other number to alarm on.""")
         # --- compaction keeps the latest record per key
-        clog = Log(-2.9, -1.95, capacity=12, name="topic account-balances, cleanup.policy=compact: a record is the key's latest state")
+        clog = Log(-2.9, -1.95, capacity=12, name="topic account-balances, cleanup.policy=compact: a record is the key's latest state", gap=GAP)
         for c in [KEY_A, KEY_B, KEY_C, KEY_A, KEY_B, KEY_A, KEY_C, KEY_B]:
             clog.put(c)
         self.play(FadeOut(age), FadeIn(clog), run_time=0.6)
@@ -77,7 +77,7 @@ class Retention(TalkSlide):
         self.play(FadeIn(tomb), FadeIn(cross), FadeIn(tl), run_time=0.4)
         n = len(clog.cells)
         self.play(VGroup(tomb, cross).animate.move_to(clog.slot(n)), FadeOut(tl), run_time=0.5)
-        off = clog.offset_label(n); self.play(FadeIn(off), run_time=0.15)
+        off = label(str(clog.base + n), 14, MUTED).move_to([clog.slot(n)[0], clog.y - SIDE / 2 - 0.22, 0]); self.play(FadeIn(off), run_time=0.15)
         bob = [i for i in range(n) if clog.cells[i].get_fill_color().to_hex() == KEY_B.upper() or clog.cells[i].get_fill_color().to_hex() == KEY_B]
         self.play(*[FadeOut(clog.cells[i]) for i in bob], *[FadeOut(clog.offs[i]) for i in bob], run_time=0.5)
         dr = Counter("tombstone age", 0, "h", MUTED, size=24).move_to([3.8, -3.1, 0], aligned_edge=LEFT)

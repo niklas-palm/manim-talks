@@ -52,3 +52,13 @@ For the parent session to merge into `LEARNINGS.md`, `docs/library.md` and `lib/
   a sentence; the sentence is in the note. Every bottom label in the deck is now under 70 characters at 17 pt.
 - Gauge names wider than the gauge clip at the frame edge when the gauge sits in the margin; two short lines
   ("write\nload") fit, a broker name does not.
+
+## Library migration (for the parent)
+
+- Scenes now use `lib.palette`'s `Log`, `Pointer` and `travel(carry=)`; `objects.py` keeps only the colours, the
+  SIDE/GAP/PITCH constants (passed as `gap=GAP` so the HWM marker and tombstone geometry stay aligned) and the
+  producer/consumer/broker wrappers. End frames of all 22 steps compared against the previous render: mean grey
+  difference under 2/255 everywhere, layout identical.
+- `bin/shots.py` at `ql` (15 fps) produced no frames: the seek to 0.05 s before a step's end lands after the last
+  frame of a 15 fps file, ffmpeg writes nothing, and the tiling step then fails on the empty glob. At `qh` it works.
+  Clamp the seek to `dur - 1/fps` or fall back to `-0.15` when nothing is written.

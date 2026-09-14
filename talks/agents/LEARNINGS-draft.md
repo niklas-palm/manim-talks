@@ -26,15 +26,21 @@ For the parent to merge into `LEARNINGS.md`, `docs/library.md` and `docs/manim.m
 - The `label()` wrap does not apply to `Text` with an explicit `\n`; two-line labels are the cheapest way to fit a
   sentence beside a box without running off the frame edge.
 
-## Candidate library helpers (used here, in `scenes/objects.py`)
+## Library helpers
 
-- `block(kind, text, s, bare)`: a one-line message block with a colour bar; `bare=True` for colour-only reminder
-  pictures.
-- `Messages(x, top, s)` with `slot(i)` and `append(scene, block, frm)`: a growing list whose items fly in from a source.
-- `call_model(scene, msgs, model, extra)`: the whole-list-into-the-box animation.
-- `code_lines(lines, size)`: monospaced code as a VGroup of lines for line-by-line highlighting (Menlo renders cleanly).
-- A generic "list that grows" (`Messages`) and `code_lines` would serve other talks (Kafka's log, a queue, any code
-  walk-through) and could move to `lib/palette.py`.
+- `block`, `Stack` and `code_lines` were promoted to `lib/palette.py`; this talk now uses them, with its kinds mapped to
+  colours in `objects.py` (`block(text, KIND[kind])`). The small reminder picture in TheCode scales bare blocks with
+  `.scale(S)` and passes `h=BH * S, gap=GAP * S` to `Stack`.
+- Still local: `call_model(scene, msgs, model, extra)` (the whole list shrinking into the model box), `tool_card`,
+  `device`, `app_box`, `model_box`, `reply`.
+
+## Kept below the size guideline, on purpose
+
+- Tool cards carry three lines (name 15 pt, description 13 pt, schema 12 pt) in a 2.2 by 0.8 card. Larger text does
+  not fit three lines beside the message list, and the name is the line the audience must read; the description is
+  read aloud in the note. `bin/check.py` accepts 12 as the floor.
+
+## Out of scope, noticed
 
 ## Out of scope, noticed
 

@@ -22,7 +22,7 @@ class TheLog(TalkSlide):
         t = title(self, "A topic is an append-only log", "1  the log")
         prod = producer().move_to([-6.1, 0.55, 0])
         brk = broker("broker", 10.2, 3.0).move_to([0.9, 0.55, 0])
-        log = Log(-3.85, 0.85, capacity=12, name="topic payments, one partition")
+        log = Log(-3.85, 0.85, capacity=12, name="topic payments, one partition", gap=GAP)
         leg = legend().move_to([4.2, 2.65, 0])
         self.play(FadeIn(prod), FadeIn(brk), FadeIn(log), FadeIn(leg), run_time=0.6)
         ar = arrow(prod, brk, "append", MUTED)
@@ -38,11 +38,11 @@ class TheLog(TalkSlide):
         nothing is updated in place, and that is why writes are sequential and cheap.""")
         # --- a consumer pulls from its offset
         c1 = consumer("consumer 1").move_to([-3.6, -2.35, 0])
-        p1 = Pointer("consumer 1").place(log, 0)
+        p1 = Pointer("consumer 1", READER).place(log, 0)
         pos = Counter("consumer 1's position: the offset of the next record", 0, "", READER, size=26).move_to([1.4, -2.45, 0], aligned_edge=LEFT)
         self.play(FadeIn(c1), FadeIn(p1), FadeIn(pos), run_time=0.5)
         for i in range(4):
-            read_flash(self, log.cells[i], p1, c1, rt=0.25)
+            travel(self, log.cells[i], c1, run_time=0.25, carry=log.cells[i])
             self.play(p1.to(log, i + 1), pos.to(i + 1), run_time=0.25)
         l2 = label("pull: the consumer owns its offset; the broker keeps no reader state", 17, READER).move_to(l1, aligned_edge=LEFT)
         self.play(FadeOut(l1), FadeIn(l2), run_time=0.4)
@@ -53,10 +53,10 @@ class TheLog(TalkSlide):
         the page cache.""")
         # --- a second consumer, independent
         c2 = consumer("consumer 2").move_to([-1.0, -2.35, 0])
-        p2 = Pointer("consumer 2").place(log, 0, dy=1.3)
+        p2 = Pointer("consumer 2", READER).place(log, 0, dy=1.3)
         self.play(FadeIn(c2), FadeIn(p2), run_time=0.4)
         for i in range(2):
-            read_flash(self, log.cells[i], p2, c2, rt=0.25)
+            travel(self, log.cells[i], c2, run_time=0.25, carry=log.cells[i])
             self.play(p2.to(log, i + 1, dy=1.3), run_time=0.25)
         for c in (KEY_C, KEY_A):
             log.append(self, c, source=prod, rt=0.3)
@@ -70,7 +70,7 @@ class TheLog(TalkSlide):
         # --- replay
         self.play(p1.to(log, 0), pos.to(0), run_time=0.6)
         for i in range(3):
-            read_flash(self, log.cells[i], p1, c1, rt=0.18)
+            travel(self, log.cells[i], c1, run_time=0.18, carry=log.cells[i])
             self.play(p1.to(log, i + 1), pos.to(i + 1), run_time=0.18)
         l4 = label("replay: move the offset back (a new group starts at auto.offset.reset: latest, or earliest)", 17, READER).move_to(l1, aligned_edge=LEFT)
         self.play(FadeOut(l3), FadeIn(l4), run_time=0.4)

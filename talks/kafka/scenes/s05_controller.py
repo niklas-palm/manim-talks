@@ -15,7 +15,7 @@ class Controller(TalkSlide):
     def construct(self):
         t = title(self, "Who decides: the controller quorum", "5  the controller")
         ctrls = VGroup(*[broker(n, 3.9, 1.0, SYNC if i == 0 else LOGC).move_to([x, 2.1, 0]) for i, (n, x) in enumerate(zip(("controller 1: active", "controller 2: standby", "controller 3: standby"), CX))])
-        mlog = Log(-2.9, 0.35, capacity=12, name="__cluster_metadata: the cluster's state as a log, replicated by Raft to every controller")
+        mlog = Log(-2.9, 0.35, capacity=12, name="__cluster_metadata: the cluster's state as a log, replicated by Raft to every controller", gap=GAP)
         for c in (LOGC, LOGC, SYNC, LOGC, LOGC, LOGC):
             mlog.put(c)
         brks = VGroup(*[broker(f"broker {i + 1}", 3.9, 1.0).move_to([x, -1.75, 0]) for i, x in enumerate(CX)])

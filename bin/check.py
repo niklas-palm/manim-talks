@@ -24,7 +24,7 @@ for f in sorted(glob.glob(f"{root}/scenes/s*.py")):
     name = os.path.basename(f)
     if "from lib.palette import *" not in src:
         flags.append(f"{name}: does not import lib.palette")
-    for m in re.finditer(r"label\(([^()]*?),\s*(\d+(?:\.\d+)?)", src):
+    for m in re.finditer(r"label\((\"(?:[^\"\\]|\\.)*\"|'(?:[^'\\]|\\.)*'|[\w.\[\]]+(?:\([^()]*\))?),\s*(\d+(?:\.\d+)?)\b", src):
         if float(m.group(2)) < 12:
             flags.append(f"{name}: label size {m.group(2)} below 12: {m.group(1)[:40]}")
     for m in re.finditer(r"(?:label|caption|swap_caption)\((?:self,\s*(?:cap,\s*)?)?\"([^\"]{60,})\"", src):
@@ -34,16 +34,16 @@ for f in sorted(glob.glob(f"{root}/scenes/s*.py")):
     classes = list(re.finditer(r"^class (\w+)\(TalkSlide\):", src, re.M))
     for i, c in enumerate(classes):
         body = src[c.end(): classes[i + 1].start() if i + 1 < len(classes) else len(src)]
-        notes = len(re.findall(r"self\.(?:next_slide|finish)\(", body))
         if not re.search(r"self\.finish\(", body):
             flags.append(f"{name}: {c.group(1)} has no finish(): the last step has no note")
         idx = glob.glob(f"{root}/media/videos/{name[:-3]}/{Q}/sections/{c.group(1)}.json")
-        if idx:
-            steps = len(json.load(open(idx[0])))
+        notes_file = f"{root}/media/notes/{c.group(1)}.json"
+        if idx and os.path.exists(notes_file):   # both written by the render, so loops and branches are counted right
+            steps, notes = len(json.load(open(idx[0]))), len(json.load(open(notes_file)))
             if steps != notes:
-                flags.append(f"{name}: {c.group(1)} rendered {steps} steps but has {notes} notes")
+                flags.append(f"{name}: {c.group(1)} rendered {steps} steps but wrote {notes} notes")
         for step in re.split(r"self\.next_slide\(", body)[:-1]:
-            if step.count("swap_caption(") + step.count("caption(self") > 1:
+            if len(re.findall(r"(?<!swap_)caption\(self", step)) + step.count("swap_caption(") > 1:
                 flags.append(f"{name}: {c.group(1)} changes the caption more than once inside one step")
 
 print(f"{talk}: {'ok' if not flags else str(len(flags)) + ' flags'}")
