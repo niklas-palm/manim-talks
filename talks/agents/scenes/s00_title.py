@@ -2,7 +2,7 @@
 from lib.palette import *
 from objects import *
 
-MOVES = ["one model call can only talk", "tools, and the loop", "the same loop as code, and where to intercept it", "the list is the only state"]
+MOVES = ["an application, an API, and one model call", "from an API to a tool", "the loop", "the same loop as code, and where to intercept it", "the list is the only state"]
 
 
 class Opening(TalkSlide):
@@ -23,5 +23,6 @@ class Opening(TalkSlide):
         machinery rather than the marketing. One sentence carries it: an agent is a model called in a loop over a growing list
         of messages, where the model may answer with a request to run a tool instead of an answer, and the application runs
         the tool, appends the result and calls the model again. Everything on screen for the next twelve minutes is one
-        picture of that sentence, growing. Four moves: why one call is not enough, the loop, the loop as code with the places
-        you can intercept it, and the one thing the loop carries, the list, which is also its limit.""")
+        picture of that sentence, growing. Five moves: an application that already calls an API, that API turned into a tool,
+        the loop, the loop as code with the places you can intercept it, and the one thing the loop carries, the list, which
+        is also its limit.""")

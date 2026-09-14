@@ -14,9 +14,9 @@ class Fleet(TalkSlide):
     def construct(self):
         t = title(self, "From one engine to a fleet", "6  the fleet")
         cap = caption(self, "A fleet starts from one engine's measured rate at your latency budget")
-        gpu = GPU("one engine", w=4.4, weights_gb=29).scale(0.8).shift(LEFT * 3.4 + UP * 0.2)
+        gpu = GPU("one engine", w=4.4, weights_gb=29).scale(0.8).shift(LEFT * 3.2 + UP * 0.2)
         self.play(FadeIn(gpu), gpu.set_cache(40), gpu.bandwidth.set(0.92), gpu.compute.set(0.7), *gpu.light_cores(0.7))
-        rps = Counter("requests/s one engine sustains inside the latency budget", 16, "", OUTPUT).shift(RIGHT * 2.6 + UP * 1.2)
+        rps = Counter("requests/s one engine sustains inside the latency budget", 16, "", OUTPUT).move_to([0.0, 1.3, 0], aligned_edge=LEFT)
         self.play(FadeIn(rps))
         self.next_slide("""A fleet starts from one engine's measured rate, at your latency budget and prompt shape. Everything before this was one engine, and a fleet is built from one number about it: how many requests per
         second one engine sustains inside your latency budget, at your prompt shape. That number is the operating point on the
@@ -24,8 +24,8 @@ class Fleet(TalkSlide):
         budget. In the companion measurements it is about 16 requests per second, 16,000 input tokens per second, for 1,000-token prompts inside an 8-second p95. Take
         that as the worked example, not as a constant.""")
         cap = swap_caption(self, cap, "Sizing is arithmetic: demand over one engine's rate, with headroom, rounded up")
-        demand = Counter("demand at peak", 100, "requests/s", TEXT).shift(RIGHT * 2.6 + DOWN * 0.3)
-        need = Counter("engines: 100 over (16 times 0.85), rounded up", 8, "", CACHE).shift(RIGHT * 2.6 + DOWN * 1.6)
+        demand = Counter("demand at peak", 100, "requests/s", TEXT).move_to([0.0, 0.0, 0], aligned_edge=LEFT)
+        need = Counter("engines: 100 over (16 times 0.85), rounded up", 8, "", CACHE).move_to([0.0, -1.3, 0], aligned_edge=LEFT)
         self.play(FadeIn(demand))
         self.play(FadeIn(need))
         self.next_slide("""Requests are independent, so engines add up: two engines serve twice what one does, to within a percent or two,

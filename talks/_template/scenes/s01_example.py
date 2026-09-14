@@ -3,8 +3,8 @@ comment like this one:
 
   Final frame: a client (left), a server box with five slots (centre), a store (right); a gauge for the server's
   load at the far right; a counter of requests served at the bottom right; a quiet caption.
-  Clicks: 1 client and server appear, one request travels and is served  2 five requests arrive together, slots fill,
-  gauge climbs  3 camera zooms into the server, a slot opens to show what a request holds  4 back out; a store
+  Clicks: 1 the still picture: client, server, gauge, counter  2 one request travels and is served  3 five requests arrive together, slots fill,
+  gauge climbs  4 camera zooms into the server, a slot opens to show what a request holds  5 back out; a store
   appears and the server writes to it, counter runs.
 
 Every step: labels first, then the animation, then the note.
@@ -27,6 +27,8 @@ class Example(TalkSlide):
         self.play(FadeIn(client), FadeIn(server), FadeIn(load), FadeIn(served), run_time=0.6)
         a1 = arrow(client, server, "one request", MUTED)
         self.play(Create(a1[0]), FadeIn(a1[1]), run_time=0.5)
+        self.next_slide("""The still picture first, nothing moving: a client, a server with five slots, a load gauge, a counter. Name what
+        is on screen; the first request travels on the next click.""")
         travel(self, client, server, CLIENT, flash=SERVER)          # the unit of motion: a dot from a to b
         self.play(server[2][0].animate.set_fill(CLIENT, 0.9), load.set(0.2), served.to(1), run_time=0.6)
         self.next_slide("""The simplest picture: one client, one server, one request. The request travels, the server takes it into a

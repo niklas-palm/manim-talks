@@ -26,7 +26,7 @@ class NodeDies(TalkSlide):
             n[5].set_color(TEAL)
         self.add(*S.base(*[S.ctrl[k] for k in ("deploy", "rs", "sched")], *[S.watches[k] for k in ("deploy", "rs", "sched")], *S.cards.values(), *pods.values(), *kw))
         # --- heartbeats
-        hb = label("lease renewed every 10 s", 15, TEAL).move_to([X_NODE, 2.6, 0])
+        hb = label("lease renewed every 10 s", 15, TEAL).move_to([COLS[3], Y_LABELS, 0], aligned_edge=LEFT)
         self.play(FadeIn(hb), run_time=0.3)
         for _ in range(2):
             dots = [Dot(color=TEAL, radius=0.07).move_to(n[5].get_center()) for n in S.nodes]
@@ -47,10 +47,10 @@ class NodeDies(TalkSlide):
             self.add(*dots)
             self.play(*[d.animate.move_to(S.api[0].get_right()) for d in dots], run_time=0.5)
             self.play(*[FadeOut(d) for d in dots], run_time=0.1)
-        since = Counter("since node 2's last heartbeat", 0, "s", HOT, size=22).move_to([3.4, -2.65, 0], aligned_edge=LEFT)
+        since = Counter("since node 2's last heartbeat", 0, "s", HOT, size=22).move_to([COLS[3], Y_COUNTERS, 0], aligned_edge=LEFT)
         self.play(FadeIn(since), run_time=0.3)
         self.play(since.to(40), run_time=1.2)
-        nr = label("NotReady, tainted", 15, HOT).next_to(n2, DOWN, buff=0.04)
+        nr = label("NotReady, tainted", 15, HOT).move_to(n2[0].get_bottom() + UP * 0.16).align_to(n2[0].get_left() + RIGHT * GAP, LEFT)
         self.play(FadeIn(nr), n2[0].animate.set_fill(HOT, 0.08), run_time=0.4)
         tol = label("tolerated 300 s", 15, MUTED).next_to(pods["b"], UP, buff=0.08)
         self.play(FadeIn(tol), run_time=0.3)
@@ -68,7 +68,7 @@ class NodeDies(TalkSlide):
         self.play(FadeOut(since), FadeOut(nr), FadeOut(hb), run_time=0.3)
         rsc = S.ctrl["rs"]
         pulse(self, S.cards["rs"].get_right(), rsc[2])
-        cmp = label("wants 3, has 2", 15, TEXT).next_to(rsc, DOWN, buff=0.08)
+        cmp = label("wants 3, has 2", 15, TEXT).next_to(rsc, DOWN, buff=GAP_TIGHT).align_to(rsc, LEFT)
         self.play(FadeIn(cmp), run_time=0.3)
         pd = card("Pod d", "no node").scale(0.7).move_to(rsc[2].get_center())
         pd[2].set_color(HOT)

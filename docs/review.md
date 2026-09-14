@@ -7,6 +7,8 @@ deck is not done. Look at `media/shots/<Scene>.png` and `media/review/<Scene>.pn
 
 - [ ] With the sound off, a viewer could say what each step showed.
 - [ ] Each step adds exactly one idea; after every click the audience can say what changed.
+- [ ] Every scene opens on a still picture (title and furniture, nothing moving); the mechanism starts on the next
+      click. First occurrence slow (0.3 to 0.6 s per beat), repeats fast (0.07 to 0.15 s) inside one click.
 - [ ] Nothing already on screen was replaced; the picture grew, moved, opened or faded because its job was done.
 - [ ] The final frame of each move contains everything the move drew, in the places the storyboard planned.
 - [ ] Nothing on screen is outright wrong. Every simplification is named in a label or note.

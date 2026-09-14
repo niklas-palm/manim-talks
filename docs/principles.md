@@ -37,6 +37,16 @@ After every click the audience must be able to say in one sentence what changed.
 split the step. If nothing visible changed, the step has no reason to exist. A 45-minute talk is sixty to eighty
 clicks; a ten-minute one is fifteen to twenty.
 
+## 3b. Open on a still picture; start slow, then speed up
+
+The first click of a scene shows the starting picture and nothing moves: the title, the furniture, the objects the
+scene begins with. The speaker names what is on screen; the mechanism starts on the next click. Within a scene the
+first time something happens it happens slowly enough to follow (0.3 to 0.6 s per beat, one thing at a time); when
+the same thing happens again it plays at speed inside one click (0.07 to 0.15 s per beat). A scene that opens
+already moving, or a mechanism that runs fast the first time, teaches nothing; a mechanism that runs slowly the
+third time bores. The presenter's next-step preview shows the speaker where the animation will end, so a still
+first step costs nothing.
+
 ## 4. Colours are vocabulary
 
 Pick four to six accent colours and give each one meaning for the whole deck: in the reference deck prompt blue,

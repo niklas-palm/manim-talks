@@ -16,25 +16,31 @@ DESIRED, ACTUAL, CONTROL, NODE, HOT = BLUE, YELLOW, VIOLET, TEAL, RED
 set_thread({"desired": DESIRED, "record": DESIRED, "records": DESIRED, "running": ACTUAL, "actual": ACTUAL,
             "controller": CONTROL, "controllers": CONTROL, "scheduler": CONTROL, "node": NODE, "nodes": NODE, "kubelet": NODE})
 
-# fixed furniture of the stage, shared by every scene so the picture never jumps between them
-X_CLIENT, X_API, X_CTRL, X_NODE = -5.95, -2.6, 1.35, 4.95
-Y_TOP = 1.95
-NODE_YS = [1.75, 0.3, -1.15]
-CTRL_YS = {"deploy": 1.95, "rs": 0.7, "sched": -0.55, "extra": -1.8}
-CARD_W, CARD_H = 1.75, 0.62
+# fixed furniture of the stage, on the library grid (COLS -6.4, -3.2, 0, 3.2, 6.4; ROWS 2.6 .. -2.3), shared by every
+# scene so the picture never jumps between them. Four columns across the 12.8 units between the margins:
+#   kubectl 1.5 | API server and etcd 3.6 | control loops 3.0 | nodes 3.2, separated by GAP_WIDE; nodes start on x = 3.2.
+X_CLIENT, X_API, X_CTRL, X_NODE = -5.65, -2.6, 1.2, 4.8
+W_API, W_CTRL, W_NODE = 3.6, 3.0, 3.2
+Y_TOP = 1.95                                         # API server centre: 1.3 tall, its top edge on the 2.6 row line
+Y_STORE = -0.625                                     # etcd: GAP below the API server, 3.35 tall, bottom on the -2.3 row line
+NODE_YS = [1.615, -0.005, -1.625]                    # three nodes of 1.37 with GAP between, from 2.3 down to the -2.3 line; a label row above at 2.55
+CTRL_YS = {"deploy": 2.075, "rs": 0.775, "sched": -0.525, "extra": -1.825}   # four loops of 1.05 with GAP between, from the 2.6 line
+Y_COUNTERS = -2.75                                   # one row of counters under the -2.3 line, left edges on the column lines
+Y_LABELS = 2.55                                      # a label above the node column (heartbeats, the open question)
+CARD_W, CARD_H = 1.6, 0.8
 
 
 def card(kind: str, detail: str = "", color: str = DESIRED) -> VGroup:
     """A record in the store: its kind, and one status line. card[0] frame, card[1] kind, card[2] status."""
     r = RoundedRectangle(corner_radius=0.08, width=CARD_W, height=CARD_H, stroke_color=color, stroke_width=2, fill_color=color, fill_opacity=0.14)
-    g = VGroup(r, label(kind, 15, TEXT).move_to(r.get_top() + DOWN * 0.19))
-    g.add(label(detail if detail else " ", 14, MUTED).move_to(r.get_bottom() + UP * 0.17))
+    g = VGroup(r, label(kind, 16, TEXT).move_to(r.get_top() + DOWN * 0.24))
+    g.add(label(detail if detail else " ", 15, MUTED).move_to(r.get_bottom() + UP * 0.22))
     return g
 
 
 def set_detail(scene, c: VGroup, text: str, color: str = MUTED, run_time: float = 0.3):
     """Replace a card's status line (fade, never become: glyph counts differ)."""
-    new = label(text, 14, color).move_to(c[2])
+    new = label(text, 15, color).move_to(c[2])
     scene.play(FadeOut(c[2]), FadeIn(new), run_time=run_time)
     c.remove(c[2]); c.add(new)
     return new
@@ -42,38 +48,39 @@ def set_detail(scene, c: VGroup, text: str, color: str = MUTED, run_time: float 
 
 def apiserver() -> VGroup:
     """The API server: a box with three gates a request passes through. [0] box, [1] name, [2] gates, [3] gate names."""
-    g = box(3.8, 1.2, "", CONTROL)
-    name = label("API server", 18, CONTROL).move_to(g[0].get_top() + DOWN * 0.2)
-    gates = VGroup(*[Rectangle(width=0.09, height=0.42, fill_color=DIM, fill_opacity=0.9, stroke_width=0) for _ in range(3)]).arrange(RIGHT, buff=1.15).move_to(g[0].get_center() + DOWN * 0.12)
-    names = VGroup(*[label(s, 15, MUTED).next_to(gt, DOWN, buff=0.05) for s, gt in zip(("authenticate", "authorise", "admit"), gates)])
+    g = box(W_API, 1.3, "", CONTROL)
+    name = label("API server", 18, CONTROL).move_to(g[0].get_top() + DOWN * 0.22)
+    gates = VGroup(*[Rectangle(width=0.09, height=0.42, fill_color=DIM, fill_opacity=0.9, stroke_width=0) for _ in range(3)]).arrange(RIGHT, buff=1.08).move_to(g[0].get_center() + DOWN * 0.1)
+    names = VGroup(*[label(s, 16, MUTED).next_to(gt, DOWN, buff=0.06) for s, gt in zip(("authenticate", "authorise", "admit"), gates)])
     g.add(name, gates, names)
     return g
 
 
 def store(members: int = 3) -> VGroup:
     """etcd: a box that holds record cards, its members as dots on the top edge. [0] box, [1] name, [2] members."""
-    g = box(3.8, 2.7, "", NODE)
+    g = box(W_API, 3.35, "", NODE)
     g[0].set_stroke(color=TEAL).set_fill(TEAL, 0.05)
-    name = label("etcd", 18, TEAL).move_to(g[0].get_top() + DOWN * 0.2 + LEFT * 1.45)
-    dots = VGroup(*[Dot(radius=0.08, color=TEAL) for _ in range(members)]).arrange(RIGHT, buff=0.14).move_to(g[0].get_top() + DOWN * 0.2 + RIGHT * 1.3)
+    name = label("etcd", 18, TEAL).move_to(g[0].get_top() + DOWN * 0.22).align_to(g[0].get_left() + RIGHT * GAP, LEFT)
+    dots = VGroup(*[Dot(radius=0.08, color=TEAL) for _ in range(members)]).arrange(RIGHT, buff=0.14).move_to(g[0].get_top() + DOWN * 0.22).align_to(g[0].get_right() + LEFT * GAP, RIGHT)
     g.add(name, dots)
     return g
 
 
 def slot_positions(st: VGroup, n: int = 6):
     """Where record cards sit inside the store: two columns, three rows."""
-    x0, y0 = st[0].get_center()[0] - 0.93, st[0].get_top()[1] - 0.78
-    return [[x0 + 1.86 * (i % 2), y0 - 0.7 * (i // 2), 0] for i in range(n)]
+    pitch_x, pitch_y = CARD_W + GAP, CARD_H + GAP_TIGHT                       # two columns, three rows, equal gaps
+    x0, y0 = st[0].get_center()[0] - pitch_x / 2, st[0].get_top()[1] - 0.5 - CARD_H / 2
+    return [[x0 + pitch_x * (i % 2), y0 - pitch_y * (i // 2), 0] for i in range(n)]
 
 
 def controller(name: str, legend: bool = False) -> VGroup:
     """A control loop in a box: name on top, the loop as a circular arrow; the three verbs only on the legend one.
     [0] box, [1] name, [2] loop arc, [3] verbs (empty group if not legend)."""
-    g = box(3.0, 1.05, "", CONTROL)
+    g = box(W_CTRL, 1.05, "", CONTROL)
     name = label(name, 16, CONTROL).move_to(g[0].get_top() + DOWN * 0.2)
-    arc = Arc(radius=0.24, start_angle=PI / 2, angle=-1.7 * PI, color=CONTROL, stroke_width=2.4).move_to(g[0].get_center() + DOWN * 0.15 + LEFT * (1.0 if legend else 0.0))
+    arc = Arc(radius=0.24, start_angle=PI / 2, angle=-1.7 * PI, color=CONTROL, stroke_width=2.4).move_to(g[0].get_center() + DOWN * 0.15 + LEFT * 1.05)   # every loop's arc in one column
     arc.add_tip(tip_length=0.13, tip_width=0.13)
-    verbs = VGroup(label("observe, compare, act", 15, MUTED).next_to(arc, RIGHT, buff=0.22)) if legend else VGroup()
+    verbs = VGroup(label("observe, compare, act", 15, MUTED).next_to(arc, RIGHT, buff=0.2)) if legend else VGroup()
     g.add(name, arc, verbs)
     return g
 
@@ -81,19 +88,19 @@ def controller(name: str, legend: bool = False) -> VGroup:
 def node_box(name: str, used: float = 0.3) -> VGroup:
     """A node: box, name, three pod slots, a memory bar with its used portion, the kubelet.
     [0] box, [1] name, [2] slots, [3] mem frame, [4] mem used, [5] kubelet, [6] mem label."""
-    g = box(3.2, 1.25, "", NODE)
-    name = label(name, 15, TEAL).move_to(g[0].get_corner(UL) + RIGHT * 0.55 + DOWN * 0.2)
-    slots = VGroup(*[Rectangle(width=0.42, height=0.42, stroke_color=DIM, stroke_width=1.3, fill_opacity=0) for _ in range(3)]).arrange(RIGHT, buff=0.1)
-    slots.move_to(g[0].get_center() + DOWN * 0.17 + LEFT * 0.7)
-    frame = Rectangle(width=1.0, height=0.16, stroke_color=DIM, stroke_width=1.3, fill_opacity=0).move_to(g[0].get_center() + RIGHT * 0.85 + DOWN * 0.02)
-    fill = Rectangle(width=max(0.01, 1.0 * used), height=0.14, fill_color=DIM, fill_opacity=0.9, stroke_width=0).align_to(frame, LEFT).set_y(frame.get_y())
-    kub = label("kubelet", 15, MUTED).move_to(g[0].get_corner(UR) + LEFT * 0.55 + DOWN * 0.2)
-    ml = label("memory", 13, MUTED).next_to(frame, DOWN, buff=0.05)
+    g = box(W_NODE, 1.37, "", NODE)
+    name = label(name, 16, TEAL).move_to(g[0].get_top() + DOWN * 0.22).align_to(g[0].get_left() + RIGHT * GAP, LEFT)
+    slots = VGroup(*[Rectangle(width=0.5, height=0.5, stroke_color=DIM, stroke_width=1.3, fill_opacity=0) for _ in range(3)]).arrange(RIGHT, buff=GAP_TIGHT)
+    slots.move_to(g[0].get_center() + DOWN * 0.2).align_to(g[0].get_left() + RIGHT * GAP, LEFT)
+    frame = Rectangle(width=1.0, height=0.18, stroke_color=DIM, stroke_width=1.3, fill_opacity=0).move_to(g[0].get_center() + DOWN * 0.08).align_to(g[0].get_right() + LEFT * GAP, RIGHT)
+    fill = Rectangle(width=max(0.01, 1.0 * used), height=0.16, fill_color=DIM, fill_opacity=0.9, stroke_width=0).align_to(frame, LEFT).set_y(frame.get_y())
+    kub = label("kubelet", 16, MUTED).move_to(g[0].get_top() + DOWN * 0.22).align_to(g[0].get_right() + LEFT * GAP, RIGHT)
+    ml = label("memory", 15, MUTED).next_to(frame, DOWN, buff=0.06).align_to(frame, LEFT)
     g.add(name, slots, frame, fill, kub, ml)
     return g
 
 
-def pod(color: str = ACTUAL, side: float = 0.36) -> Square:
+def pod(color: str = ACTUAL, side: float = 0.42) -> Square:
     return Square(side, fill_color=color, fill_opacity=0.92, stroke_width=0)
 
 
@@ -121,15 +128,15 @@ class Stage:
     animate the rest. Nothing moves between scenes, so the audience keeps one mental picture."""
 
     def __init__(self, node_used=(0.3, 0.55, 0.95), controllers=()):
-        self.client = node("kubectl", MUTED, w=1.6, h=0.85, size=18).move_to([X_CLIENT, Y_TOP, 0])
+        self.client = node("kubectl", MUTED, w=1.5, h=0.85, size=18).move_to([X_CLIENT, Y_TOP, 0])
         self.api = apiserver().move_to([X_API, Y_TOP, 0])
-        self.store = store().move_to([X_API, -0.25, 0])
+        self.store = store().move_to([X_API, Y_STORE, 0])
         self.slots = slot_positions(self.store)
         self.nodes = VGroup(*[node_box(f"node {i + 1}", u).move_to([X_NODE, y, 0]) for i, (u, y) in enumerate(zip(node_used, NODE_YS))])
         self.ctrl = {k: controller(n, legend=(i == 0)).move_to([X_CTRL, CTRL_YS[k], 0]) for i, (k, n) in enumerate(controllers)}
         self.watches = {k: watch(c, self.api, legend=(i == 0)) for i, (k, c) in enumerate(self.ctrl.items())}
-        self.desired = Counter("pods desired", 3, "", DESIRED, size=22).move_to([-6.7, -2.65, 0], aligned_edge=LEFT)
-        self.running = Counter("pods running", 0, "", ACTUAL, size=22).move_to([-4.8, -2.65, 0], aligned_edge=LEFT)
+        self.desired = Counter("pods desired", 3, "", DESIRED, size=22).move_to([COLS[0], Y_COUNTERS, 0], aligned_edge=LEFT)
+        self.running = Counter("pods running", 0, "", ACTUAL, size=22).move_to([COLS[1], Y_COUNTERS, 0], aligned_edge=LEFT)
         self.cards = {}
 
     def add_card(self, key: str, kind: str, detail: str, slot: int, color: str = DESIRED) -> VGroup:

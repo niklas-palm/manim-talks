@@ -59,6 +59,9 @@ at 1080p60, test the presenter and audience windows in a browser, and commit. De
   under a camera zoom, or fades because its job is done. The audience must be able to say what changed after every
   click.
 - **One idea per click.** If you need two sentences to say what a step showed, it is two steps.
+- **Open still, start slow, speed up.** A scene's first click shows the starting picture and nothing moves; the
+  mechanism begins on the next click. The first time something happens, it is slow enough to follow; repetitions
+  play at speed inside one click.
 - **Colours are vocabulary.** A talk uses four to six accent colours, each with one meaning for the whole deck,
   declared in `objects.py` with `set_thread`, so titles and labels colour the nouns automatically. Never reuse a
   colour for a second meaning.

@@ -22,7 +22,7 @@ class Controllers(TalkSlide):
         c1, w1 = S.ctrl["deploy"], S.watches["deploy"]
         self.play(FadeIn(c1), Create(w1[0]), FadeIn(w1[1]), run_time=0.7)
         pulse(self, S.cards["deploy"].get_right(), c1[2])                          # observe
-        cmp = label("wants 1, has 0", 15, TEXT).next_to(c1, DOWN, buff=0.1)
+        cmp = label("wants 1, has 0", 15, TEXT).next_to(c1, DOWN, buff=GAP_TIGHT).align_to(c1, LEFT)
         self.play(FadeIn(cmp), run_time=0.3)
         rs = card("ReplicaSet", "3 replicas, v1").scale(0.7).move_to(c1[2].get_center())
         self.play(FadeIn(rs), run_time=0.3)

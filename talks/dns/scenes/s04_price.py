@@ -12,11 +12,11 @@ minimum. An alias (CNAME) is a pointer to another name, and the resolver starts 
 from lib.palette import *
 from objects import *
 
-RES_X = [-5.0, -1.7, 1.6, 4.9]
+RES_X = [-4.8, -1.6, 1.6, 4.8]
 
 
 def resolver_small(x: float, y: float, name: str) -> VGroup:
-    g = box(3.2, 1.3, name, ZONE, size=16)
+    g = box(3.0, 1.3, name, ZONE, size=16)
     g.move_to([x, y, 0])
     return g
 
@@ -24,20 +24,20 @@ def resolver_small(x: float, y: float, name: str) -> VGroup:
 class Price(TalkSlide):
     def construct(self):
         t = title(self, "The price of remembering", "4  the price of remembering")
-        auth = zone_box("example.com.", "the owner's zone", 1.85, w=6.6, h=1.65, x=0.6)
-        r_auth = record("www.example.com.", "A", "104.20.23.154", "5 min", ADDRESS).move_to([0.6, 1.78, 0])
+        auth = zone_box("example.com.", "the owner's zone", CONTENT_TOP - 0.825, w=6.6, h=1.65, x=0.0)
+        r_auth = record("www.example.com.", "A", "104.20.23.154", "5 min", ADDRESS).move_to([0.0, 1.72, 0])
         self.play(FadeIn(auth), FadeIn(r_auth), run_time=0.5)
-        rl = label("resolvers around the world, each with its own copy", 16, MUTED).move_to([0, 0.6, 0])
-        rs = VGroup(*[resolver_small(x, -0.3, n) for x, n in zip(RES_X, ("Stockholm", "Dublin", "Virginia", "Tokyo"))])
-        copies = VGroup(*[record("www", "", "104.20.23.154", "", ADDRESS, width=2.9, size=15).move_to(r[0].get_center() + DOWN * 0.18) for r in rs])
+        rs = VGroup(*[resolver_small(x, -0.35, n) for x, n in zip(RES_X, ("Stockholm", "Dublin", "Virginia", "Tokyo"))])
+        rl = label("resolvers around the world, each with its own copy", 16, MUTED).next_to(rs, UP, buff=GAP_TIGHT).align_to(rs, LEFT)
+        copies = VGroup(*[record("www", "", "104.20.23.154", "", ADDRESS, width=2.7, size=15).move_to(r[0].get_center() + DOWN * 0.18) for r in rs])
         fuses = VGroup(*[fuse(c, f) for c, f in zip(copies, (0.9, 0.3, 0.6, 0.15))])
         self.play(FadeIn(rl), FadeIn(rs), FadeIn(copies), FadeIn(fuses), run_time=0.7)
         # --- the change
         new_val = label("104.20.24.1", 16, HOT).move_to(r_auth[3], aligned_edge=LEFT)
         self.play(Transform(r_auth[3], new_val), r_auth[0].animate.set_fill(HOT, 0.25), run_time=0.6)
-        stale = label("stale: the old address, until each copy expires", 16, HOT).move_to([0, -1.35, 0])
+        stale = label("stale: the old address, until each copy expires", 16, HOT).next_to(rs, DOWN, buff=GAP_TIGHT).align_to(rs, LEFT)
         self.play(FadeIn(stale), *[c[0].animate.set_fill(HOT, 0.2) for c in copies], run_time=0.5)
-        clock = label("time passes", 15, MUTED).move_to([-6.2, -1.9, 0])
+        clock = label("time passes", 15, MUTED).next_to(rs, DOWN, buff=GAP_TIGHT).align_to(rs, RIGHT)
         self.play(FadeIn(clock), run_time=0.2)
         order = sorted(range(4), key=lambda i: (0.9, 0.3, 0.6, 0.15)[i])
         for i in order:
@@ -52,7 +52,7 @@ class Price(TalkSlide):
         # --- the trick
         self.play(FadeOut(stale), FadeOut(clock), run_time=0.3)
         trick = VGroup(label("1  TTL to 60 s; wait one old TTL", 16, TEXT), label("2  change the address", 16, TEXT),
-                       label("3  TTL back up", 16, TEXT)).arrange(DOWN, aligned_edge=LEFT, buff=0.1).move_to([-6.2, -2.0, 0], aligned_edge=LEFT)
+                       label("3  TTL back up", 16, TEXT)).arrange(DOWN, aligned_edge=LEFT, buff=0.1).next_to(rs, DOWN, buff=GAP_WIDE).align_to(rs, LEFT)
         ttl_lab = label("60 s", 14, REMEMBERED).move_to(r_auth[4], aligned_edge=RIGHT)
         self.play(FadeIn(trick[0]), Transform(r_auth[4], ttl_lab), run_time=0.5)
         self.play(*[Transform(f, fuse(c, 0.2)) for f, c in zip(fuses, copies)], run_time=0.8)
@@ -70,19 +70,19 @@ class Price(TalkSlide):
         live is a dial between how fast you can change and how cheap lookups are, and the owner of the zone holds it.""")
         # --- a name that does not exist
         self.play(FadeOut(trick), FadeOut(rl), FadeOut(rs), FadeOut(copies), FadeOut(fuses), run_time=0.5)
-        client = client_box(-0.6).shift(RIGHT * 0.3)
-        res = box(5.8, 2.4, "recursive resolver", ZONE, size=18).move_to([-0.3, -0.8, 0])
+        client = client_box(y=-0.9)
+        res = box(W_RESOLVER, 2.2, "recursive resolver", ZONE, size=18, name_align="left").move_to([X_RESOLVER, -0.9, 0])
         self.play(FadeIn(client), FadeIn(res), run_time=0.4)
         question(self, client, res, "wwww.example.com?")
         question(self, res, auth, "wwww.example.com?")
-        soa = record("example.com.", "SOA", "minimum 1800 s", "30 min", ZONE).move_to([0.6, 1.3, 0])
+        soa = record("example.com.", "SOA", "minimum 1800 s", "30 min", ZONE).move_to([0.0, 1.25, 0])
         self.play(FadeIn(soa), run_time=0.4)
         answer(self, auth, res, HOT, "no such name (NXDOMAIN)")
-        neg = record("wwww.example.com.", "does not exist", "", "30 min", HOT).scale(0.9).move_to(res[0].get_center() + DOWN * 0.25)
+        neg = record("wwww.example.com.", "NXDOMAIN", "no such name", "", HOT).scale(W_CACHE_ROW / W_RECORD).move_to(res[0].get_center() + DOWN * 0.2)
         nf = fuse(neg)
         self.play(FadeIn(neg), FadeIn(nf), run_time=0.4)
         answer(self, res, client, HOT, "no such name")
-        nl = label("the 'no' is cached too: for the zone's SOA minimum, 30 min here", 16, MUTED).move_to([0, -2.75, 0])
+        nl = label("the 'no' is cached too, for the SOA minimum: 30 min", 16, MUTED).next_to(res, DOWN, buff=GAP_TIGHT).align_to(res, LEFT)
         self.play(FadeIn(nl), run_time=0.4)
         self.next_slide("""The most expensive miss is a name that does not exist: a typo, a decommissioned host, a probe. Nothing is cached,
         so every such question walks to the authoritative servers, which answer "no such name". If the resolver forgot
@@ -93,17 +93,17 @@ class Price(TalkSlide):
         created can take half an hour to exist for someone who asked for it a minute too early.""")
         # --- an alias
         self.play(FadeOut(neg), FadeOut(nf), FadeOut(nl), run_time=0.3)
-        cname = record("www.example.com.", "CNAME", "edge.cdn.example.net.", "1 h", ZONE).move_to([0.6, 1.78, 0])
+        cname = record("www.example.com.", "CNAME", "edge.cdn.example.net.", "1 h", ZONE).move_to([0.0, 1.72, 0])
         self.play(Transform(r_auth, cname), run_time=0.6)
         question(self, client, res, "www.example.com?")
         question(self, res, auth, "www.example.com?")
         answer(self, auth, res, ZONE, "it is an alias for edge.cdn.example.net")
-        far = zone_box("cdn.example.net.", "another zone: another walk, root, net, example.net", -2.75, w=6.6, h=0.8, x=3.0)
+        far = zone_box("cdn.example.net.", "another zone: another walk, root, net, example.net", -0.9, w=W_TREE, h=1.1, x=X_TREE)
         self.play(FadeIn(far), run_time=0.4)
         question(self, res, far, "edge.cdn.example.net?")
         answer(self, far, res, ADDRESS, "203.0.113.20")
         answer(self, res, client, ADDRESS, "203.0.113.20")
-        al = label("an alias is a pointer to another name: the walk restarts there", 16, MUTED).move_to([-2.4, -3.35, 0])
+        al = label("an alias is a pointer to another name: the walk restarts there", 16, MUTED).move_to([0, -3.3, 0])
         self.play(FadeIn(al), run_time=0.4)
         self.finish("""One more kind of pointer, and it is rule one again. Instead of an address, a name can hold an alias, a CNAME,
         that says "this name is really that other name". Content networks live on it: www.example.com points at a

@@ -250,8 +250,8 @@ class Mechanics(TalkSlide):
         rl = label("KV cache: one column per token, one row per layer", 13, CACHE).next_to(rack, UP, buff=0.12).align_to(rack, LEFT)
         bus, comp = Gauge("bus", OUTPUT, 1.5), Gauge("compute", PROMPT, 1.5)
         gauges = VGroup(bus, comp).arrange(RIGHT, buff=0.35).move_to([-6.0, -0.5, 0])
-        reads = Counter("full reads of the model", 0, "", WEIGHTS, size=22).move_to([3.7, -2.7, 0], aligned_edge=LEFT)
-        produced = Counter("tokens produced", 0, "", OUTPUT, size=22).move_to([5.75, -2.7, 0], aligned_edge=LEFT)
+        reads = Counter("full reads of the model", 0, "", WEIGHTS, size=22).move_to([3.2, -2.7, 0], aligned_edge=LEFT)
+        produced = Counter("tokens produced", 0, "", OUTPUT, size=22).move_to([5.3, -2.7, 0], aligned_edge=LEFT)
         self.play(FadeOut(cap), FadeOut(table), FadeOut(tl), FadeIn(layers), FadeIn(ll), FadeIn(more), FadeIn(rack), FadeIn(rl), FadeIn(gauges), FadeIn(reads), FadeIn(produced))
         self.next_slide("""The stage; everything from here on happens on it. The five vectors wait at the top. Left, the model: a stack of
         layers, four drawn of thirty to a hundred, each a set of weight matrices sitting in GPU memory. Right, the KV cache,

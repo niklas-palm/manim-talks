@@ -29,3 +29,37 @@ def consumer(name: str, w: float = 2.1) -> VGroup:
 
 def broker(name: str, w: float, h: float, color: str = LOGC) -> VGroup:
     return box(w, h, name, color, size=18)
+
+
+def claim(scene, old, text: str, color: str = LOGC):
+    """The one line a step claims, in the caption band, left-aligned to the margin: at most eight words, size 17. Every
+    scene uses this one slot, so the eye knows where to look; the sentence behind it is in the note."""
+    t = label(text, 17, color).move_to([-MARGIN, CAPTION_Y, 0], aligned_edge=LEFT)
+    if old is None:
+        scene.play(FadeIn(t), run_time=0.4)
+    else:
+        scene.play(FadeOut(old), FadeIn(t), run_time=0.4)
+    return t
+
+
+def config(text: str, size: float = 15) -> VGroup:
+    """A broker or client setting as a small highlighted code block (ini syntax), never as plain text."""
+    return code(text, "ini", size)
+
+
+class Isr(VGroup):
+    """The in-sync set as a row of numbered markers with a name, attached to the leader's box: a marker is green when
+    that broker is in sync, red when it has fallen out, dim when it is gone. set(scene, in_sync, out) animates."""
+
+    def __init__(self, n: int = 3, **kw):
+        super().__init__(**kw)
+        self.marks = VGroup(*[VGroup(Square(0.3, fill_color=SYNC, fill_opacity=0.9, stroke_width=0), label(str(i + 1), 14, BG)) for i in range(n)]).arrange(RIGHT, buff=0.06)
+        self.name = label("in-sync", 15, SYNC).next_to(self.marks, DOWN, buff=0.05).align_to(self.marks, RIGHT)   # under the marks: the HWM label rides at the marks' height
+        self.add(self.name, self.marks)
+
+    def set(self, in_sync, out=(), gone=()):
+        anims = []
+        for i, m in enumerate(self.marks):
+            colour = SYNC if i + 1 in in_sync else FAIL if i + 1 in out else DIM
+            anims += [m[0].animate.set_fill(colour, 0.9 if i + 1 not in gone else 0.35), m[1].animate.set_color(BG if i + 1 not in gone else MUTED)]
+        return anims

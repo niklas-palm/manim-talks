@@ -16,7 +16,7 @@ class Delegation(TalkSlide):
     def construct(self):
         t = title(self, "Delegation: the name is a path", "2  delegation: the name is a path")
         # --- the name, split into labels right to left
-        name = label("www.example.com.", 48, NAME).move_to([0, 1.4, 0])
+        name = label("www.example.com.", 60, NAME).move_to([0, 1.1, 0])
         self.play(Write(name), run_time=0.8)
         parts = [("www", 0, 3), ("example", 4, 11), ("com", 12, 15), (".", 15, 16)]
         boxes = VGroup()
@@ -25,14 +25,14 @@ class Delegation(TalkSlide):
             br = SurroundingRectangle(sub, color=ZONE, buff=0.06, stroke_width=1.5)
             boxes.add(br)
             self.play(Create(br), run_time=0.3)
-        dot_note = label("read from the right: the last dot is the root", 18, MUTED).next_to(name, DOWN, buff=0.4)
+        dot_note = label("read from the right: the last dot is the root", 20, MUTED).next_to(name, DOWN, buff=GAP_WIDE)
         self.play(FadeIn(dot_note), run_time=0.4)
         self.next_slide("""Split the list along the name itself. A name is read from the right: the final dot, usually invisible, is the
         root of the whole tree; then com, one of 1,393 top-level domains; then example, a name registered under com;
         then www, a host inside it. Each label is one level, and the levels nest, so a name is a path from the root down
         to the thing you want. RFC 1034 wrote the tree this way in 1987, and it has not changed.""")
         # --- each level is a zone with an owner, holding pointers to the level below
-        self.play(FadeOut(boxes), FadeOut(dot_note), name.animate.scale(0.6).to_edge(UP, buff=1.15), run_time=0.7)
+        self.play(FadeOut(boxes), FadeOut(dot_note), FadeOut(name), run_time=0.7)
         (root, tld, auth), (r_root, r_tld, r_auth) = tree()
         self.play(FadeIn(root), run_time=0.4)
         self.play(FadeIn(r_root), run_time=0.4)
@@ -50,11 +50,11 @@ class Delegation(TalkSlide):
         zones below it and nothing else about them: that is delegation, and it is why nobody has to hold the whole list.
         The number at the right of each record is its time to live; hold that thought for move three.""")
         # --- the two actors
-        client = client_box(0.4)
-        res = resolver_box(-0.1)
+        client = client_box()
+        res = resolver_box()
         self.play(FadeIn(client), FadeIn(res), run_time=0.6)
         a1 = arrow(client, res, "", MUTED)
-        al = label("one question, one answer", 15, MUTED).next_to(client, DOWN, buff=0.12)
+        al = label("one question, one answer", 15, MUTED).next_to(client, DOWN, buff=GAP_TIGHT)
         self.play(Create(a1[0]), FadeIn(al), run_time=0.5)
         self.next_slide("""Two actors do the asking. Your laptop's stub resolver, a library inside the operating system, asks exactly one
         question and waits for one answer: it sets the recursion-desired bit and lets someone else do the work. That
@@ -66,7 +66,7 @@ class Delegation(TalkSlide):
         self.play(r_root[0].animate.set_fill(ZONE, 0.35), run_time=0.3)
         answer(self, root, res, ZONE, "not mine: ask com's servers")
         self.play(r_root[0].animate.set_fill(ZONE, 0.10), run_time=0.2)
-        c1 = cache_row(r_root, 0.85)
+        c1 = cache_row(r_root, CACHE_Y[0])
         self.play(FadeIn(c1), run_time=0.4)
         self.next_slide("""Hop one. The resolver knows the root servers' addresses by configuration; that is the one list everyone does
         hold, and it is thirteen lines long. It asks a root server the full question. The root is not authoritative for
@@ -78,7 +78,7 @@ class Delegation(TalkSlide):
         self.play(r_tld[0].animate.set_fill(ZONE, 0.35), run_time=0.3)
         answer(self, tld, res, ZONE, "not mine: ask example.com's servers")
         self.play(r_tld[0].animate.set_fill(ZONE, 0.10), run_time=0.2)
-        c2 = cache_row(r_tld, 0.3)
+        c2 = cache_row(r_tld, CACHE_Y[1])
         self.play(FadeIn(c2), run_time=0.4)
         self.next_slide("""Hop two. The same question to one of com's servers. Com is not authoritative for www.example.com either; it
         holds the pointer to example.com's servers, hera and elliott at Cloudflare in this case, and returns it. Another
@@ -88,7 +88,7 @@ class Delegation(TalkSlide):
         self.play(r_auth[0].animate.set_fill(ADDRESS, 0.35), run_time=0.3)
         answer(self, auth, res, ADDRESS, "104.20.23.154")
         self.play(r_auth[0].animate.set_fill(ADDRESS, 0.10), run_time=0.2)
-        c3 = cache_row(r_auth, -0.25)
+        c3 = cache_row(r_auth, CACHE_Y[2])
         self.play(FadeIn(c3), run_time=0.4)
         answer(self, res, client, ADDRESS, "104.20.23.154")
         self.play(Flash(client[0], color=ADDRESS, flash_radius=1.2, num_lines=8), run_time=0.4)

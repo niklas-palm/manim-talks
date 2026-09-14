@@ -41,7 +41,7 @@ class SchedulerKubelet(TalkSlide):
         Its output will be one more field in the record.""")
         # --- zoom into the nodes: filtering
         wide = VGroup(t, S.client, S.api, S.store, S.desired, S.running, sc, ws, *[S.ctrl[k] for k in ("deploy", "rs")], *[S.watches[k] for k in ("deploy", "rs")], *S.cards.values(), ring)
-        self.play(frame.animate.scale(ZN).move_to([X_NODE, 0.3, 0]), FadeOut(wide), run_time=1.0)
+        self.play(frame.animate.scale(ZN).move_to([X_NODE, NODE_YS[1], 0]), FadeOut(wide), run_time=1.0)
         need = VGroup(*[Rectangle(width=0.25, height=0.14, stroke_color=DESIRED, stroke_width=1.6, fill_opacity=0).next_to(n[4], RIGHT, buff=0).set_y(n[3].get_y()) for n in S.nodes])
         nl = label("the Pod's request", 15, DESIRED).scale(ZN).next_to(S.nodes[0][3], UP, buff=0.08)
         self.play(FadeIn(need), FadeIn(nl), run_time=0.5)

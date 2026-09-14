@@ -21,17 +21,17 @@ set_thread({"token": TOKEN, "tokens": TOKEN, "query": QUERY, "queries": QUERY, "
             "value": VALUE, "values": VALUE, "attention": ATTN, "weights": WEIGHTS, "weight": WEIGHTS})
 
 WORDS = ["The", "cat", "sat", "on", "the", "mat"]
-XS = [-5.0 + 1.9 * i for i in range(6)]   # the six token columns, used by every scene that shows the sentence
-ROW_Y = 1.75                              # the persistent row of token vectors sits here
+XS = [-4.75 + 1.9 * i for i in range(6)]  # the six token columns, symmetric about x = 0, used by every scene that shows the sentence
+ROW_Y = 1.85                              # the persistent row of token vectors is centred here; its word labels clear the title
 D = 8                                     # cells drawn per vector; the real model has 512 (a named simplification)
 
 
-def token_row(cell: float = 0.14, y: float = ROW_Y) -> tuple:
+def token_row(cell: float = 0.16, y: float = ROW_Y) -> tuple:
     """The six token vectors with their words above, across the top of the picture. Returns (group, list of vectors)."""
     g, vecs = VGroup(), []
     for k, (w, x) in enumerate(zip(WORDS, XS)):
         v = vector(20 + k, TOKEN, cell=cell).move_to([x, y, 0])
-        lab = label(w, 17, TOKEN).next_to(v, UP, buff=0.12)
+        lab = label(w, 18, TOKEN).next_to(v, UP, buff=GAP_TIGHT)
         g.add(VGroup(v, lab)); vecs.append(v)
     return g, vecs
 

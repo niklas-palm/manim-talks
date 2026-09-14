@@ -5,28 +5,28 @@ carry their own names, and the two definitions stay on screen once they appear."
 from lib.palette import *
 from objects import *
 
-XR = 0.9   # left edge of the right-hand column
+XR = 0.0   # left edge of the right-hand column, on the centre grid line
 
 
 class DecodeCeiling(TalkSlide):
     def construct(self):
         t = title(self, "GPU latency and throughput", "1  two jobs, two costs")
         # --- the card, named
-        gpu = GPU("one GPU", w=4.6, weights_gb=32).scale(0.85).shift(LEFT * 3.5 + UP * 0.2)
+        gpu = GPU("one GPU", w=4.6, weights_gb=32).scale(0.85).shift(LEFT * 3.2 + UP * 0.2)
         card = label("RTX PRO 6000 Blackwell Server Edition (g7e): 96 GB GDDR7", 14, MUTED, width=3.9).next_to(gpu, DOWN, buff=0.15)
-        bw = Counter("memory bandwidth", 1.6, "TB/s", OUTPUT, decimals=2).move_to([4.3, 1.35, 0], aligned_edge=LEFT)
+        bw = Counter("memory bandwidth", 1.6, "TB/s", OUTPUT, decimals=2).move_to([3.2, 1.3, 0], aligned_edge=LEFT)
         # --- the model, named
         mk = label("model", 13, MUTED).move_to([XR, 2.35, 0], aligned_edge=LEFT)
         mname = label("dense, 32B parameters, fp8: one byte per weight", 17, TEXT).move_to([XR, 2.0, 0], aligned_edge=LEFT)
-        by = Counter("bytes read per token: all of it", 32, "GB", WEIGHTS).move_to([XR, 1.35, 0], aligned_edge=LEFT)
+        by = Counter("bytes read per token", 32, "GB", WEIGHTS).move_to([XR, 1.3, 0], aligned_edge=LEFT)
         self.play(FadeIn(gpu), FadeIn(card), gpu.bandwidth.set(0.97), FadeIn(bw), FadeIn(mk), FadeIn(mname), FadeIn(by), run_time=0.8)
         # --- the division
-        bar = Line(LEFT * 1.3, RIGHT * 1.3, color=TEXT).move_to([2.2, -0.35, 0])
+        bar = Line(LEFT * 1.3, RIGHT * 1.3, color=TEXT).move_to([1.3, 0.0, 0])
         num = label("1.6 TB/s", 24, OUTPUT).next_to(bar, UP, buff=0.1)
         den = label("32 GB per token", 24, WEIGHTS).next_to(bar, DOWN, buff=0.1)
         eq = label("=", 30, TEXT).next_to(bar, RIGHT, buff=0.3)
-        res = Counter("fastest one request can decode", 50, "tokens/s", TEXT).move_to([4.15, -0.3, 0], aligned_edge=LEFT)
-        lat = Counter("between two of its tokens", 20, "ms", TEXT, size=22, decimals=1).move_to([4.15, -1.15, 0], aligned_edge=LEFT)
+        res = Counter("fastest one request can decode", 50, "tokens/s", TEXT).move_to([3.2, 0.0, 0], aligned_edge=LEFT)
+        lat = Counter("between two of its tokens", 20, "ms", TEXT, size=22, decimals=1).move_to([3.2, -1.3, 0], aligned_edge=LEFT)
         self.play(Create(bar), FadeIn(num), FadeIn(den), run_time=0.6)
         self.play(FadeIn(eq), FadeIn(res), FadeIn(lat), run_time=0.8)
         self.next_slide("""RTX PRO 6000 Blackwell Server Edition, 96 GB GDDR7: the GPU in a g7e instance. Two words for the rest of the talk. Latency is how fast one request gets its tokens; throughput is how many tokens
@@ -38,19 +38,18 @@ class DecodeCeiling(TalkSlide):
         this division for any model you are considering; it is the per-user speed limit in ten seconds.""")
         # --- this talk's model
         mname2 = label("mixture of experts, 30B parameters, 3B active, fp8", 17, TEXT).move_to(mname, aligned_edge=LEFT)
-        byname2 = label("bytes read per token: the active part", 15, MUTED).move_to(by.name, aligned_edge=LEFT)
         den2 = label("3 GB per token", 24, WEIGHTS).move_to(den)
-        self.play(FadeOut(mname), FadeIn(mname2), Transform(by.name, byname2), FadeOut(den), FadeIn(den2), gpu.set_weights(29), run_time=1.0)
+        self.play(FadeOut(mname), FadeIn(mname2), FadeOut(den), FadeIn(den2), gpu.set_weights(29), run_time=1.0)
         self.play(by.to(3), res.to(530), lat.to(1.9), run_time=2.0)
         self.next_slide("""The model this talk measures is built differently: 30B weights in total, but only about 3B of them are read for
         any one token. How it manages that is knob two, later; for now take the number. 3 GB per token against the same 1.6
         terabytes per second gives about 530 tokens per second for one request, under two milliseconds between tokens. Ten
         times the dense ceiling, from the same card, because the token reads a tenth of the bytes.""")
         # --- measured, and the two words on screen
-        meas = Counter("measured, one request alone", 175, "tokens/s", HOT).move_to([XR, -1.45, 0], aligned_edge=LEFT)
+        meas = Counter("measured, one request alone", 175, "tokens/s", HOT).move_to([XR, -1.3, 0], aligned_edge=LEFT)
         mlat = label("5.7 ms between tokens; a third of the ceiling", 15, MUTED).next_to(meas, DOWN, buff=0.1).align_to(meas, LEFT)
-        d1 = label("latency: the time between one request's tokens. Here 5.7 ms.", 18, MUTED).move_to([-6.4, -2.45, 0], aligned_edge=LEFT)
-        d2 = label("throughput: tokens per second from the whole GPU. Here 175.", 18, MUTED).move_to([-6.4, -2.85, 0], aligned_edge=LEFT)
+        d1 = label("latency: the time between one request's tokens. Here 5.7 ms.", 18, MUTED).move_to([-6.4, -2.6, 0], aligned_edge=LEFT)
+        d2 = label("throughput: tokens per second from the whole GPU. Here 175.", 18, MUTED).move_to([-6.4, -2.95, 0], aligned_edge=LEFT)
         self.play(FadeIn(meas), FadeIn(mlat), gpu.bandwidth.set(0.39), run_time=1.0)
         self.play(FadeIn(d1), FadeIn(d2), run_time=0.6)
         self.next_slide("""throughput: tokens per second from the whole GPU. Here 175: with one request, the two are the same number. Measured alone, the same request decodes at about 175 tokens per second, 5.7 milliseconds between tokens, a third
@@ -63,7 +62,7 @@ class DecodeCeiling(TalkSlide):
         card2 = label("H100 SXM, 80 GB HBM3: the GPU in a p5 instance", 14, MUTED, width=3.9).move_to(card, aligned_edge=UP)
         num2 = label("3.35 TB/s", 24, OUTPUT).move_to(num)
         mem2 = label("memory 80 GB", 15, DIM).move_to(gpu.mem_label, aligned_edge=LEFT)
-        dense2 = label("the dense 32B on the H100: 105 tokens/s", 15, MUTED).move_to([XR, -1.7, 0], aligned_edge=LEFT)
+        dense2 = label("the dense 32B on the H100: 105 tokens/s", 15, MUTED).move_to([XR, -1.95, 0], aligned_edge=LEFT)
         meas2 = label("measured, eight in flight: 67 tokens/s each here, 102 on the H100", 15, MUTED).next_to(dense2, DOWN, buff=0.1).align_to(dense2, LEFT)
         self.play(FadeOut(card), FadeIn(card2), FadeOut(num), FadeIn(num2), Transform(gpu.mem_label, mem2), gpu.set_weights(29 * 96 / 80),
                   FadeOut(meas), FadeOut(mlat), gpu.bandwidth.set(0.97), run_time=1.0)

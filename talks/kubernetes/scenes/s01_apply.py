@@ -9,6 +9,17 @@ from lib.palette import *
 from objects import *
 
 ZOOM = 0.5
+MANIFEST = """apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - name: web
+        image: web:v1"""
 
 
 class ApplyRequest(TalkSlide):
@@ -17,15 +28,18 @@ class ApplyRequest(TalkSlide):
         t = title(self, "kubectl apply writes a record, not a process", "1  a record, not a process")
         S = Stage()
         self.play(FadeIn(S.client), FadeIn(S.api), FadeIn(S.store), run_time=0.7)
-        req = card("Deployment", "3 replicas, v1").move_to([X_CLIENT, 0.85, 0])
-        self.play(FadeIn(req, shift=DOWN * 0.1), run_time=0.5)
+        manifest = code(MANIFEST, "yaml", 17).move_to([COLS[3], 2.3, 0], aligned_edge=UL)   # what the user typed, in the node column until the nodes take it
+        ml = label("what kubectl apply sends", 15, MUTED).move_to([COLS[3], Y_LABELS, 0], aligned_edge=LEFT)
+        self.play(FadeIn(manifest), FadeIn(ml), run_time=0.5)
+        req = card("Deployment", "3 replicas, v1").next_to(S.client, DOWN, buff=GAP_WIDE)
+        self.play(TransformFromCopy(manifest.panel, req[0]), FadeIn(req[1]), FadeIn(req[2]), run_time=0.7)
         self.next_slide("""Start with the command everyone has typed: kubectl apply of a Deployment, three replicas of an image. Look at
         what the request is: not "start three containers", but a description of a state, replicas three, this image. The
         client sends that description to the API server, the only door into the cluster, and under the API server sits etcd,
         the database that will hold it. Nothing on the right yet; we get there.""")
         # --- zoom into the API server: three gates
         gates, gnames = S.api[2], S.api[3]
-        self.play(frame.animate.scale(ZOOM).move_to(S.api.get_center() + DOWN * 0.1), FadeOut(t), FadeOut(S.store), FadeOut(S.client),
+        self.play(frame.animate.scale(ZOOM).move_to(S.api.get_center() + DOWN * 0.1), FadeOut(t), FadeOut(S.store), FadeOut(S.client), FadeOut(manifest), FadeOut(ml),
                   req.animate.scale(0.6).move_to(S.api[0].get_left() + LEFT * 0.6 + DOWN * 0.12), run_time=1.0)
         for k in range(3):
             self.play(req.animate.move_to(gates[k].get_center() + LEFT * 0.5), run_time=0.4)
@@ -37,15 +51,15 @@ class ApplyRequest(TalkSlide):
         filled in, quotas enforced, policies applied, and it runs only for writes. Then the object is validated and goes to
         the store.""")
         # --- back out: written to etcd, quorum of two
-        self.play(frame.animate.scale(1 / ZOOM).move_to(ORIGIN), FadeIn(t), FadeIn(S.store), FadeIn(S.client), run_time=1.0)
+        self.play(frame.animate.scale(1 / ZOOM).move_to(ORIGIN), FadeIn(t), FadeIn(S.store), FadeIn(S.client), FadeIn(manifest), FadeIn(ml), run_time=1.0)
         self.play(req.animate.scale(1 / 0.6).move_to(S.slots[0]), run_time=0.6)
         S.cards["deploy"] = req
         members = S.store[2]
         copies = VGroup(*[req[0].copy().scale(0.25).move_to(m) for m in members])
         self.play(LaggedStart(*[FadeIn(c) for c in copies], lag_ratio=0.3), run_time=0.7)
-        ql = label("quorum: 2 of 3", 15, TEAL).next_to(S.store, DOWN, buff=0.12)
+        ql = label("quorum: 2 of 3", 15, TEAL).next_to(S.store, DOWN, buff=GAP_TIGHT).align_to(S.store, LEFT)
         self.play(FadeOut(copies), FadeIn(ql), run_time=0.4)
-        ok = label("201 created", 15, DESIRED).next_to(S.client, DOWN, buff=0.2)
+        ok = label("201 created", 15, DESIRED).next_to(S.client, DOWN, buff=GAP_TIGHT)
         self.play(FadeIn(ok), run_time=0.3)
         self.play(members[2].animate.set_color(HOT), run_time=0.4)
         copies = VGroup(*[req[0].copy().scale(0.25).move_to(m) for m in members[:2]])
@@ -57,7 +71,12 @@ class ApplyRequest(TalkSlide):
         That is why control planes come in odd numbers, and why the database is the only thing that has to be durable:
         everything else can be restarted and will rebuild itself from these records.""")
         # --- nothing runs yet
-        self.play(FadeOut(ok), FadeOut(ql), FadeIn(S.nodes), FadeIn(S.desired), FadeIn(S.running), run_time=0.7)
+        bar = highlight_line(manifest, 5)                                       # replicas: 3 is the number the gap is measured against
+        self.play(FadeOut(ok), FadeOut(ql), FadeIn(bar), run_time=0.4)
+        self.play(FadeIn(S.desired), FadeIn(S.running), run_time=0.5)
+        self.play(FadeOut(manifest), FadeOut(ml), FadeOut(bar), run_time=0.4)
+        self.play(FadeIn(S.nodes), run_time=0.7)
+        self.wait(0.3)
         self.finish("""Here are the machines: three nodes, each with a kubelet, some memory already in use, empty slots for pods. And
         here is the punchline of move one: nothing has happened to them. The API server did not talk to a node. kubectl
         did not start anything. There is a record that says three, and a count of running pods that says zero. The whole

@@ -29,7 +29,7 @@ class ServiceRollout(TalkSlide):
         fl = label("frontend", 15, DESIRED).next_to(front, DOWN, buff=0.06)
         self.play(FadeIn(front), FadeIn(fl), run_time=0.4)
         qs = VGroup(*[DashedLine(front.get_top(), p.get_bottom(), color=HOT, stroke_width=1.6, dash_length=0.08) for p in pods.values()])
-        q = label("which address?", 16, HOT).move_to([X_NODE, 2.6, 0])
+        q = label("which address?", 16, HOT).move_to([COLS[3], Y_LABELS, 0], aligned_edge=LEFT)
         self.play(Create(qs), FadeIn(q), run_time=0.7)
         self.next_slide("""Node two is back, and on it runs a frontend that needs the web pods. Each pod has its own IP address, and the set
         changes: d replaced b in the last move and has a new address; the next rollout will replace all three. A client
@@ -57,7 +57,7 @@ class ServiceRollout(TalkSlide):
         Every time a pod comes or goes, this list is rewritten. Nothing routes yet; a list exists.""")
         # --- kube-proxy on every node
         chips = VGroup(*[Rectangle(width=0.5, height=0.14, fill_color=TEAL, fill_opacity=0.8, stroke_width=0).move_to(n[0].get_top() + DOWN * 0.2) for n in S.nodes])
-        kp = label("kube-proxy", 15, TEAL).next_to(S.nodes[0], UP, buff=0.08)
+        kp = label("kube-proxy on every node", 15, TEAL).move_to([COLS[3], Y_LABELS, 0], aligned_edge=LEFT)
         self.play(LaggedStart(*[FadeIn(c) for c in chips], lag_ratio=0.2), FadeIn(kp), run_time=0.6)
         for target in ("c", "a"):
             d = Dot(color=DESIRED, radius=0.08).move_to(front.get_center())
@@ -73,7 +73,7 @@ class ServiceRollout(TalkSlide):
         # --- kubectl set image: the rollout limits
         set_detail(self, S.cards["deploy"], "3 replicas, v2", DESIRED)
         self.play(FadeIn(rs2), run_time=0.4)
-        lim = VGroup(label("maxSurge 25%: 1 extra", 15, MUTED), label("maxUnavailable 25%: 0 missing", 15, MUTED)).arrange(DOWN, aligned_edge=LEFT, buff=0.08).move_to([-2.6, -2.65, 0], aligned_edge=LEFT)
+        lim = VGroup(label("maxSurge 25%: 1 extra", 15, MUTED), label("maxUnavailable 25%: 0 missing", 15, MUTED)).arrange(DOWN, aligned_edge=LEFT, buff=0.08).move_to([COLS[2], Y_COUNTERS - 0.15, 0], aligned_edge=LEFT)
         self.play(FadeIn(lim), run_time=0.5)
         self.next_slide("""Now change what you want: kubectl set image to v2 edits one field of the Deployment record. The Deployment
         controller observes a template that no ReplicaSet matches and creates a second ReplicaSet, v2, at zero replicas.
@@ -81,8 +81,8 @@ class ServiceRollout(TalkSlide):
         percent extra pods, rounded up, so one above three; and at most twenty-five percent unavailable, rounded down, so
         zero below three. The old ReplicaSet stays, at zero, for rollback; ten are kept by default.""")
         # --- the rollout at speed: v2 up, v1 down, the list following
-        nv1 = Counter("v1 pods", 3, "", ACTUAL, size=20).move_to([3.4, -2.65, 0], aligned_edge=LEFT)
-        nv2 = Counter("v2 pods (outlined)", 0, "", ACTUAL, size=20).move_to([5.0, -2.65, 0], aligned_edge=LEFT)
+        nv1 = Counter("v1 pods", 3, "", ACTUAL, size=22).move_to([COLS[3], Y_COUNTERS, 0], aligned_edge=LEFT)
+        nv2 = Counter("v2 pods (outlined)", 0, "", ACTUAL, size=22).move_to([X_NODE, Y_COUNTERS, 0], aligned_edge=LEFT)
         self.play(FadeIn(nv1), FadeIn(nv2), run_time=0.4)
         slots_new = [(1, 1), (1, 2), (0, 0)]
         old = ["a", "c", "d"]

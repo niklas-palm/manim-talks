@@ -12,7 +12,7 @@ def layer_stack(n: int, width: float, color: str = WEIGHTS, op: float = 0.7, h: 
     return VGroup(*[Rectangle(width=width, height=h, fill_color=color, fill_opacity=op, stroke_width=0) for _ in range(n)]).arrange(DOWN, buff=buff)
 
 
-def timeline(segments, unit: float, y: float, x0: float = -6.2):
+def timeline(segments, unit: float, y: float, x0: float = -6.4):
     """segments: list of (kind, length): kind 'c' compute (blue) or 's' sync (red). Returns the bars and total width."""
     bars = VGroup(); x = x0
     for kind, length in segments:
@@ -25,7 +25,7 @@ def timeline(segments, unit: float, y: float, x0: float = -6.2):
 class Parallelism(TalkSlide):
     def construct(self):
         t = title(self, "When the model does not fit one GPU", "4  more than one GPU")
-        model = layer_stack(6, 2.6).shift(UP * 2.2 + LEFT * 3.6)
+        model = layer_stack(6, 2.6).shift(UP * 2.2 + LEFT * 3.2)
         ml = label("a 235B model: 236 GB of fp8 weights", 18, TEXT).next_to(model, RIGHT, buff=0.35)
         g = gpu_row(4, 2.0, 2.2, buff=0.55).shift(UP * 0.25)   # room between the GPUs for the exchange arrows to be seen
         gl = label("four 80 GB GPUs", 16, DIM).next_to(g, DOWN, buff=0.12)

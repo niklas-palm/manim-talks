@@ -13,19 +13,20 @@ SCORES = [1.2, 0.4, 2.1, 0.2, 0.9, 2.6]   # illustrative match strengths; the me
 class Attention(TalkSlide):
     def construct(self):
         t = title(self, "Every token reads every other", "3  attention")
-        row, vecs = token_row(0.14)
+        row, vecs = token_row(0.16)
         self.play(LaggedStart(*[FadeIn(g, shift=DOWN * 0.1) for g in row], lag_ratio=0.06), run_time=0.9)
         self.next_slide("""Here are the six token vectors from the last move, each carrying what its token is and where it sits. A word's
         meaning depends on its neighbours: "bank" near "river" is not "bank" near "money". Attention is how each token pulls
         in what it needs from the others. It starts by giving every token three different views of itself.""")
         # --- three matrices turn one token's vector into q, k, v, drawn large
-        src = vector(25, TOKEN, cell=0.22).move_to([-4.6, -0.55, 0])
-        W = VGroup(grid(3, 8, cell=0.24), grid(3, 8, cell=0.24), grid(3, 8, cell=0.24)).arrange(DOWN, buff=0.3).move_to([-2.2, -0.55, 0])
-        wl = VGroup(*[label(s, 20, WEIGHTS).next_to(m, LEFT, buff=0.2) for s, m in zip(("Wq", "Wk", "Wv"), W)])
-        q = column(3, QUERY, 0.24, op=0.0).next_to(W[0], RIGHT, buff=0.4)
-        k = column(3, KEY, 0.24, op=0.0).next_to(W[1], RIGHT, buff=0.4)
-        v = column(3, VALUE, 0.24, op=0.0).next_to(W[2], RIGHT, buff=0.4)
-        ql = VGroup(*[label(s, 20, c).next_to(col, RIGHT, buff=0.2) for s, col, c in zip(("query", "key", "value"), (q, k, v), (QUERY, KEY, VALUE))])
+        WY = -1.45   # the work band is centred here, under the token row and its triples
+        src = vector(25, TOKEN, cell=0.32).move_to([-4.8, WY, 0])
+        W = VGroup(grid(3, 8, cell=0.3), grid(3, 8, cell=0.3), grid(3, 8, cell=0.3)).arrange(DOWN, buff=GAP).move_to([-1.0, WY, 0])
+        wl = VGroup(*[label(s, 22, WEIGHTS).next_to(m, LEFT, buff=GAP) for s, m in zip(("Wq", "Wk", "Wv"), W)])
+        q = column(3, QUERY, 0.3, op=0.0).move_to([2.5, W[0].get_y(), 0])
+        k = column(3, KEY, 0.3, op=0.0).move_to([2.5, W[1].get_y(), 0])
+        v = column(3, VALUE, 0.3, op=0.0).move_to([2.5, W[2].get_y(), 0])
+        ql = VGroup(*[label(s, 22, c).move_to([4.5, col.get_y(), 0], aligned_edge=LEFT) for s, col, c in zip(("query", "key", "value"), (q, k, v), (QUERY, KEY, VALUE))])
         self.play(TransformFromCopy(vecs[FOCUS], src), run_time=0.7)
         self.play(FadeIn(W), FadeIn(wl), FadeIn(q), FadeIn(k), FadeIn(v))
         dot_product(self, src, TOKEN, W[0], 0, q[0], QUERY)
@@ -42,23 +43,25 @@ class Attention(TalkSlide):
         # --- every token gets its own triple, under its vector
         tri = VGroup()
         for kk in range(6):
-            tri.add(VGroup(column(3, QUERY, 0.14), column(3, KEY, 0.14), column(3, VALUE, 0.14)).arrange(RIGHT, buff=0.05).next_to(vecs[kk], DOWN, buff=0.25))
-        self.play(FadeOut(VGroup(W, wl, src, q, k, v, ql)), run_time=0.5)
+            tri.add(VGroup(column(3, QUERY, 0.2), column(3, KEY, 0.2), column(3, VALUE, 0.2)).arrange(RIGHT, buff=0.05).next_to(vecs[kk], DOWN, buff=GAP))
+        work = VGroup(W, wl, src, q, k, v, ql)
+        self.play(work.animate.set_opacity(0.3), run_time=0.5)   # the matrices stay, faded: the band does not go empty
         self.play(LaggedStart(*[FadeIn(g, shift=UP * 0.1) for g in tri], lag_ratio=0.06), run_time=0.9)
         self.next_slide("""The same three matrices run on every token, all at once, giving each its own query, key and value. That "all at
         once" is the parallel step from move one. Now the read: we follow one token's query, the last, "mat", and let it
         gather from the rest.""")
         # --- the chosen query, large at the right, scored against every key: the fan
+        self.play(FadeOut(work), run_time=0.4)
         qbig = tri[FOCUS][0].copy()
-        self.play(qbig.animate.scale(0.24 / 0.14).move_to([6.1, -0.35, 0]), run_time=0.6)
-        qbl = label('query of "mat"', 17, QUERY).next_to(qbig, UP, buff=0.12)
+        self.play(qbig.animate.scale(0.28 / 0.2).move_to([COLS[4] - 0.8, ROWS[2] - 0.7, 0]), run_time=0.6)
+        qbl = label('query of "mat"', 18, QUERY).next_to(qbig, UP, buff=GAP_TIGHT)
         self.play(FadeIn(qbl), run_time=0.3)
         keys = [tri[j][1] for j in range(6)]
         lines = VGroup(*[Line(qbig.get_left(), kc.get_bottom(), color=MUTED, stroke_width=1.8, stroke_opacity=0.65) for kc in keys])
         self.play(LaggedStart(*[Create(l) for l in lines], lag_ratio=0.08), run_time=1.0)
-        slabels = VGroup(*[label(f"{s:.1f}", 18, TEXT).move_to([XS[j], -0.05, 0]) for j, s in enumerate(SCORES)])
+        slabels = VGroup(*[label(f"{s:.1f}", 20, TEXT).move_to([XS[j], ROWS[2] - 0.35, 0]) for j, s in enumerate(SCORES)])
         self.play(LaggedStart(*[FadeIn(s, shift=DOWN * 0.05) for s in slabels], lag_ratio=0.06), run_time=0.8)
-        sl = label('score: query of "mat" times each key', 17, MUTED).to_edge(DOWN, buff=0.6)
+        sl = label('score: query of "mat" times each key', 18, MUTED).move_to([0, ROWS[3] - 0.2, 0])
         self.play(FadeIn(sl))
         self.next_slide("""The query of "mat" is compared with the key of every token, by the same multiply-and-sum, one score per token.
         A big score means that token's key matches what "mat" is looking for. In the original paper the score is divided by
@@ -67,10 +70,10 @@ class Attention(TalkSlide):
         # --- softmax: the scores become weights, drawn as bars under the tokens
         self.play(FadeOut(sl), FadeOut(lines), run_time=0.3)
         weights = softmax(SCORES)
-        bars = VGroup(*[Rectangle(width=0.5, height=max(0.04, w * 3.6), fill_color=ATTN, fill_opacity=0.45 + 0.5 * (w == max(weights)), stroke_width=0)
-                        .move_to([XS[j], -2.3, 0], aligned_edge=DOWN) for j, w in enumerate(weights)])
-        wlabels = VGroup(*[label(f"{w:.2f}", 16, ATTN).next_to(b, UP, buff=0.08) for b, w in zip(bars, weights)])
-        bl = label("softmax: weights that sum to 1", 17, ATTN).to_edge(DOWN, buff=0.6)
+        bars = VGroup(*[Rectangle(width=0.6, height=max(0.05, w * 3.4), fill_color=ATTN, fill_opacity=0.45 + 0.5 * (w == max(weights)), stroke_width=0)
+                        .move_to([XS[j], ROWS[4], 0], aligned_edge=DOWN) for j, w in enumerate(weights)])
+        wlabels = VGroup(*[label(f"{w:.2f}", 18, ATTN).next_to(b, UP, buff=GAP_TIGHT) for b, w in zip(bars, weights)])
+        bl = label("softmax: weights that sum to 1", 18, ATTN).move_to([0, ROWS[4] - 0.35, 0])
         self.play(LaggedStart(*[GrowFromEdge(b, DOWN) for b in bars], lag_ratio=0.06), FadeOut(slabels), FadeIn(bl), run_time=1.0)
         self.play(FadeIn(wlabels), run_time=0.4)
         self.next_slide("""Raw scores are not yet a mixture. Softmax turns them into weights between zero and one that add up to one: the
@@ -78,15 +81,15 @@ class Attention(TalkSlide):
         These are the attention weights: "mat" pays this much attention to each token, and this row of bars is exactly what
         people mean by an attention pattern.""")
         # --- the weighted sum: each value, scaled by its weight, lands in the new vector
-        out = column(3, ATTN, 0.24, op=0.0).move_to([6.1, -1.75, 0])
-        outl = label('new vector\nfor "mat"', 17, ATTN).next_to(out, DOWN, buff=0.12)
+        out = column(3, ATTN, 0.28, op=0.0).move_to([COLS[4] - 0.8, ROWS[4] + 0.45, 0])
+        outl = label('new vector\nfor "mat"', 18, ATTN).next_to(out, DOWN, buff=GAP_TIGHT)
         self.play(FadeIn(outl), run_time=0.3)
         cum = 0.0
         for j in range(6):
             vc = tri[j][2].copy()
             cum += weights[j]
             self.play(bars[j].animate.set_fill(ATTN, 1.0), run_time=0.15)
-            self.play(vc.animate.scale((0.24 / 0.14) * (0.35 + 1.4 * weights[j])).move_to(out.get_center()).set_opacity(0.35 + 0.65 * weights[j]), run_time=0.4)
+            self.play(vc.animate.scale((0.28 / 0.2) * (0.35 + 1.4 * weights[j])).move_to(out.get_center()).set_opacity(0.35 + 0.65 * weights[j]), run_time=0.4)
             self.play(FadeOut(vc), *[c.animate.set_fill(ATTN, min(0.95, cum)) for c in out], bars[j].animate.set_fill(ATTN, 0.45), run_time=0.25)
         self.play(Flash(out, color=ATTN, flash_radius=0.6, num_lines=10), run_time=0.5)
         self.finish("""Last step of the read, and watch the new vector fill. Take every token's value, scale it by that token's weight,

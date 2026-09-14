@@ -16,9 +16,9 @@ class Batching(TalkSlide):
         al = label("time, one decode step after another", 14, DIM).next_to(axis, UP, buff=0.05).align_to(axis, LEFT)
         wl = label("weights read", 14, WEIGHTS).move_to([-5.5, 1.55, 0], aligned_edge=RIGHT)
         rl = VGroup(*[label(f"request {i + 1}", 14, DIM).move_to([-5.5, y, 0], aligned_edge=RIGHT) for i, y in enumerate(ROWS)])
-        reads = Counter("weights read, per step", 1, "", WEIGHTS, size=24).move_to([-6.4, -1.75, 0], aligned_edge=LEFT)
-        per_step = Counter("tokens produced, per step", 1, "", OUTPUT, size=24).move_to([-2.4, -1.75, 0], aligned_edge=LEFT)
-        steplen = label("step time: the weights read, plus a little arithmetic per request", 14, DIM).move_to([1.6, -1.75, 0], aligned_edge=LEFT)
+        reads = Counter("weights read, per step", 1, "", WEIGHTS, size=24).move_to([-6.4, -1.3, 0], aligned_edge=LEFT)
+        per_step = Counter("tokens produced, per step", 1, "", OUTPUT, size=24).move_to([-3.2, -1.3, 0], aligned_edge=LEFT)
+        steplen = label("step time: the weights read, plus a little arithmetic per request", 14, DIM).move_to([0.0, -1.3, 0], aligned_edge=LEFT)
         self.play(Create(axis), FadeIn(al), FadeIn(wl), FadeIn(rl[0]), FadeIn(reads), FadeIn(per_step))
         cap = caption(self, "One request: every step reads all the weights and produces one token")
         cols = []
@@ -162,10 +162,10 @@ class Batching(TalkSlide):
         cap = swap_caption(self, cap, "Measured on this GPU as the batch grows")
         gpu = GPU("one GPU", w=4.8, weights_gb=29).scale(0.9).shift(LEFT * 3.3 + DOWN * 0.3)
         self.play(FadeIn(gpu), gpu.bandwidth.set(0.39), gpu.set_cache(3))
-        inflight = Counter("requests in flight", 1, "", TEXT, size=26).move_to([0.9, 1.9, 0], aligned_edge=LEFT)
-        each = Counter("tokens/s, each request", 174, "", OUTPUT, size=26).move_to([2.8, 1.9, 0], aligned_edge=LEFT)
+        inflight = Counter("requests in flight", 1, "", TEXT, size=26).move_to([0.0, 1.9, 0], aligned_edge=LEFT)
+        each = Counter("tokens/s, each request", 174, "", OUTPUT, size=26).move_to([2.5, 1.9, 0], aligned_edge=LEFT)
         total = Counter("tokens/s, whole GPU", 174, "", CACHE, size=26).move_to([5.0, 1.9, 0], aligned_edge=LEFT)
-        clk = label("latency and throughput, both measured while decoding", 12, MUTED).move_to([2.8, 1.3, 0], aligned_edge=LEFT)
+        clk = label("latency and throughput, both measured while decoding", 12, MUTED).move_to([2.5, 1.3, 0], aligned_edge=LEFT)
         self.play(FadeIn(inflight), FadeIn(each), FadeIn(total), FadeIn(clk))
         self.next_slide("""Now measured, on this GPU: each request's speed and the total, as the batch grows. Now the same thing measured. The GPU from before with one request decoding: the bus busy about forty percent of
         the time, the compute grid nearly idle, and three counters: requests in flight, tokens per second each one gets, and

@@ -7,8 +7,8 @@ from objects import *
 class Industry(TalkSlide):
     def construct(self):
         t = title(self, "Where this is going", "7  where the industry is")
-        pre = box(3.0, 1.1, "prefill", PROMPT, size=24).shift(LEFT * 3.6 + UP * 1.2)
-        dec = box(3.0, 1.1, "decode", OUTPUT, size=24).shift(RIGHT * 0.2 + UP * 1.2)
+        pre = box(3.0, 1.1, "prefill", PROMPT, size=24).shift(LEFT * 2.8 + UP * 1.2)
+        dec = box(3.0, 1.1, "decode", OUTPUT, size=24).shift(RIGHT * 2.8 + UP * 1.2)
         arrow = Arrow(pre[0].get_right(), dec[0].get_left(), buff=0.05, color=DIM)
         loop = CurvedArrow(dec[0].get_bottom() + RIGHT * 0.6, dec[0].get_bottom() + LEFT * 0.6, angle=-TAU / 3, color=OUTPUT, stroke_width=2, tip_length=0.15)
         self.play(FadeIn(pre), FadeIn(dec), Create(arrow), Create(loop))
@@ -20,7 +20,7 @@ class Industry(TalkSlide):
             g = VGroup(label(name, 20, color), label(what, 15, TEXT, width=3.6)).arrange(DOWN, aligned_edge=LEFT, buff=0.04).move_to(pos, aligned_edge=LEFT)
             self.play(FadeIn(g, shift=UP * 0.12), run_time=0.5)
             return g
-        f1 = front("disaggregated serving", "prefill and decode on separate pools, each sized and tuned for its own gauge", PROMPT, LEFT * 5.1 + DOWN * 0.15)
+        f1 = front("disaggregated serving", "prefill and decode on separate pools, each sized and tuned for its own gauge", PROMPT, LEFT * 4.7 + DOWN * 0.15)
         self.play(pre.animate.shift(LEFT * 0.4), dec.animate.shift(RIGHT * 0.4), arrow.animate.put_start_and_end_on(pre[0].get_right() + LEFT * 0.4, dec[0].get_left() + RIGHT * 0.4), run_time=0.6)
         self.next_slide("""Disaggregated serving pulls the two phases onto different pools of GPUs: prefill on hardware and settings chosen
         for compute, decode on hardware and settings chosen for bandwidth, with the KV cache handed across between them. It is
@@ -29,14 +29,14 @@ class Industry(TalkSlide):
         per GPU by itself; it lets time-to-first-token and time-per-token be tuned independently and stops a long prefill from
         stalling everyone's decode. For a homogeneous single-GPU fleet at moderate prompt lengths the transfer costs more than
         it saves, which is why the companion stack does not do it.""")
-        f2 = front("caches with an address", "routers that know which engine holds which blocks; tiers where evicted blocks live on", PROMPT, LEFT * 5.1 + DOWN * 1.3)
+        f2 = front("caches with an address", "routers that know which engine holds which blocks; tiers where evicted blocks live on", PROMPT, LEFT * 4.7 + DOWN * 1.3)
         self.next_slide("""The cache stops being one engine's private memory. Routers that score engines by the blocks they hold and the
         depth of their queue are now standard parts of the fleet layer, the grown-up version of the session cookie from knob
         three, and the vendors report time-to-first-token roughly halved on conversational traffic. Behind them, tiers: the
         engines now ship frameworks that spill evicted blocks to host memory, local disk, object stores and other nodes, and
         pull them back on a hit. Knob three's measurement is the caution to carry into that world: a tier pays only when it is
         sized to the working set that comes back.""")
-        f6 = front("sparse attention", "a token reads only a chosen part of the cache, so the read stops growing with context", PROMPT, LEFT * 5.1 + DOWN * 2.45)
+        f6 = front("sparse attention", "a token reads only a chosen part of the cache, so the read stops growing with context", PROMPT, LEFT * 4.7 + DOWN * 2.45)
         self.next_slide("""The third front on this side attacks the read that grew with every token in move one. Sparse attention lets a
         token score a selected subset of the cached keys instead of all of them, and the newest large models ship with it
         built in; the engines have separate prefill and decode paths for it. If it holds up in quality, the cache read stops

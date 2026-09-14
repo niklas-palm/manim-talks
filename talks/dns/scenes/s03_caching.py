@@ -19,11 +19,11 @@ class Caching(TalkSlide):
         t = title(self, "Caching: remember what you were told", "3  caching: remember what you were told")
         # --- the picture move two left behind
         (root, tld, auth), (r_root, r_tld, r_auth) = tree()
-        client = client_box(0.4)
-        res = resolver_box(-0.1)
-        rows = VGroup(cache_row(r_root, 0.85), cache_row(r_tld, 0.3), cache_row(r_auth, -0.25))
+        client = client_box()
+        res = resolver_box()
+        rows = VGroup(cache_row(r_root, CACHE_Y[0]), cache_row(r_tld, CACHE_Y[1]), cache_row(r_auth, CACHE_Y[2]))
         fuses = VGroup(*[fuse(r) for r in rows])
-        hops = Counter("hops into the tree", 3, "", ZONE, size=24).move_to([-6.7, -2.5, 0], aligned_edge=LEFT)
+        hops = Counter("hops into the tree", 3, "", ZONE, size=24).move_to([-MARGIN, -2.4, 0], aligned_edge=LEFT)
         self.play(FadeIn(root), FadeIn(tld), FadeIn(auth), FadeIn(r_root), FadeIn(r_tld), FadeIn(r_auth), FadeIn(client), FadeIn(res), FadeIn(rows), FadeIn(fuses), FadeIn(hops), run_time=0.8)
         # --- the same name again: one hop
         question(self, client, res, "www.example.com?")
@@ -36,25 +36,25 @@ class Caching(TalkSlide):
         answer comes straight back: zero hops into the tree, no root server, no registry, no example.com server involved.
         This is why the root servers are not answering every lookup on earth.""")
         # --- a different name under com: the root is skipped
-        client2 = node("another laptop", NAME, w=2.2, h=1.0, sub="same resolver").move_to([X_CLIENT, -1.2, 0])
+        client2 = client_box(y=-1.1, name="another laptop", sub="same resolver")
         self.play(FadeIn(client2), run_time=0.4)
         question(self, client2, res, "mail.other.com?")
         self.play(rows[0][0].animate.set_fill(REMEMBERED, 0.45), run_time=0.3)
-        skip = label("root skipped: com's servers already known", 15, REMEMBERED).next_to(res, DOWN, buff=0.12)
+        skip = label("root skipped: com's servers already known", 15, REMEMBERED).next_to(res, DOWN, buff=GAP_TIGHT).align_to(res, LEFT)
         self.play(FadeIn(skip), run_time=0.3)
         question(self, res, tld, "mail.other.com?")
         answer(self, tld, res, ZONE, "ask other.com's servers")
         other = record("other.com.", "NS", "ns1.other.com.", "2 days", ZONE)
-        c4 = cache_row(other, -0.8)
+        c4 = cache_row(other, CACHE_Y[3])
         self.play(FadeIn(c4), FadeIn(fuse(c4)), hops.to(1), rows[0][0].animate.set_fill(REMEMBERED, 0.14), run_time=0.4)
-        far = zone_box("other.com.", "another owner's zone", -2.55, h=0.75)
+        far = box(W_TREE, 0.6, "other.com.   another owner's zone", ZONE, size=16).move_to([X_TREE, -2.5, 0])
         self.play(FadeIn(far), run_time=0.3)
         question(self, res, far, "mail.other.com?")
         answer(self, far, res, ADDRESS, "198.51.100.7")
-        c5 = cache_row(record("mail.other.com.", "A", "198.51.100.7", "5 min", ADDRESS), -1.35)
+        c5 = cache_row(record("mail.other.com.", "A", "198.51.100.7", "5 min", ADDRESS), CACHE_Y[4])
         self.play(FadeIn(c5), FadeIn(fuse(c5)), hops.to(2), run_time=0.4)
         answer(self, res, client2, ADDRESS, "198.51.100.7")
-        ttls = label("pointers near the top: days. The address at the bottom: minutes", 16, REMEMBERED).move_to([X_TREE, -3.25, 0])
+        ttls = label("pointers near the top: days; the address: minutes", 16, REMEMBERED).move_to([X_TREE - W_TREE / 2, -3.25, 0], aligned_edge=LEFT)
         self.play(FadeOut(skip), FadeIn(ttls), run_time=0.4)
         self.next_slide("""A different name, mail.other.com, under com as well. The resolver already holds the pointer to com's servers,
         so it does not ask the root: it goes straight to com, gets the pointer to other.com, asks other.com, gets the
@@ -64,19 +64,17 @@ class Caching(TalkSlide):
         lookup, so they are remembered longest; the address at the bottom changes when the owner moves servers, so it is
         remembered briefly. The expensive part of the walk is the part that is cached longest. That is the design.""")
         # --- time passes: the address expires, one lookup walks the bottom again
-        clock = label("five minutes pass", 16, MUTED).next_to(res, DOWN, buff=0.12)
+        clock = label("five minutes pass", 16, MUTED).next_to(res, DOWN, buff=GAP_TIGHT).align_to(res, LEFT)
         self.play(FadeIn(clock), run_time=0.3)
         self.play(Transform(fuses[2], fuse(rows[2], 0.0)), Transform(fuses[0], fuse(rows[0], 0.998)), Transform(fuses[1], fuse(rows[1], 0.996)), run_time=1.6, rate_func=linear)
         self.play(rows[2][0].animate.set_fill(HOT, 0.3), run_time=0.3)
-        expired = label("expired", 15, HOT).next_to(rows[2], LEFT, buff=0.15)
-        self.play(FadeIn(expired), run_time=0.3)
         question(self, client, res, "www.example.com?")
         question(self, res, auth, "www.example.com?")
         answer(self, auth, res, ADDRESS, "104.20.23.154")
-        fresh = cache_row(r_auth, -0.25)
-        self.play(FadeOut(rows[2]), FadeOut(fuses[2]), FadeIn(fresh), FadeIn(fuse(fresh)), hops.to(1), FadeOut(expired), run_time=0.5)
+        fresh = cache_row(r_auth, CACHE_Y[2])
+        self.play(FadeOut(rows[2]), FadeOut(fuses[2]), FadeIn(fresh), FadeIn(fuse(fresh)), hops.to(1), run_time=0.5)
         answer(self, res, client, ADDRESS, "104.20.23.154")
-        cost = VGroup(label("hit: no network, about 0 ms", 16, REMEMBERED), label("miss: about 130 ms; 4 to 6% time out", 16, HOT)).arrange(DOWN, aligned_edge=LEFT, buff=0.08).move_to([X_RESOLVER, -2.85, 0])
+        cost = VGroup(label("hit: no network, about 0 ms", 16, REMEMBERED), label("miss: about 130 ms; 4 to 6% time out", 16, HOT)).arrange(DOWN, aligned_edge=LEFT, buff=0.08).move_to([X_RESOLVER - W_RESOLVER / 2, -2.55, 0], aligned_edge=LEFT)
         self.play(FadeOut(clock), FadeOut(ttls), FadeIn(cost), run_time=0.4)
         self.next_slide("""Time passes; five minutes here, compressed. The address's time to live runs out and the row may no longer be used;
         the pointers above it have barely aged. The next lookup for the name is a miss: the resolver still knows
@@ -90,7 +88,7 @@ class Caching(TalkSlide):
         stack.next_to(client, UP, buff=0.3).align_to(client, LEFT)
         marks = VGroup(*[Rectangle(width=0.1, height=0.2, fill_color=REMEMBERED, fill_opacity=0.9, stroke_width=0).next_to(s_, LEFT, buff=0.1) for s_ in stack])
         self.play(FadeIn(stack, lag_ratio=0.2), FadeIn(marks, lag_ratio=0.2), run_time=0.8)
-        cd = label("the same TTL, counting down in every cache: 300 s, then 281 s", 16, MUTED).move_to([0.6, -3.3, 0])
+        cd = label("the same TTL counts down in every cache: 300 s, then 281 s", 16, MUTED).move_to([0, -3.3, 0])
         self.play(FadeOut(cost), FadeIn(cd), run_time=0.4)
         self.finish("""The resolver is not the only cache. The browser keeps answers, the operating system's stub keeps answers, and
         each of them counts the same time to live down from where it received it: a record that left the resolver with
