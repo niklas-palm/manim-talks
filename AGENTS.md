@@ -23,7 +23,8 @@ Read a scene file next to its shots (`talks/llm-serving/media/shots/<Scene>.png`
 code becomes picture. The other talks under `talks/` are shorter examples built with the same rules: `dns` (a
 name becomes an address), `kubernetes` (desired state and the loops that chase it), `kafka` (a log you can replay),
 `transformers` (every token learns from every other), `agents` (a model, a list of messages, and a loop). Each has a
-`script.md` with its spine, moves and sources, and a `README.md`.
+`script.md` with its spine, moves and sources, and a `README.md`, and each has a `-bright` sibling that is the same
+deck in the other style (see "One deck, two styles" below), so `talks/` holds twelve folders for six talks.
 
 ## Two kinds of talk, and where they live
 
@@ -35,15 +36,16 @@ searched first, so a real deck may take a sample's name and shadow it). Put a de
 audience rather than for this repository: a company's theme, a customer's numbers, a version of a sample edited for
 one room. Nothing under `out/` is ever committed, so a real deck can carry things this repository should not.
 
-Starting one from a sample is a copy, on purpose: `cp -R talks/<sample>/{scenes,script.md,README.md} out/<name>/`,
-then write its style into `out/<name>/.theme`. It is free to diverge, and the sample stays as the worked example.
+Starting one from a sample is a copy, on purpose:
+`mkdir -p out/<name> && cp -R talks/<sample>/{scenes,script.md,README.md} out/<name>/`, then write its style into
+`out/<name>/.theme`. It is free to diverge, and the sample stays as the worked example.
 
 ## What you are making
 
 A talk is a folder (`talks/<slug>/` or `out/<slug>/`) with:
 
 ```
-scenes/objects.py     the talk's vocabulary: which colour means what (set_thread), shared drawings
+scenes/objects.py     the talk's vocabulary: which accent slot means what (set_thread), shared drawings
 scenes/s00_*.py ...   one file per move, one or more TalkSlide classes each; presented in file order
 script.md             the spine sentence, the moves, the sources; its first "# " line is the deck title
 .theme                one line naming this talk's style, if it differs from the project's (see below)
@@ -167,19 +169,24 @@ at 1080p60, test the presenter and audience windows in a browser, and commit. De
 
 ```bash
 python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt   # once; ffmpeg, cairo and pango via Homebrew
-bin/render.sh <talk> ql [Scene ...]     # preview render (480p), then build the pages; qm 720p, qh 1080p60 for the talk itself
+# Run the Python tools with .venv/bin/python (the shell wrappers already do): under another interpreter the checks
+# that ask Pango which fonts are installed cannot answer, and say so instead of passing.
+bin/render.sh <talk> ql [Scene ...]     # preview render (480p), then the pages; qm 720p, qh 1080p60 for the talk
 bin/shots.py <talk> ql                  # the frame every step holds on, tiled per scene: media/shots/<Scene>.png
 bin/review.sh <talk> ql                 # a frame every two seconds per scene, for motion and collisions mid-step
-bin/check.py <talk> ql                  # structural checks: files, set_thread, notes per step, text sizes, sentences on screen
+bin/check.py <talk> ql                  # structural checks: files, notes per step, text sizes, on-screen sentences,
+                                        # hues named in a scene, and whether the talk's style is fit to present
 bin/seams.py <talk> ql                  # every scene boundary: last frame beside first frame, with a difference score
 bin/serve.sh <talk>                     # one local server for the repository; opens the talk's presenter window
-bin/export_pptx.py <talk> qh            # optional: one PowerPoint slide per step, clip autoplaying, note in the notes; generated, not committed
+bin/export_pptx.py <talk> qh            # optional: one slide per step, the clip autoplaying, the note in the notes
 bin/themes.py list|check|preview|from-pptx   # the styles a deck can be presented in; see "Choosing the look"
 THEME=<name> bin/render.sh <talk> ql    # render in another style without changing anything
 ```
 
-Never run two renders at once (shared text cache). Render one scene while you work on it; render everything once
-at the end. Keep terminal output short: renders are chatty, pipe them to a log and grep for `Traceback`.
+Never run two renders of the same talk at once: they share that talk's rasterised-text cache under its `media/`.
+Different talks, including a sample and its `-bright` sibling, render in parallel safely. Render one scene while you
+work on it; render everything once at the end. Keep terminal output short: renders are chatty, pipe them to a log and
+grep for `Traceback`.
 
 ## Starting a new talk
 
@@ -194,7 +201,8 @@ library, an `objects.py` to fill in, and a `script.md` skeleton.
 ## Definition of done
 
 A deck is done when every item in `docs/review.md` holds, the deck was reviewed in the style it will be presented
-in (`bin/check.py` names it, and it must be the one the speaker asked for), the 1080p60 render exists, the presenter drives the
+in (`bin/check.py` names it, and it must be the one the speaker asked for), the 1080p60 render exists, the presenter
+drives the
 audience window in a real browser, every step has a note, `script.md` cites the sources, `README.md` says what the
 talk is, and `LEARNINGS.md` has what you learned. Report what you built, what you could not verify, and what you
 left out and why.

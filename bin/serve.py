@@ -5,7 +5,7 @@ The standard library's `python3 -m http.server` answers every request with the w
 Chrome then treats a video as unseekable: setting currentTime is ignored, so the player replayed each scene from its
 start on every step and the hold at a step boundary left the element blank. This handler honours Range requests, which
 is all a <video> needs to seek. Usage: python3 serve.py [port] [folder]   (serves the current folder by default;
-bin/serve.sh serves the repository root, so every talk is reachable under /talks/<name>/ from one server)"""
+bin/serve.sh serves the repository root, so a talk is reachable under /talks/<name>/ or /out/<name>/ from one server)"""
 import os
 import re
 import sys
@@ -63,6 +63,6 @@ class RangeHandler(SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8765
-    if len(sys.argv) > 2:          # optional folder to serve; default is the current directory (bin/serve.sh starts it inside the talk folder)
+    if len(sys.argv) > 2:          # optional folder to serve; default is the current directory (bin/serve.sh passes the repository root)
         os.chdir(sys.argv[2])
     ThreadingHTTPServer(("127.0.0.1", port), RangeHandler).serve_forever()

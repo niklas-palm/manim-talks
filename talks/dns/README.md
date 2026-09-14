@@ -23,6 +23,6 @@ bin/serve.sh dns          # presenter and audience windows
 ```
 
 Every number on screen is from a primary source or a live trace, listed with dates in `script.md`, which also names
-the simplifications. Speaker notes live next to each step in `scenes/`. Colours: blue is a name or a question, yellow
-an address, violet a zone or a pointer, teal a remembered record and its time to live, red a miss or a name that does
-not exist.
+the simplifications. Speaker notes live next to each step in `scenes/`. One accent per meaning: a name or a question,
+an address, a zone or a pointer, a remembered record and its time to live, and a miss or a name that does not exist.
+Which hue each one is, is the style's business (AGENTS.md, "Choosing the look").

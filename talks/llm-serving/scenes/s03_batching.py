@@ -96,7 +96,7 @@ class Batching(TalkSlide):
         nreq_c = Counter("requests sharing the step", 0, "", TEXT, size=22).move_to([3.7, -0.35, 0], aligned_edge=LEFT)   # the longest name ends at the 6.4 margin
         ms_c = Counter("step time", 0, "ms", WEIGHTS, size=22, decimals=1).move_to([3.7, -1.3, 0], aligned_edge=LEFT)
         tps_c = Counter("tokens per second, all together", 0, "", OUTPUT, size=22).move_to([3.7, -2.25, 0], aligned_edge=LEFT)
-        HUES = ["#FFD166", "#F4845F", "#EF476F", "#C77DFF", "#06D6A0", "#8ECAE6", "#FFB703", "#B5E48C", "#F9C74F", "#90BE6D", "#F8961E", "#9BF6FF"]
+        HUES = identity(12)   # a colour per request, so one can be followed from arrival to completion; identity, not vocabulary
         # arrivals per step, each number the length of a request in steps (its first step is the prefill). Light load, then more than the slots can take, then quiet.
         arrivals = {0: [7], 4: [9], 9: [6], 14: [8, 10], 15: [9, 7], 16: [11, 8, 9], 17: [9], 18: [10, 8], 19: [7, 9], 20: [8], 21: [10, 9], 22: [8], 23: [9], 25: [8], 27: [7], 30: [9], 32: [8], 34: [8], 36: [9], 37: [8], 38: [9], 39: [10]}
 
@@ -113,7 +113,7 @@ class Batching(TalkSlide):
             anims, arriving = [], []
             for length in arrivals.get(t, []):
                 hue = HUES[nreq % len(HUES)]; nreq += 1
-                sq = Square(0.2, fill_color=hue, fill_opacity=0.95, stroke_width=0).move_to([-4.85 + 0.28 * len(waiting), yq, 0])
+                sq = Square(0.2, fill_color=hue, fill_opacity=SOLID, stroke_width=0).move_to([-4.85 + 0.28 * len(waiting), yq, 0])
                 waiting.append([hue, length, sq]); arriving.append(FadeIn(sq, shift=UP * 0.1))
             if arriving:
                 self.play(*arriving, run_time=0.12)
@@ -135,7 +135,7 @@ class Batching(TalkSlide):
                     col.add(Rectangle(width=w - 0.05, height=0.24, stroke_color=DIM, stroke_width=sw(0.4), fill_opacity=0).move_to([xc, ys[i], 0]))
                     continue
                 hue, remaining, first = st
-                col.add(Rectangle(width=w - 0.05, height=0.24, fill_color=hue, fill_opacity=0.95, stroke_color=TEXT if first else hue, stroke_width=sw(0.6) if first else 0).move_to([xc, ys[i], 0]))
+                col.add(Rectangle(width=w - 0.05, height=0.24, fill_color=hue, fill_opacity=SOLID, stroke_color=TEXT if first else hue, stroke_width=sw(0.6) if first else 0).move_to([xc, ys[i], 0]))
                 st[1] -= 1; st[2] = False
                 if st[1] == 0:
                     slots[i] = None

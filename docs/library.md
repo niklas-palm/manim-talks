@@ -20,10 +20,10 @@ What a scene may use:
 | `BG` | the ground; a mask that hides something is drawn in it |
 | `HI` | the momentary highlight of a cell being read or a line being run. Neutral, never a meaning |
 | `PANEL` `CODE_STYLE` `CODE_FONT` `FONT` | what a code block sits on, its Pygments style, and the two families |
-| `rad(k)` `sw(k)` | a corner radius and a stroke width derived from the theme's, so every drawing squares off or thickens together |
+| `rad(k)` `sw(k)` | a corner radius and a stroke width derived from the theme's, so every drawing squares off or thickens together. `RADIUS`, `STROKE` and `THEME` are the raw values behind them; a scene uses the functions |
 | `FILL` `SOLID` | a container's fill opacity and a filled mark's; both are fainter in the bright style |
 | `MODE` | `"dark"` or `"light"`; a scene should not need to ask |
-| `cased(s)` | a title as the theme writes it; `title()` already applies it |
+| `identity(n)` | n colours that are told apart, for a thing whose colour means only "this one": twelve requests sharing a step. Identity, not vocabulary; never a substitute for a slot |
 
 Two rules follow, and `bin/check.py` enforces the first:
 
@@ -138,7 +138,8 @@ drawing lives there). If a second talk needs it, move it here and document it in
 | `sweep(scene, vec, vcolor, [(mat, out, color)], rt)` | every row at speed; several matrices swept together |
 
 Pass `cols` when the matrix is not eight wide and `mat_color` when the matrix is not violet. The light-up colour is
-`HI`, a neutral near-white, in every deck: a highlight in an accent colour would read as that accent's meaning.
+`HI` in every deck: the neutral extreme of the ground, near-white on the dark style and near-black on the bright one.
+A highlight in an accent colour would read as that accent's meaning.
 
 ## Lists that grow
 
@@ -150,7 +151,7 @@ Three decks independently drew state as a list that only grows; these are the sh
 | `Pointer(name, color)` | a reader's position under a Log; `place(log, i)`, `to(log, i)` returns the Transform. Replay is the pointer moving back |
 | `block(text, color, w, h, size, bare)` | one item of a Stack: a coloured block with a bar and one line of text; `"role · text"` colours the role |
 | `Stack(x, top, h, gap)` | a list of blocks growing downward; `append(scene, block, frm)` flies a block in from what produced it; the whole list is one VGroup so a copy can travel as one thing |
-| `code(source, language, size, width)` | syntax-highlighted code (Pygments monokai, any language Pygments knows) on a dark panel, laid out large and scaled so spacing is exact; `block.lines[i]` per line, `block.panel` |
+| `code(source, language, size, width)` | syntax-highlighted code (the theme's Pygments style, any language Pygments knows) on the theme's panel, laid out large and scaled so spacing is exact; `block.lines[i]` per line, `block.panel` |
 | `highlight_line(block, i)` | a translucent bar behind line i; add it after the code and move it down the lines while the picture does each step |
 
 Budget 0.45 units under a Log's offsets for a pointer and its tag, and 1.4 units between stacked logs that each carry

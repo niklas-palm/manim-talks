@@ -6,7 +6,7 @@ nothing else. See AGENTS.md for the styles that ship and how to choose one; docs
 
 Resolution order, first hit wins:
     THEME=<name>            environment variable, for one render
-    <talk>/.theme           one line, that talk's style; bin/render.sh exports it
+    <talk>/.theme           one line, that talk's style; every tool that knows the talk resolves it (active_name)
     .theme                  one line at the repository root, the project's style
     dark                    the fallback
 
@@ -24,6 +24,7 @@ proportionally, so those three numbers reach every drawing.
 """
 import json
 import os
+import re
 import sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -37,15 +38,6 @@ ROLES = ["bg", "text", "muted", "dim", "caption", "hi", "panel"]
 # a5 growth, a6 spice, alert wrong.
 ACCENTS = ["a1", "a2", "a3", "a4", "a5", "a6", "alert"]
 NUMBERS = ["radius", "stroke", "fill", "solid"]   # the feel: a corner, a line weight, a container fill, a solid mark
-
-_warned = set()
-
-
-def _warn(msg: str):
-    if msg not in _warned:
-        _warned.add(msg)
-        print(f"theme: {msg}", file=sys.stderr)
-
 
 # ------------------------------------------------------------------------------------------------ colour maths
 # Enough of CIE to answer two questions: can the audience see this against the background (contrast ratio), and can
@@ -104,10 +96,15 @@ def blend(a: str, b: str, t: float) -> str:
 
 def lift(c: str, bg: str, ratio: float = 3.0, steps: int = 60) -> str:
     """Move a colour away from the background until it has at least `ratio` contrast against it, keeping its hue: what
-    makes a real corporate palette usable on a stage. Returns the colour unchanged if it already passes."""
+    makes a real corporate palette usable on a stage. Returns the colour unchanged if it already passes, and the
+    extreme it was heading for when the ratio cannot be reached at all (a mid grey ground caps every colour); the
+    caller learns that from validate(), which is where an unusable theme is refused.
+
+    The direction is whichever of black and white has more contrast to give against this background. That crossover is
+    at a relative luminance of about 0.18, not at 0.5: a light grey ground wants dark ink."""
     if contrast(c, bg) >= ratio:
         return c
-    target = "#FFFFFF" if luminance(bg) < 0.5 else "#000000"
+    target = "#000000" if contrast("#000000", bg) > contrast("#FFFFFF", bg) else "#FFFFFF"
     best = c
     for i in range(1, steps + 1):
         best = blend(c, target, i / steps)
@@ -117,6 +114,12 @@ def lift(c: str, bg: str, ratio: float = 3.0, steps: int = 60) -> str:
 
 
 # ------------------------------------------------------------------------------------------------ loading
+
+def is_dark(bg: str) -> bool:
+    """Whether a background wants light ink. White text against it beats black text against it: the WCAG crossover,
+    around luminance 0.18, rather than the midpoint, which would call a light grey dark."""
+    return contrast("#FFFFFF", bg) > contrast("#000000", bg)
+
 
 def names() -> list:
     """Every theme that ships, plus anything under themes/local (extracted from a PowerPoint file, never committed)."""
@@ -131,64 +134,79 @@ def path_of(name: str) -> str:
     return os.path.join(THEME_DIR, f"{name}.json")
 
 
-def active_name() -> str:
-    """The theme this render uses. THEME wins; then the repository's .theme; then the dark house style."""
+def _named_in(folder: str) -> str:
+    """The theme named by a `.theme` file in `folder`, or "" if there is none. Whitespace only counts as none."""
+    f = os.path.join(REPO, folder, ".theme")
+    if os.path.exists(f):
+        with open(f) as fh:
+            return fh.read().strip()
+    return ""
+
+
+def active_name(root: str = None) -> str:
+    """The theme a talk presents in, in one place and in the documented order: THEME, then the talk's own .theme, then
+    the repository's, then dark. `root` is the talk folder (`talks/x` or `out/x`); every tool that knows which talk it
+    is working on passes it, so a deck cannot be built in one style and rendered in another."""
     env = os.environ.get("THEME", "").strip()
     if env:
         return env
-    f = os.path.join(REPO, ".theme")
-    if os.path.exists(f):
-        with open(f) as fh:
-            n = fh.read().strip()
-        if n:
-            return n
-    return DEFAULT
+    return (_named_in(root) if root else "") or _named_in("") or DEFAULT
 
 
-def fonts_available() -> set:
-    """The installed families, asked of Pango. Only a check calls this: asking during a render initialises Pango's font
-    map before Manim does and shifts glyph positions by a fraction of a pixel, which changes every frame in the deck."""
+def fonts_available():
+    """The installed families, asked of Pango, or None when Pango cannot be asked (a tool run under an interpreter
+    without it). Only the checkers call this: a render uses what the theme declares, so that what is checked is what
+    will be drawn. None and the empty set are different answers, and a checker must not read the first as the second."""
     try:
         import manimpango
         return set(manimpango.list_fonts())
-    except Exception:                                  # no Pango (a doc build, a bare checkout): trust the theme
-        return set()
+    except Exception:
+        return None
 
 
-def pick_font(candidates, kind: str, probe: bool = False) -> str:
-    """The first installed family, so a theme written on one machine still renders on another. Pango substitutes
-    silently when a family is missing, which is how a deck ends up in a font nobody chose. A render never probes
-    (see fonts_available); bin/themes.py check does, and says which family is missing."""
-    if not probe:
-        return candidates[0]
+def _read(path: str) -> dict:
+    """A theme file as a dict, or a message naming the file. A half-written theme is a normal thing to have on disk
+    while editing one; a traceback with no file name in it is not a normal thing to read."""
+    try:
+        with open(path) as f:
+            t = json.load(f)
+    except json.JSONDecodeError as e:
+        raise SystemExit(f"theme: {path} is not valid JSON: {e}")
+    if not isinstance(t, dict):
+        raise SystemExit(f"theme: {path} must be a JSON object, not {type(t).__name__}")
+    return t
+
+
+def sheet_bg(t: dict) -> str:
+    """The padding between frames on a contact sheet: a shade off the deck's own ground, so a bright deck's sheets are
+    not framed in black. bin/shots.py, bin/seams.py, bin/review.sh and bin/themes.py all tile frames."""
+    return blend(t["bg"], t["text"], 0.10)
+
+
+def missing_fonts(t: dict):
+    """The families this theme asks for that are not installed, or None when that cannot be determined here. Pango
+    substitutes a missing family silently, which is how a deck ends up in a font nobody chose, so the checkers report
+    it rather than the render guessing. Run them under the project's interpreter, or the answer is None."""
     have = fonts_available()
-    if not have:
-        return candidates[0]
-    for c in candidates:
-        if c in have:
-            return c
-    _warn(f"none of the {kind} fonts {candidates} is installed; Pango will substitute")
-    return candidates[0]
+    if have is None:
+        return None
+    return [t[k] for k in ("font", "code_font") if t[k] not in have]
 
 
-def load(name: str = None, probe_fonts: bool = False) -> dict:
+def load(name: str = None) -> dict:
     """The theme as a flat dict: the seven roles, the seven accents, the four numbers, the fonts, the code style,
     plus `name`, `mode` and `description`. Unknown keys are kept, missing ones inherited from the default."""
     name = name or active_name()
-    with open(path_of(DEFAULT)) as f:
-        t = json.load(f)
+    t = _read(path_of(DEFAULT))
     if name != DEFAULT:
         p = path_of(name)
         if not os.path.exists(p):
             raise SystemExit(f"theme: no such theme '{name}'. Available: {', '.join(names())} "
                              f"(see AGENTS.md, 'Choosing the look')")
-        with open(p) as f:
-            over = json.load(f)
+        over = _read(p)
         accents = dict(t["accents"]); accents.update(over.pop("accents", {}))
         t.update(over); t["accents"] = accents
     t["name"] = name
-    t["font"] = pick_font([t["font"]] + t.get("font_fallbacks", []), "body", probe_fonts)
-    t["code_font"] = pick_font([t["code_font"]] + t.get("code_font_fallbacks", []), "code", probe_fonts)
     return t
 
 
@@ -203,10 +221,19 @@ def validate(t: dict) -> list:
             bad.append(f"missing accent '{k}'")
     if bad:
         return bad
+    for k in ROLES + list(t["accents"]):
+        v = t["accents"].get(k, t.get(k))
+        if not (isinstance(v, str) and re.fullmatch(r"#(?:[0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})", v)):
+            bad.append(f"{k} is {v!r}, not a hex colour like #1A2B3C")
+    for k in NUMBERS:
+        if not isinstance(t[k], (int, float)) or isinstance(t[k], bool) or not 0 <= t[k] <= 12:
+            bad.append(f"{k} is {t[k]!r}, not a number between 0 and 12")
+    if bad:
+        return bad                                     # the colour maths below would only raise on these
     bg = t["bg"]
     if t["mode"] not in ("dark", "light"):
         bad.append(f"mode is '{t['mode']}', not dark or light")
-    if (luminance(bg) < 0.5) != (t["mode"] == "dark"):
+    elif is_dark(bg) != (t["mode"] == "dark"):
         bad.append(f"mode says {t['mode']} but the background {bg} is not")
     for role, need in (("text", 7.0), ("caption", 4.5), ("muted", 4.5), ("hi", 3.0)):
         r = contrast(t[role], bg)

@@ -1,10 +1,10 @@
 """This talk's vocabulary on top of the shared library.
 
-  DESIRED (blue)   records: the state you asked for, stored in etcd (Deployment, ReplicaSet, Pod, Service)
-  ACTUAL  (yellow) what actually runs: containers on nodes, and the status they report back
-  CONTROL (violet) the control plane: API server, controllers, scheduler; every loop that chases the gap
-  NODE    (teal)   the machines: nodes, kubelet, kube-proxy; and etcd's members
-  HOT     (red)    failure, absence, a gap between desired and actual
+  DESIRED (A1, the cool slot)   records: the state you asked for, stored in etcd (Deployment, ReplicaSet, Pod, Service)
+  ACTUAL  (A2, warm)            what actually runs: containers on nodes, and the status they report back
+  CONTROL (A3, deep)            the control plane: API server, controllers, scheduler; every loop that chases the gap
+  NODE    (A4, fresh)           the machines: nodes, kubelet, kube-proxy; and etcd's members
+  HOT     (ALERT)               failure, absence, a gap between desired and actual
 
 Text sizes: 15 and up for anything inside a box, 13 only for units. Legend-like words appear once ("watch" on the
 first line, "observe, compare, act" when the first loop is opened under the zoom, "kube-proxy" on the first node); the
@@ -69,9 +69,9 @@ def apiserver() -> VGroup:
 def store(members: int = 3) -> VGroup:
     """etcd: a box that holds record cards, its members as dots in its top-right corner. [0] box, [1] name, [2] members."""
     g = box(W_STORE, H_NODE, "", NODE)
-    g[0].set_stroke(color=TEAL).set_fill(TEAL, 0.05)
-    name = label("etcd", 18, TEAL).move_to(g[0].get_top() + DOWN * 0.2).align_to(g[0].get_left() + RIGHT * GAP, LEFT)
-    dots = VGroup(*[Dot(radius=0.08, color=TEAL) for _ in range(members)]).arrange(RIGHT, buff=0.14).move_to(g[0].get_top() + DOWN * 0.2).align_to(g[0].get_right() + LEFT * GAP, RIGHT)
+    g[0].set_stroke(color=NODE).set_fill(NODE, 0.05)
+    name = label("etcd", 18, NODE).move_to(g[0].get_top() + DOWN * 0.2).align_to(g[0].get_left() + RIGHT * GAP, LEFT)
+    dots = VGroup(*[Dot(radius=0.08, color=NODE) for _ in range(members)]).arrange(RIGHT, buff=0.14).move_to(g[0].get_top() + DOWN * 0.2).align_to(g[0].get_right() + LEFT * GAP, RIGHT)
     g.add(name, dots)
     return g
 
@@ -100,7 +100,7 @@ def node_box(name: str, used: float = 0.3) -> VGroup:
     [0] box, [1] name, [2] slots, [3] mem frame, [4] mem used, [5] kubelet, [6] mem label."""
     g = box(W_NODE, H_NODE, "", NODE)
     left, right, top = g[0].get_left()[0] + 0.15, g[0].get_right()[0] - 0.15, g[0].get_top()[1]
-    name = label(name, 15, TEAL).move_to([left, top - 0.24, 0], aligned_edge=LEFT)
+    name = label(name, 15, NODE).move_to([left, top - 0.24, 0], aligned_edge=LEFT)
     kub = label("kubelet", 15, MUTED).move_to([right, top - 0.24, 0], aligned_edge=RIGHT)
     slots = VGroup(*[Rectangle(width=0.38, height=0.38, stroke_color=DIM, stroke_width=sw(0.52), fill_opacity=0) for _ in range(3)]).arrange(RIGHT, buff=0.13)
     slots.move_to([left, top - 0.64, 0], aligned_edge=LEFT)
@@ -164,7 +164,7 @@ def mem(node_g: VGroup, used: float):
 
 def beat(scene, nodes, run_time=0.5):
     """Every kubelet renews its lease at once: a teal dot from each kubelet straight up into the bar."""
-    dots = [Dot(color=TEAL, radius=0.07).move_to(n[5].get_center()) for n in nodes]
+    dots = [Dot(color=NODE, radius=0.07).move_to(n[5].get_center()) for n in nodes]
     scene.add(*dots)
     scene.play(*[d.animate.move_to(door(d)) for d in dots], run_time=run_time)
     scene.play(*[FadeOut(d) for d in dots], run_time=0.12)

@@ -22,6 +22,8 @@ bin/                 render.sh, build.py, shots.py, seams.py, review.sh, check.p
 talks/_template/     copy this to start a talk: title scene, a worked example scene, objects.py, script.md
 talks/llm-serving/   the reference deck: 45 minutes on how open-weight LLMs are served, 82 steps, 13 scenes
 talks/<others>/      shorter example decks built with the same rules: dns, kubernetes, kafka, transformers, agents
+talks/<talk>-bright/ the same deck in the bright style: a .theme and symlinks to the talk's scenes, nothing copied
+out/<slug>/          talks for an audience rather than for this repository; git ignores the whole folder
 LEARNINGS.md         the living log of what cost time and what changed a rule
 ```
 

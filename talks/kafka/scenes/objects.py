@@ -1,10 +1,10 @@
 """Kafka's vocabulary on top of the shared library.
 
-  KEY_A / KEY_B / KEY_C (blue, yellow, orange)   records, coloured by their key, from producer to disk to consumer
-  LOGC (violet)      the log and everything structural: partitions, segments, brokers
-  READER (teal)      consumers and the offsets they own
-  SYNC (green)       replicated and committed: in-sync replicas, the high-water mark
-  FAIL (red)         a lagging replica, a dead broker, a refused write
+  KEY_A / KEY_B / KEY_C (A1, A2, A6)  records, coloured by their key, from producer to disk to consumer
+  LOGC (A3, deep)     the log and everything structural: partitions, segments, brokers
+  READER (A4, fresh)  consumers and the offsets they own
+  SYNC (A5, growth)   replicated and committed: in-sync replicas, the high-water mark
+  FAIL (ALERT)        a lagging replica, a dead broker, a refused write
 """
 from lib.palette import *
 

@@ -34,7 +34,7 @@ from manim import *
 from lib import theme as _theme
 
 THEME = _theme.load()
-MODE = THEME["mode"]                          # "dark" or "light"; a scene should never need to ask, a check might
+MODE = THEME["mode"]                          # "dark" or "light"; identity() needs it, a scene should not
 A1, A2, A3, A4, A5, A6 = (THEME["accents"][k] for k in ("a1", "a2", "a3", "a4", "a5", "a6"))
 ALERT = THEME["accents"]["alert"]             # wrong, hot, refused, over a limit; never a second meaning
 ACCENT = [A1, A2, A3, A4, A5, A6]
@@ -49,7 +49,7 @@ CAPTION = THEME["caption"]         # the footnote at the bottom of a step
 BG = THEME["bg"]                   # the background; masks that hide things are drawn in it
 HI = THEME["hi"]                   # the momentary highlight of a cell being read or a line being run: never a meaning
 PANEL = THEME["panel"]             # the panel a code block sits on
-FONT = THEME["font"]               # resolved against the installed families, with the theme's fallbacks
+FONT = THEME["font"]               # what the theme declares; bin/check.py says when it is not installed
 CODE_FONT = THEME["code_font"]
 CODE_STYLE = THEME["code_style"]   # a Pygments style whose plain identifiers stay neutral (monokai on dark, xcode on light)
 BASE_SIZE = 48                     # every text is laid out at this size and scaled down: Pango rounds glyph positions to whole
@@ -63,6 +63,16 @@ RADIUS = THEME["radius"]           # a box's corner radius: rad(0.8) a node, rad
 STROKE = THEME["stroke"]           # a box's stroke width: sw(0.88) arrows and nodes, sw(0.64) dashed, sw(0.48) rails
 FILL = THEME["fill"]               # a container's fill opacity, fainter in the bright style
 SOLID = THEME["solid"]             # a filled mark's opacity: a token, a cell, a bar, a pointer
+
+
+def identity(n: int) -> list:
+    """n colours that can be told apart, for a thing whose colour means only "this one, not that one": the requests
+    sharing a step, the jobs in a queue, the keys in a partition. The accent slots are the talk's vocabulary and run
+    out at six, and a deck that needs a dozen identities must not invent its own hex: this walks the hue circle at a
+    saturation and lightness the active ground can hold, and lifts each colour until it is visible against it."""
+    import colorsys
+    light, sat = (0.66, 0.62) if MODE == "dark" else (0.42, 0.68)
+    return [_theme.lift(_theme.hex_of(colorsys.hls_to_rgb((0.07 + i / n) % 1.0, light, sat)), BG, 3.0) for i in range(n)]
 
 
 def rad(k: float = 1.0) -> float:
@@ -236,7 +246,7 @@ def swap_caption(scene, old, s: str, size: float = 22, color: str = TEXT) -> Tex
 
 # ------------------------------------------------------------------------------------------------ objects
 
-def tokens(n: int, color: str = BLUE, side: float = 0.36, gap: float = 0.08) -> VGroup:
+def tokens(n: int, color: str = A1, side: float = 0.36, gap: float = 0.08) -> VGroup:
     """A row of n squares: tokens, messages, requests, records. Colour says what they are."""
     return VGroup(*[Square(side_length=side, fill_color=color, fill_opacity=SOLID, stroke_width=0) for _ in range(n)]).arrange(RIGHT, buff=gap)
 

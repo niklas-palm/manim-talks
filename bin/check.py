@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Structural checks for a talk, the things a review should not have to find by eye. Usage: bin/check.py <talk> [ql|qm|qh]
-Reports, per talk: the files a talk must have, that objects.py declares its colours with set_thread, that every scene
-class wrote as many notes as it rendered steps, text sizes below 12, on-screen strings that look like sentences (more
+Reports, per talk: the style it presents in and whether that style is fit to present (contrast, accents that can be
+told apart, fonts installed); any colour a scene names itself instead of taking from objects.py; the files a talk must
+have; that objects.py declares its vocabulary with set_thread; that scene names are unique; that every scene class
+wrote as many notes as it rendered steps, text sizes below 12, on-screen strings that look like sentences (more
 than 14 words in a label), captions swapped more than once in a step, and a group animated together with one of its
 members in one play (the trap that leaves the member behind). Exit code 1 if anything is
 flagged. It is a checklist helper, not a judge: docs/review.md is the review."""
@@ -9,26 +11,41 @@ import glob, json, os, re, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib import theme as _theme
-from lib.talks import dir_of
+from lib.talks import RES, dir_of, quality, qualities_present, scenes_of
 
 talk = sys.argv[1] if len(sys.argv) > 1 else sys.exit(__doc__)
-Q = {"ql": "480p15", "qm": "720p30", "qh": "1080p60"}[sys.argv[2] if len(sys.argv) > 2 else "qh"]
+Q = quality(sys.argv[2] if len(sys.argv) > 2 else None)
 root = dir_of(talk)
 flags = []
 
 # The look this talk presents in, and whether it is fit to present: contrast against the background, accents that can
 # be told apart, fonts that are installed. bin/themes.py check says the same for every theme.
-_name = open(f"{root}/.theme").read().strip() if os.path.exists(f"{root}/.theme") else _theme.active_name()
-_th = _theme.load(_name, probe_fonts=True)
+_name = _theme.active_name(root)
+_th = _theme.load(_name)
 flags += [f"theme {_name}: {b}" for b in _theme.validate(_th)]
-_have = _theme.fonts_available()
-flags += [f"theme {_name}: the {k} font '{_th[k]}' is not installed; Pango will substitute one"
-          for k in ("font", "code_font") if _have and _th[k] not in _have]
+_missing = _theme.missing_fonts(_th)
+if _missing is None:
+    print(f"  (fonts not checked: Pango is not available under {os.path.basename(sys.executable)}; "
+          f"use .venv/bin/python)")
+else:
+    flags += [f"theme {_name}: the font '{fam}' is not installed; Pango will substitute one nobody chose"
+              for fam in _missing]
 
-# A hue named in a scene is a hue that will not follow the theme: a talk maps its nouns onto slots in objects.py.
-for _f in sorted(glob.glob(f"{root}/scenes/s*.py")):
-    for _hue in re.findall(r"\b(BLUE|YELLOW|VIOLET|TEAL|GREEN|ORANGE|RED)\b", open(_f).read()):
-        flags.append(f"{os.path.basename(_f)} names the colour {_hue}: use the meaning from objects.py instead")
+# A colour a scene names itself is a colour that will not follow the theme: objects.py maps the talk's nouns onto the
+# accent slots, and every scene uses those names. objects.py is checked too, because that is where the mapping lives.
+for _f in sorted(glob.glob(f"{root}/scenes/*.py")):
+    _src, _n = open(_f).read(), os.path.basename(_f)
+    for _hue in set(re.findall(r"\b(BLUE|YELLOW|VIOLET|TEAL|GREEN|ORANGE|RED)\b", _src)):
+        flags.append(f"{_n} names the colour {_hue}: use the meaning from objects.py, or a slot (A1..A6, ALERT)")
+    for _hex in set(re.findall(r"[\"']#[0-9A-Fa-f]{3,6}[\"']", _src)):
+        flags.append(f"{_n} draws with the literal colour {_hex}: it cannot follow the theme (use a slot, BG, HI, ...)")
+
+# Two scenes with one class name: bin/render.sh renders neither, and they would overwrite each other's notes.
+_seen = {}
+for _stem, _scene in scenes_of(root):
+    if _scene in _seen:
+        flags.append(f"{_scene} is defined in both {_seen[_scene]}.py and {_stem}.py: scene names must be unique")
+    _seen[_scene] = _stem
 
 for f, what in [("script.md", "the spine, moves and sources"), ("README.md", "what the talk is"), ("scenes/objects.py", "the talk's colours and shared drawings")]:
     if not os.path.exists(f"{root}/{f}"):
@@ -72,6 +89,14 @@ for f in sorted(glob.glob(f"{root}/scenes/s*.py")):
         for step in re.split(r"self\.next_slide\(", body)[:-1]:
             if len(re.findall(r"(?<!swap_)caption\(self", step)) + step.count("swap_caption(") > 1:
                 flags.append(f"{name}: {c.group(1)} changes the caption more than once inside one step")
+
+# The notes-per-step check compares what the render wrote with what the scene declared, so it needs a render at the
+# quality being checked. Silence there used to look like a pass.
+_have_q = qualities_present(root)
+if not _have_q:
+    flags.append(f"never rendered: the notes-per-step check needs one (bin/render.sh {talk} ql)")
+elif Q not in [RES[q] for q in _have_q]:
+    flags.append(f"nothing rendered at {Q}: the notes-per-step check was skipped (this talk has {', '.join(_have_q)})")
 
 print(f"{talk}: {'ok' if not flags else str(len(flags)) + ' flags'}  (theme {_name}, {_th['mode']})")
 for x in flags:

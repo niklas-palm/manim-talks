@@ -1,5 +1,5 @@
-"""This talk's vocabulary and its one picture. Colours: the user blue, the model violet, tools yellow, what came back
-from the world teal, red for a wall. The stage is fixed for the whole deck: the user at the left margin, the
+"""This talk's vocabulary and its one picture. The accent slots carry the meanings: the user A1, the model A3, tools
+A2, what came back from the world A4, ALERT for a wall. The stage is fixed for the whole deck: the user at the left margin, the
 application as a box holding the list of messages, the model top right, the tools in a column under the model, each
 card carrying the device it reaches. Every scene adds the parts it starts from and grows from there.
 

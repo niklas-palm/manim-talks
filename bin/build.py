@@ -5,43 +5,42 @@ and presenter.html, the speaker's window with notes, a timer and the controls.
 Playback is one continuous video per scene with pause points at the step boundaries, not one clip per step: swapping a
 video's source between clips redraws the element and flickers, while pausing and resuming a single source is seamless.
 Scene changes swap between two stacked video elements, the next one already loaded, so they do not flicker either.
-Boundaries come from the per-step durations Manim writes into the section index. Usage: bin/build.py <talk> [ql|qm|qh]; writes talks/<talk>/present.html and presenter.html."""
+Boundaries come from the per-step durations Manim writes into the section index. Usage: bin/build.py <talk> [ql|qm|qh]; writes <talk folder>/present.html and presenter.html."""
 import glob, json, os, re, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib import theme as _theme
-from lib.talks import dir_of
+from lib.talks import dir_of, quality, rendered_or_exit, scenes_of
 
-TH = _theme.load()                       # the theme the render used (bin/render.sh exports THEME), so the page matches the picture
+talk = sys.argv[1] if len(sys.argv) > 1 else sys.exit(__doc__)
+Q = quality(sys.argv[2] if len(sys.argv) > 2 else None, "qm")
+root = dir_of(talk)
+
+# The pages are dressed in the talk's own style, resolved the same way the render resolves it, so rebuilding the pages
+# without re-rendering cannot put dark chrome around a bright deck.
+TH = _theme.load(_theme.active_name(root))
 def _mix(k):                             # k of the way from the background towards the ink: chrome that works dark or light
     return _theme.blend(TH["bg"], TH["text"], k)
 CH = {"bg": TH["bg"], "page": _mix(0.05), "ink": TH["text"], "muted": TH["muted"], "faint": _mix(0.45),
       "line": _mix(0.18), "btn": _mix(0.11), "btnline": _mix(0.24), "accent": TH["accents"]["a1"], "font": TH["font"],
       "veil": "rgba(%d,%d,%d,.88)" % tuple(round(v * 255) for v in _theme.rgb(TH["bg"]))}
-
-talk = sys.argv[1] if len(sys.argv) > 1 else None
-if not talk:
-    sys.exit("usage: bin/build.py <talk> [ql|qm|qh]")
-Q = {"ql": "480p15", "qm": "720p30", "qh": "1080p60"}[sys.argv[2] if len(sys.argv) > 2 else "qm"]
-root = dir_of(talk)
 title_line = next((l for l in open(f"{root}/script.md") if l.startswith("# ")), f"# {talk}") if os.path.exists(f"{root}/script.md") else f"# {talk}"
 TITLE = title_line[2:].strip()
+items = rendered_or_exit(root, Q, talk)   # never write a page from nothing: an unrendered quality used to leave a blank deck
+for stem, scene in scenes_of(root):
+    if not any(scene == s for _, s, _, _ in items):
+        print(f"not rendered: {scene}")
 scenes = []
-for f in sorted(glob.glob(f"{root}/scenes/s*.py")):
-    stem = os.path.basename(f)[:-3]
-    for scene in re.findall(r"^class (\w+)\(TalkSlide\)", open(f).read(), re.M):
-        index = f"{root}/media/videos/{stem}/{Q}/sections/{scene}.json"
-        if not os.path.exists(index):
-            print(f"not rendered: {scene}"); continue
-        notes_path = f"{root}/media/notes/{scene}.json"
-        notes = json.load(open(notes_path)) if os.path.exists(notes_path) else []
-        ends, t = [], 0.0
-        for sec in json.load(open(index)):
-            t += float(sec["duration"]); ends.append(round(t, 3))
-        scenes.append({"name": scene, "src": f"media/videos/{stem}/{Q}/{scene}.mp4", "ends": ends,   # relative to the talk folder, where the pages live
-                       "notes": [notes[i] if i < len(notes) else "" for i in range(len(ends))]})
+for stem, scene, video, index in items:
+    notes_path = f"{root}/media/notes/{scene}.json"
+    notes = json.load(open(notes_path)) if os.path.exists(notes_path) else []
+    ends, t = [], 0.0
+    for sec in json.load(open(index)):
+        t += float(sec["duration"]); ends.append(round(t, 3))
+    scenes.append({"name": scene, "src": f"media/videos/{stem}/{Q}/{scene}.mp4", "ends": ends,   # relative to the talk folder, where the pages live
+                   "notes": [notes[i] if i < len(notes) else "" for i in range(len(ends))]})
 steps = [{"scene": s["name"], "si": i, "k": k, "note": s["notes"][k]} for i, s in enumerate(scenes) for k in range(len(s["ends"]))]
-data = json.dumps({"scenes": scenes, "steps": steps})
+data = json.dumps({"scenes": scenes, "steps": steps}).replace("</", "<\\/")   # a note containing </script> would end the element
 
 player_js = """
 const D=%s;const S=D.scenes,ST=D.steps;let i=-1;

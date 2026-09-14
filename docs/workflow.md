@@ -6,10 +6,11 @@ four days with rendering and review, presenter test an hour. A ten-minute talk s
 ## 0. Agree the look
 
 Ask, once, before anything is drawn: dark or bright (AGENTS.md, "Choosing the look"). `dark` is the default and what
-most rooms want; `bright` is for a lit room, a screen share or a handout. If the answer is a company's own PowerPoint template, import
-it with `bin/themes.py from-pptx` and render with that theme; it lands in `themes/local`, which is never committed.
-Write the answer into `talks/<talk>/.theme` (or the repository's `.theme` if it is the project's style) so every later
-render, the two pages and the PowerPoint export agree, and note it in the talk's README. Then look at one frame in it
+most rooms want; `bright` is for a lit room, a screen share or a handout. If the answer is a company's own PowerPoint
+template, import it with
+`bin/themes.py from-pptx` and render with that theme; it lands in `themes/local`, which is never committed. Write the
+answer into `<talk>/.theme` (or the repository's `.theme` if it is the project's style) so the render, the two pages and
+the PowerPoint export agree, and note it in the talk's README. Then look at one frame in it
 (`bin/themes.py preview <talk> <Scene>`) before building the rest: a palette that reads on a laptop can lose a colour
 on a projector, and finding that out at the end costs a re-review of every scene.
 
@@ -50,7 +51,8 @@ For each scene, sketch (in a comment block at the top of the scene file) the fin
 ever be on screen, its position band, its colour. Then list the clicks backwards from it: what appears, moves, or
 opens at each click, one idea each. Decide the fixed furniture (title, gauges, counters, racks) and give it fixed
 coordinates. Decide which words will be labels and where they sit. Decide where the camera zooms, if at all, and
-what opens inside the zoom. Only then write code. Design for the half-size review sheet from the start: sizes that look right in a full-frame
+what opens inside the zoom. Only then write code. Design for the half-size review sheet from the start: sizes that
+look right in a full-frame
 render (12 pt labels, 0.1-unit cells) are unreadable there and on a projector; blocks 0.35 units tall with 14 pt text,
 cells 0.16 to 0.42, labels 15 to 18 are the sizes that survived review (docs/principles.md rule 11).
 
@@ -76,8 +78,8 @@ margin where gauges and counters live.
 ```bash
 bin/render.sh <talk> ql <Scene>         # preview; a scene renders in seconds to a couple of minutes
 THEME=<name> bin/render.sh <talk> ql <Scene>   # the same scene in another style, to check the deck is not tied to one
-bin/shots.py <talk> ql                  # then open talks/<talk>/media/shots/<Scene>.png
-bin/seams.py <talk> ql                  # last frame of each scene beside the first of the next (media/seams/seams.png): identical or title only
+bin/shots.py <talk> ql                  # then open <talk folder>/media/shots/<Scene>.png
+bin/seams.py <talk> ql                  # each scene's last frame beside the next scene's first: identical or title only
 ```
 
 Look at the end frame of every step: collisions, clipped text, wrong colours, a label the animation left behind, a
@@ -87,7 +89,7 @@ rule 12). Then `bin/review.sh <talk> ql` for what happens mid-animation. Fix, re
 again. Extract single frames with ffmpeg when a moment needs checking:
 
 ```bash
-ffmpeg -y -ss 3.2 -i talks/<talk>/media/videos/<file>/480p15/sections/<Scene>_0004_unnamed.mp4 -frames:v 1 /tmp/f.png
+ffmpeg -y -ss 3.2 -i <talk folder>/media/videos/<file>/480p15/sections/<Scene>_0004_unnamed.mp4 -frames:v 1 /tmp/f.png
 ```
 
 Keep tool output short; renders are chatty. Pipe to a log and `grep -c Traceback`.

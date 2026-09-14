@@ -1,14 +1,14 @@
 """DNS: how a name becomes an address. The talk's vocabulary on top of the shared library.
 
-  NAME (blue)        a name, a question about a name, the client that asks
-  ADDRESS (yellow)   an address, the answer that ends a lookup
-  ZONE (violet)      a zone and the servers that are authoritative for it; a pointer to who to ask next (NS)
-  REMEMBERED (teal)  a record held in a cache, and the bar under it: the time it may still be kept
-  HOT (red)          a miss, an expired record, a name that does not exist
+  NAME (A1, the cool slot)  a name, a question about a name, the client that asks
+  ADDRESS (A2, warm)        an address, the answer that ends a lookup
+  ZONE (A3, deep)           a zone and the servers that are authoritative for it; a pointer to who to ask next (NS)
+  REMEMBERED (A4, fresh)    a record held in a cache, and the bar under it: the time it may still be kept
+  HOT (ALERT)               a miss, an expired record, a name that does not exist
 
 One picture for the whole talk: the client on the left, the recursive resolver with its cache in the middle, the
-tree of zones on the right. Questions travel right, answers travel left; a violet answer is a pointer, a yellow one is
-the address. Sizes are for a projector: rows at 16 pt, boxes that span the frame.
+tree of zones on the right. Questions travel right, answers travel left; a ZONE-coloured answer is a pointer, an
+ADDRESS-coloured one is the address. Sizes are for a projector: rows at 16 pt, boxes that span the frame.
 """
 from lib.palette import *
 

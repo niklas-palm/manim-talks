@@ -1,9 +1,9 @@
 """This talk's vocabulary on top of the shared library.
 
-Colours, each with one meaning for the whole deck:
-  TOKEN  (blue)    a token's vector, the thing that flows down the stack (the "residual stream")
-  QUERY  (yellow)  what a token is looking for
-  KEY    (teal)    how a token answers other tokens' queries
+Accent slots, each with one meaning for the whole deck (the theme decides the hue; the slot keeps its character):
+  TOKEN  (A1, cool)   a token's vector, the thing that flows down the stack (the "residual stream")
+  QUERY  (A2, warm)   what a token is looking for
+  KEY    (A4, fresh)  how a token answers other tokens' queries
   VALUE  (green)   what a token hands over when its key matches
   WEIGHTS(violet)  the learned matrices (Wq, Wk, Wv, feed-forward, the vocabulary matrix)
   ATTN   (orange)  attention weights and the update a layer computes; also the position vector added at the start
@@ -72,7 +72,7 @@ PIPE_Y = -1.25                            # the centre line of the layer and pre
 
 def big_tokens(side: float = 1.3, y: float = ROWS[1]) -> VGroup:
     """The six tokens as squares with their words inside (move 1 at 1.3, move 2 at 1.0)."""
-    toks = VGroup(*[VGroup(Square(side, fill_color=TOKEN, fill_opacity=SOLID * 0.94, stroke_width=0), label(w, 28 if side > 1.1 else 22, "#0f1116")) for w in WORDS])
+    toks = VGroup(*[VGroup(Square(side, fill_color=TOKEN, fill_opacity=SOLID * 0.94, stroke_width=0), label(w, 28 if side > 1.1 else 22, BG)) for w in WORDS])
     for g, x in zip(toks, XS):
         g.move_to([x, y, 0]); g[1].move_to(g[0])
     return toks
@@ -90,7 +90,7 @@ def all_edges(toks: VGroup) -> VGroup:
 
 
 def sequential_counters(steps: int = 1, conns: int = 30) -> tuple:
-    a = Counter("sequential steps to read the sentence", steps, "", GREEN, size=30).move_to([COLS[0], ROWS[4], 0], aligned_edge=LEFT)
+    a = Counter("sequential steps to read the sentence", steps, "", VALUE, size=30).move_to([COLS[0], ROWS[4], 0], aligned_edge=LEFT)
     b = Counter("connections: every token to every other", conns, "", ATTN, size=30).move_to([COLS[2], ROWS[4], 0], aligned_edge=LEFT)
     return a, b
 

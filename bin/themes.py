@@ -4,46 +4,51 @@ from a PowerPoint file.
 
     bin/themes.py list                            every theme with its mode and one line about it
     bin/themes.py check [name ...]                contrast, accent distance and installed fonts; the default is all
-    bin/themes.py preview [talk] [Scene]          the same frame in every theme -> media/themes/<talk>-<Scene>.png
+    bin/themes.py preview <talk> <Scene>          the same frame in every theme -> media/themes/<talk>-<Scene>.png
     bin/themes.py from-pptx <file.pptx> <name>    a company's theme -> themes/local/<name>.json, never committed
 
 A theme is chosen with THEME=<name> for one render, a `.theme` file in a talk folder for that talk, or `.theme` at the
 repository root for the project. AGENTS.md, "Choosing the look", is the guide an agent reads.
 """
+import colorsys
 import glob
+import itertools
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
+import xml.etree.ElementTree as ET
 import zipfile
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from lib import theme as T
+from lib import theme as _theme
 from lib.talks import dir_of
 
-REPO = T.REPO
-A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
-P = "{http://schemas.openxmlformats.org/presentationml/2006/main}"
+REPO = _theme.REPO
+NS_DRAWING = "{http://schemas.openxmlformats.org/drawingml/2006/main}"        # a:  colours and fonts
+NS_PRESENT = "{http://schemas.openxmlformats.org/presentationml/2006/main}"   # p:  slides and masters
 
 
 def cmd_list():
     print(f"{'theme':22s} {'mode':6s} description")
-    for n in T.names():
-        t = T.load(n)
+    for n in _theme.names():
+        t = _theme.load(n)
         print(f"{n:22s} {t['mode']:6s} {t['description']}")
-    print(f"\nactive: {T.active_name()}   (THEME=<name>, a talk's .theme, or .theme at the repository root)")
+    print(f"\nactive: {_theme.active_name()}   (THEME=<name>, a talk's .theme, or .theme at the repository root)")
 
 
 def cmd_check(which):
     ok = True
-    for n in which or T.names():
-        t = T.load(n, probe_fonts=True)
-        bad = T.validate(t)
-        have = T.fonts_available()
-        for kind, fam in (("body", t["font"]), ("code", t["code_font"])):
-            if have and fam not in have:
-                bad.append(f"the {kind} font '{fam}' is not installed; Pango will substitute one")
+    for n in which or _theme.names():
+        t = _theme.load(n)
+        bad = _theme.validate(t)
+        missing = _theme.missing_fonts(t)
+        if missing is None:
+            print(f"{n:22s} fonts not checked: Pango is not available under {os.path.basename(sys.executable)}; "
+                  f"run .venv/bin/python bin/themes.py check")
+        bad += [f"the font '{fam}' is not installed; Pango will substitute one nobody chose" for fam in missing or []]
         print(f"{n:22s} {'ok' if not bad else 'FAIL'}")
         for b in bad:
             print("   -", b)
@@ -62,12 +67,15 @@ def cmd_preview(talk: str, scene: str):
         sys.exit(f"no scene {scene} in {root}/scenes")
     from PIL import Image, ImageDraw, ImageFont
     shots = []
-    for n in T.names():
+    for n in _theme.names():
         out = f"/tmp/theme-preview/{n.replace('/', '-')}"
+        shutil.rmtree(out, ignore_errors=True)          # a frame left from another scene would be labelled with this theme
         env = dict(os.environ, THEME=n, PYTHONPATH=f".:{root}/scenes")
-        subprocess.run([".venv/bin/manim", "-ql", "-s", "--media_dir", out, src, scene],
-                       env=env, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, check=True)
-        png = sorted(glob.glob(f"{out}/images/*/*.png"))
+        r = subprocess.run([".venv/bin/manim", "-ql", "-s", "--media_dir", out, src, scene],
+                           env=env, capture_output=True, text=True)
+        if r.returncode:
+            sys.exit(f"rendering {scene} in {n} failed:\n{(r.stdout or '')[-2000:]}")
+        png = sorted(glob.glob(f"{out}/images/*/{scene}*.png"))
         if png:
             shots.append((n, png[-1]))
             print(f"  {n}")
@@ -78,7 +86,8 @@ def cmd_preview(talk: str, scene: str):
     tw, th = w // 2, h // 2
     band = 26
     rows = (len(shots) + cols - 1) // cols
-    sheet = Image.new("RGB", (cols * tw, rows * (th + band)), (24, 24, 26))
+    pad = tuple(round(v * 255) for v in _theme.rgb(_theme.sheet_bg(_theme.load(_theme.active_name(root)))))
+    sheet = Image.new("RGB", (cols * tw, rows * (th + band)), pad)
     try:
         font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 15)
     except Exception:
@@ -87,7 +96,7 @@ def cmd_preview(talk: str, scene: str):
     for i, (n, p) in enumerate(shots):
         x, y = (i % cols) * tw, (i // cols) * (th + band)
         sheet.paste(Image.open(p).convert("RGB").resize((tw, th)), (x, y + band))
-        cap = f"{n}   {T.load(n)['description']}"
+        cap = f"{n}   {_theme.load(n)['description']}"
         while font.getlength(cap) > tw - 16 and len(cap) > 12:      # one line per tile, cut to fit: no label crosses into its neighbour
             cap = cap[:-2] + "\u2026"
         d.text((x + 8, y + 5), cap, fill=(232, 232, 232), font=font)
@@ -101,7 +110,7 @@ def cmd_preview(talk: str, scene: str):
 
 def _colour(el):
     """A DrawingML colour element's hex, whichever of the two forms it uses."""
-    for tag, attr in ((f"{A}srgbClr", "val"), (f"{A}sysClr", "lastClr")):
+    for tag, attr in ((f"{NS_DRAWING}srgbClr", "val"), (f"{NS_DRAWING}sysClr", "lastClr")):
         c = el.find(tag) if el is not None else None
         if c is not None and c.get(attr):
             return "#" + c.get(attr)
@@ -110,52 +119,54 @@ def _colour(el):
 
 def _scheme(zf) -> dict:
     """The colour and font scheme of the first theme part: dk1, lt1, dk2, lt2, accent1..6, and the two typefaces."""
-    import xml.etree.ElementTree as ET
-    name = next(n for n in zf.namelist() if re.match(r"ppt/theme/theme\d+\.xml$", n))
+    name = next((n for n in zf.namelist() if re.match(r"ppt/theme/theme\d+\.xml$", n)), None)
+    if not name:
+        sys.exit("that file has no PowerPoint theme part: open it in PowerPoint and save it as .pptx")
     root = ET.fromstring(zf.read(name))
-    cs = root.find(f".//{A}clrScheme")
+    cs = root.find(f".//{NS_DRAWING}clrScheme")
+    if cs is None:
+        sys.exit(f"{name} carries no colour scheme: there is nothing to import")
     cols = {}
     for child in cs:
         key = child.tag.split("}")[1]
         cols[key] = _colour(child)
-    fs = root.find(f".//{A}fontScheme")
+    fs = root.find(f".//{NS_DRAWING}fontScheme")
     fonts = {}
     for which in ("majorFont", "minorFont"):
-        latin = fs.find(f"{A}{which}/{A}latin")
+        latin = fs.find(f"{NS_DRAWING}{which}/{NS_DRAWING}latin")
         fonts[which] = latin.get("typeface") if latin is not None else None
     return cols, fonts
 
 
 def _master_bg(zf, cols) -> tuple:
     """The slide master's background colour, and whether it is a picture or gradient we cannot import."""
-    import xml.etree.ElementTree as ET
     names = [n for n in zf.namelist() if re.match(r"ppt/slideMasters/slideMaster\d+\.xml$", n)]
     if not names:
         return None, ""
     root = ET.fromstring(zf.read(sorted(names)[0]))
-    cmap = root.find(f"{P}clrMap")
+    cmap = root.find(f"{NS_PRESENT}clrMap")
     mapping = dict(cmap.attrib) if cmap is not None else {}
 
     def resolve(scheme_name):
         target = mapping.get(scheme_name, scheme_name)
-        return cols.get({"dk1": "dk1", "lt1": "lt1", "dk2": "dk2", "lt2": "lt2"}.get(target, target))
-    bg = root.find(f".//{P}bg")
+        return cols.get(target)
+    bg = root.find(f".//{NS_PRESENT}bg")
     if bg is None:
         return None, ""
-    if bg.find(f".//{A}blipFill") is not None:
+    if bg.find(f".//{NS_DRAWING}blipFill") is not None:
         return None, "the master background is a picture; only its colours are imported"
-    if bg.find(f".//{A}gradFill") is not None:
-        stop = bg.find(f".//{A}gradFill//{A}gs/{A}srgbClr")
+    if bg.find(f".//{NS_DRAWING}gradFill") is not None:
+        stop = bg.find(f".//{NS_DRAWING}gradFill//{NS_DRAWING}gs/{NS_DRAWING}srgbClr")
         return ("#" + stop.get("val") if stop is not None else None), "the master background is a gradient; its first stop is used"
-    solid = bg.find(f".//{A}solidFill")
+    solid = bg.find(f".//{NS_DRAWING}solidFill")
     if solid is not None:
         c = _colour(solid)
         if c:
             return c, ""
-        sc = solid.find(f"{A}schemeClr")
+        sc = solid.find(f"{NS_DRAWING}schemeClr")
         if sc is not None:
             return resolve(sc.get("val")), ""
-    ref = bg.find(f"{P}bgRef/{A}schemeClr")
+    ref = bg.find(f"{NS_PRESENT}bgRef/{NS_DRAWING}schemeClr")
     if ref is not None:
         return resolve(ref.get("val")), ""
     return None, ""
@@ -168,49 +179,63 @@ def cmd_from_pptx(path: str, name: str):
     What is not imported, on purpose: logos, picture backgrounds, slide layouts. A talk here is a picture that unfolds,
     not a slide with a brand frame; the colours and the type are what carry a house style into it. The result goes to
     themes/local, which git ignores: a company's palette is theirs, not this repository's."""
-    with zipfile.ZipFile(path) as zf:
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", name):
+        sys.exit(f"not a theme name: {name!r} (letters, digits, dot, dash, underscore: it becomes a file name)")
+    try:
+        zf = zipfile.ZipFile(path)
+    except FileNotFoundError:
+        sys.exit(f"no such file: {path}")
+    except zipfile.BadZipFile:
+        sys.exit(f"{path} is not a .pptx (a .pptx is a zip; a .ppt or an alias is not)")
+    with zf:
         cols, fonts = _scheme(zf)
         bg, note = _master_bg(zf, cols)
     bg = bg or cols.get("lt1") or "#FFFFFF"
-    dark = T.luminance(bg) < 0.5
+    dark = _theme.is_dark(bg)
     ink = "#FFFFFF" if dark else "#000000"
     for cand in (cols.get("dk1") if not dark else cols.get("lt1"), ink):
-        if cand and T.contrast(cand, bg) >= 7:
+        if cand and _theme.contrast(cand, bg) >= 7:
             ink = cand
             break
     acc = [cols.get(f"accent{i}") or ink for i in range(1, 7)]
     slots = _assign(acc, bg, dark)
+    # A style is not only its palette: a pale ground wants thinner lines and smaller corners. Without these four an
+    # imported light theme would inherit the dark style's weights, which is what a white template least wants.
+    feel = _theme.load("dark" if dark else "bright")
     t = {
         "mode": "dark" if dark else "light",
         "description": f"Imported from {os.path.basename(path)}: its background, type and accents. Not committed.",
         "font": fonts.get("minorFont") or "Helvetica",
-        "font_fallbacks": ["Helvetica", "Arial", "DejaVu Sans"],
         "code_font": "Menlo",
-        "code_font_fallbacks": ["Monaco", "DejaVu Sans Mono"],
         "code_style": "monokai" if dark else "xcode",
         "bg": bg,
         "text": ink,
-        "muted": T.blend(bg, ink, 0.62),
-        "dim": T.blend(bg, ink, 0.30),
-        "caption": T.blend(bg, ink, 0.80),
-        "hi": T.blend(bg, ink, 0.96),
-        "panel": T.blend(bg, ink, 0.06),
+        "muted": _theme.blend(bg, ink, 0.62),
+        "dim": _theme.blend(bg, ink, 0.30),
+        "caption": _theme.blend(bg, ink, 0.80),
+        "hi": _theme.blend(bg, ink, 0.96),
+        "panel": _theme.blend(bg, ink, 0.06),
         "accents": slots,
+        **{k: feel[k] for k in _theme.NUMBERS},
     }
-    os.makedirs(f"{T.THEME_DIR}/local", exist_ok=True)
-    dst = f"{T.THEME_DIR}/local/{name}.json"
+    os.makedirs(f"{_theme.THEME_DIR}/local", exist_ok=True)
+    dst = f"{_theme.THEME_DIR}/local/{name}.json"
     with open(dst, "w") as f:
         json.dump(t, f, indent=2)
         f.write("\n")
-    loaded = T.load(f"local/{name}")
-    bad = T.validate(loaded)
+    loaded = _theme.load(f"local/{name}")
+    bad = _theme.validate(loaded)
     print(f"-> {dst}   THEME=local/{name} bin/render.sh <talk> ql")
     if note:
         print(f"   note: {note}")
-    print(f"   {'fit to present' if not bad else 'still not fit to present:'}")
+    for fam in _theme.missing_fonts(loaded):
+        print(f"   note: the font '{fam}' is not installed here; Pango will substitute one")
+    print(f"   {'fit to present' if not bad else 'NOT fit to present:'}")
     for b in bad:
         print("   -", b)
     print("   themes/local is ignored by git: a company's palette does not belong in this repository.")
+    if bad:
+        sys.exit("   edit it by hand or delete it: a deck whose two meanings look alike teaches nothing.")
 
 
 # What each slot means, as the hue the house style uses for it: cool, warm, deep, fresh, growth, spice. An imported
@@ -220,16 +245,13 @@ SLOT_HUES = {"a1": 191, "a2": 41, "a3": 260, "a4": 174, "a5": 111, "a6": 15}
 
 
 def _hue(c: str) -> float:
-    import colorsys
-    r, g, b = T.rgb(c)
+    r, g, b = _theme.rgb(c)
     return colorsys.rgb_to_hls(r, g, b)[0] * 360
 
 
 def _assign(acc: list, bg: str, dark: bool) -> dict:
     """Six imported accents onto the six slots, by the closest match of hue to what each slot means, then an alert red
     of their own character, then everything lifted off the background and pushed apart."""
-    import colorsys
-    import itertools
 
     def gap(a, b):
         d = abs(a - b) % 360
@@ -239,45 +261,44 @@ def _assign(acc: list, bg: str, dark: bool) -> dict:
                key=lambda perm: sum(gap(_hue(acc[perm[i]]), SLOT_HUES[keys[i]]) for i in range(6)))
     slots = {keys[i]: acc[best[i]] for i in range(6)}
     # "Wrong" is a red the palette could have had: the hue of alarm, the saturation and lightness of these accents.
-    hls = [colorsys.rgb_to_hls(*T.rgb(c)) for c in acc]
+    hls = [colorsys.rgb_to_hls(*_theme.rgb(c)) for c in acc]
     sat = sorted(h[2] for h in hls)[len(hls) // 2]
     lit = sorted(h[1] for h in hls)[len(hls) // 2]
-    alert = T.hex_of(colorsys.hls_to_rgb(2 / 360, min(0.72, max(0.3, lit)), max(0.55, sat)))
-    out = {"alert": T.lift(alert, bg, 3.2)}            # first, so spreading moves the other slots and "wrong" stays red
-    out.update({k: T.lift(v, bg, 3.2) for k, v in slots.items()})
+    alert = _theme.hex_of(colorsys.hls_to_rgb(2 / 360, min(0.72, max(0.3, lit)), max(0.55, sat)))
+    out = {"alert": _theme.lift(alert, bg, 3.2)}            # first, so spreading moves the other slots and "wrong" stays red
+    out.update({k: _theme.lift(v, bg, 3.2) for k, v in slots.items()})
     return _spread(out, bg)
 
 
 def _spread(slots: dict, bg: str, need: float = 22.0) -> dict:
     """Push accents apart until no two read as one colour, keeping each as close to the original as possible. Corporate
     palettes are often three blues and two greys; without this, two meanings in a deck would look the same."""
-    import colorsys
     keys = list(slots)
     for _ in range(4):
         worst = None
         for i, a in enumerate(keys):
             for b in keys[i + 1:]:
-                d = T.distance(slots[a], slots[b])
+                d = _theme.distance(slots[a], slots[b])
                 if d < need and (worst is None or d < worst[0]):
                     worst = (d, a, b)
         if not worst:
             break
         _, a, b = worst
         for slot in (b, a):                                   # move the later slot first; a1 keeps its hue if it can
-            r, g, bl = T.rgb(slots[slot])
+            r, g, bl = _theme.rgb(slots[slot])
             h, l, s = colorsys.rgb_to_hls(r, g, bl)
             for dh in (0.04, -0.04, 0.08, -0.08, 0.12, -0.12, 0.16, -0.16, 0.2, -0.2):
                 for dl in (0, 0.08, -0.08, 0.16, -0.16):
-                    c = T.hex_of(colorsys.hls_to_rgb((h + dh) % 1.0, min(0.95, max(0.05, l + dl)), min(1.0, s * 1.15)))
-                    if T.contrast(c, bg) < 3.2:
+                    c = _theme.hex_of(colorsys.hls_to_rgb((h + dh) % 1.0, min(0.95, max(0.05, l + dl)), min(1.0, s * 1.15)))
+                    if _theme.contrast(c, bg) < 3.2:
                         continue
-                    if min(T.distance(c, slots[k]) for k in keys if k != slot) >= need:
+                    if min(_theme.distance(c, slots[k]) for k in keys if k != slot) >= need:
                         slots[slot] = c
                         break
                 else:
                     continue
                 break
-            if T.distance(slots[a], slots[b]) >= need:
+            if _theme.distance(slots[a], slots[b]) >= need:
                 break
     return slots
 
@@ -291,7 +312,9 @@ if __name__ == "__main__":
     elif what == "check":
         sys.exit(cmd_check(rest))
     elif what == "preview":
-        cmd_preview(rest[0] if rest else "agents", rest[1] if len(rest) > 1 else "TheApi")
+        if len(rest) < 2:
+            sys.exit("usage: bin/themes.py preview <talk> <Scene>")
+        cmd_preview(rest[0], rest[1])
     elif what == "from-pptx":
         if len(rest) < 2:
             sys.exit("usage: bin/themes.py from-pptx <file.pptx> <name>")

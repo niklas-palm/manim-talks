@@ -19,16 +19,18 @@ from pptx.util import Inches
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib import theme as _theme
-from lib.talks import dir_of
-
-BG_HEX = _theme.load()["bg"].lstrip("#")
+from lib.talks import dir_of, quality, rendered_or_exit, scenes_of
 
 CLICK = "--click" in sys.argv
 sys.argv = [a for a in sys.argv if a != "--click"]
 talk = sys.argv[1] if len(sys.argv) > 1 else sys.exit(__doc__)
-Q = {"ql": "480p15", "qm": "720p30", "qh": "1080p60"}[sys.argv[2] if len(sys.argv) > 2 else "qh"]
+Q = quality(sys.argv[2] if len(sys.argv) > 2 else None)
 root = dir_of(talk)
 out = sys.argv[3] if len(sys.argv) > 3 else f"{root}/{talk}.pptx"
+items = rendered_or_exit(root, Q, talk)
+# The slide behind the clip is the talk's own ground, resolved as the render resolves it: a bright deck exported on its
+# own must not be letterboxed in near-black.
+BG_HEX = _theme.load(_theme.active_name(root))["bg"].lstrip("#")
 
 title_line = next((l for l in open(f"{root}/script.md") if l.startswith("# ")), f"# {talk}") if os.path.exists(f"{root}/script.md") else f"# {talk}"
 TITLE = title_line[2:].strip()
@@ -56,14 +58,12 @@ def poster(clip: str, png: str):
 prs = Presentation()
 prs.slide_width, prs.slide_height = Inches(13.333), Inches(7.5)
 blank = prs.slide_layouts[6]
-tmp = tempfile.mkdtemp()
+for stem, scene in scenes_of(root):
+    if not any(scene == sc for _, sc, _, _ in items):
+        print(f"not rendered: {scene}")
 n_steps = 0
-for f in sorted(glob.glob(f"{root}/scenes/s*.py")):
-    stem = os.path.basename(f)[:-3]
-    for scene in re.findall(r"^class (\w+)\(TalkSlide\)", open(f).read(), re.M):
-        index = f"{root}/media/videos/{stem}/{Q}/sections/{scene}.json"
-        if not os.path.exists(index):
-            print(f"not rendered: {scene}"); continue
+with tempfile.TemporaryDirectory() as tmp:            # the poster frames are throwaway; leaving them behind cost megabytes a run
+    for stem, scene, _video, index in items:
         notes_path = f"{root}/media/notes/{scene}.json"
         notes = json.load(open(notes_path)) if os.path.exists(notes_path) else []
         for k, sec in enumerate(json.load(open(index))):

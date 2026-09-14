@@ -8,13 +8,18 @@ keep the presenter on your own screen.
 
 ```bash
 bin/render.sh <talk> qh        # renders and builds the pages
-bin/serve.sh <talk>            # serves the repository on http://localhost:8765 and opens talks/<talk>/presenter.html
+bin/serve.sh <talk>            # serves the repository on http://localhost:8765 and opens the talk's presenter.html
 ```
 
 In the presenter click **open audience window**, move that window to the shared screen, press `f` in it for full
 screen. Keys in the presenter: right arrow or space for next, left for back, Home for the first step, `t` resets the
 timer. The audience window also answers to its own keys and clicks, and reports its position back, so the two stay
 in step whichever one you drive.
+
+Both pages are dressed in the talk's own style: `bin/build.py` reads the theme the talk presents in (the same
+resolution the render uses) and mixes the page chrome from its ground and its ink, so a bright deck is not served
+inside a dark frame. Rebuilding the pages without re-rendering (`bin/build.py <talk> <quality>`) is safe for the same
+reason.
 
 ## How it works, and why it is built this way
 
@@ -27,7 +32,7 @@ in step whichever one you drive.
 - **The two windows talk over a `BroadcastChannel` and a direct `postMessage`** to the window the presenter opened.
   Two `file://` pages have opaque origins and may not share a channel, so the pages must be served over http.
 - **One server for all talks.** `bin/serve.sh` serves the repository root and opens the talk's page under
-  `/talks/<name>/`; starting it for a second talk reuses the running server, so the first talk's windows keep
+  `/talks/<name>/` or `/out/<name>/`; starting it for a second talk reuses the running server, so the first talk's windows keep
   working. (An earlier version served one talk folder per port, and starting a second talk turned the first one's
   windows black after the current scene: every later video request was a 404.)
 - **The server answers byte-range requests** (`bin/serve.py`), including suffix ranges. Python's `http.server` does not, and Chrome then
@@ -44,13 +49,14 @@ power: a 1080p60 video plus a preview video is real decoding work.
 
 ## Exporting to PowerPoint
 
-The PowerPoint file is generated, never committed: `talks/*/*.pptx` is in `.gitignore`, like the rendered videos.
+The PowerPoint file is generated, never committed: `talks/*/*.pptx` is in `.gitignore`, like the rendered videos, and
+everything under `out/` is ignored wholesale.
 Render the deck first, then export; regenerate after every render, since the file embeds the clips.
 
 ```bash
 .venv/bin/pip install python-pptx                 # once
 bin/render.sh <talk> qh                           # the clips the export embeds
-bin/export_pptx.py <talk> qh                      # -> talks/<talk>/<talk>.pptx  (a minute or two; 12 to 45 MB per deck)
+bin/export_pptx.py <talk> qh                      # -> <talk folder>/<talk>.pptx  (a minute or two; 12 to 45 MB per deck)
 bin/export_pptx.py <talk> qh out.pptx --click     # elsewhere, and clips that wait for a click instead of starting
 ```
 

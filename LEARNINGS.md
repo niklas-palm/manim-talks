@@ -1,8 +1,10 @@
 # Learnings
 
-The living log. Add an entry whenever something cost time or changed a rule; date it and name the talk. The
-technical Manim entries are consolidated in `docs/manim.md`, the style rules in `docs/principles.md`; this file is
-where they arrive first.
+The living log. Add an entry whenever something cost time or changed a rule, written as a first principle: what is
+generally true, why, and what to do instead, in words that outlive the deck it came from. No dates, no company names,
+no "in the agents deck"; if a lesson needs an example, the example is one clause of it. The older sections, written before that rule,
+carry dates and deck names; they are left as they were. The technical Manim entries are consolidated in
+`docs/manim.md`, the style rules in `docs/principles.md`; this file is where they arrive first.
 
 ## From the reference deck (talks/llm-serving, September 2026)
 
@@ -306,3 +308,27 @@ First principles that the passes confirmed, written to outlast the decks they ca
   next person as a feature to maintain.
 - Prove a style on every deck, not on one frame. Render the whole set in both and look at the sheets; the frames that
   break under a new ground are never the ones a single preview happens to show.
+
+## What a review loop finds that a pass does not
+
+- One question, one implementation. When three tools each re-derived which style a deck presents in, two of them got a
+  different answer and wrote artefacts in the wrong style into files that are committed. A question the whole system
+  asks belongs in one function that takes what it needs as an argument, and every caller passes it.
+- A tool that deletes its previous output must first prove it can produce new output. Two of them cleared a folder,
+  found nothing to put in it, and exited zero: the failure looked exactly like success, and the loss was silent.
+- A check that validates a substituted value validates nothing. A font check that first replaced a missing family with
+  an installed one, and then tested the installed one, could never fail; the render meanwhile used the missing name.
+  Check what will actually be used.
+- A threshold taken from intuition rather than from the standard is wrong in the middle of the range, which is where
+  nobody looks. Light and dark do not divide at half the luminance; the crossover is much darker, and a mid grey ground
+  wants dark ink.
+- Any string that becomes a file name is validated before it is joined to a path. An imported style named with a parent
+  directory would have overwritten a shipped one.
+- A tool that writes something unusable must exit non-zero, or nothing can be built on top of it.
+- Parallel reviewers with one narrow role each find what a single careful pass does not. The reviewer looking only for
+  dead code found the split implementation; the one comparing new code against its siblings found the hand-written
+  colours a mechanical migration had skipped. Give each one a role and forbid it from fixing anything.
+- Every automated rewrite needs to know where the code is. A prose re-wrap that did not track fenced blocks broke the
+  commands inside them into unrunnable halves, and the diff looked innocent.
+- The fix for a class of defect is a check, not a patch. Literal colours came back into scene files after a migration
+  removed them, so the checker now refuses a scene that names a colour at all; that is what stops the third recurrence.

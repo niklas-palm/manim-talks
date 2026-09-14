@@ -1,9 +1,9 @@
 """This talk's vocabulary on top of the shared library: the five meanings its colours carry, the nouns that are
 coloured wherever they appear, and the one drawing every scene shares, the GPU.
 
-  PROMPT (blue)   tokens that came in       WEIGHTS (violet)  the model's parameters
-  OUTPUT (yellow) tokens the model wrote    CACHE (teal)      the KV cache, working memory per request
-  HOT (red)       saturated or wrong
+  PROMPT (A1, cool)  tokens that came in        WEIGHTS (A3, deep)   the model's parameters
+  OUTPUT (A2, warm)  tokens the model wrote     CACHE (A4, fresh)    the KV cache, working memory per request
+  HOT (ALERT)        saturated or wrong
 """
 from lib.palette import *
 
