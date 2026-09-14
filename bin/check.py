@@ -9,10 +9,11 @@ import glob, json, os, re, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib import theme as _theme
+from lib.talks import dir_of
 
 talk = sys.argv[1] if len(sys.argv) > 1 else sys.exit(__doc__)
 Q = {"ql": "480p15", "qm": "720p30", "qh": "1080p60"}[sys.argv[2] if len(sys.argv) > 2 else "qh"]
-root = f"talks/{talk}"
+root = dir_of(talk)
 flags = []
 
 # The look this talk presents in, and whether it is fit to present: contrast against the background, accents that can

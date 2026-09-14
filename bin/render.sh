@@ -6,7 +6,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 TALK=${1:?usage: bin/render.sh <talk> [ql|qm|qh] [Scene ...]}; Q=${2:-qm}; shift; shift || true
-DIR=talks/$TALK; [[ -d $DIR/scenes ]] || { echo "no such talk: $DIR"; exit 1; }
+DIR=$(.venv/bin/python -c "import sys; sys.path.insert(0,'.'); from lib.talks import dir_of; print(dir_of('$TALK'))")
 export PYTHONPATH=.:$DIR/scenes
 # The look: THEME wins, then this talk's .theme, then the repository's .theme (lib/theme.py). Exported so the render,
 # the pages bin/build.py writes and the PowerPoint export all use one theme.

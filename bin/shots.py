@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
-"""End-state screenshots of every step of one talk, from the rendered videos: talks/<talk>/media/shots/<Scene>-<k>.png
+"""End-state screenshots of every step of one talk, from the rendered videos: <talk>/media/shots/<Scene>-<k>.png
 and one tiled sheet per scene, <Scene>.png. The presenter holds on exactly these frames, so this is what the audience
 sits with while the speaker talks: the fastest review of captions, spacing and colour there is. Frames are taken 0.08 s
 before each step ends, so a fade that is the step's last animation is finished; end every step on a settled picture.
 Usage: bin/shots.py <talk> [ql|qm|qh]"""
 import glob, json, os, re, subprocess, sys
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from lib.talks import dir_of
+
 talk = sys.argv[1]
 Q = {"ql": "480p15", "qm": "720p30", "qh": "1080p60"}[sys.argv[2] if len(sys.argv) > 2 else "qh"]
-root = f"talks/{talk}"
+root = dir_of(talk)
 out_dir = f"{root}/media/shots"
 os.makedirs(out_dir, exist_ok=True)
 for old in glob.glob(f"{out_dir}/*.png"):   # a frame ffmpeg cannot produce must not leave last run's file in its place

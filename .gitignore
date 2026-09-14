@@ -5,3 +5,4 @@ __pycache__/
 .DS_Store
 talks/*/*.pptx
 themes/local/
+out/

@@ -20,6 +20,7 @@ import zipfile
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib import theme as T
+from lib.talks import dir_of
 
 REPO = T.REPO
 A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
@@ -31,7 +32,7 @@ def cmd_list():
     for n in T.names():
         t = T.load(n)
         print(f"{n:22s} {t['mode']:6s} {t['description']}")
-    print(f"\nactive: {T.active_name()}   (THEME=<name>, talks/<talk>/.theme, or .theme at the repository root)")
+    print(f"\nactive: {T.active_name()}   (THEME=<name>, a talk's .theme, or .theme at the repository root)")
 
 
 def cmd_check(which):
@@ -54,15 +55,16 @@ def cmd_preview(talk: str, scene: str):
     """One frame of a real deck in every theme, tiled. The frame is rendered with manim -s (the last frame only), so a
     sheet of ten themes takes about a minute. Look at it before choosing; a palette that reads on a screen can lose a
     colour on a projector."""
-    src = next((f for f in sorted(glob.glob(f"talks/{talk}/scenes/s*.py"))
+    root = dir_of(talk)
+    src = next((f for f in sorted(glob.glob(f"{root}/scenes/s*.py"))
                 if re.search(rf"^class {scene}\(", open(f).read(), re.M)), None)
     if not src:
-        sys.exit(f"no scene {scene} in talks/{talk}/scenes")
+        sys.exit(f"no scene {scene} in {root}/scenes")
     from PIL import Image, ImageDraw, ImageFont
     shots = []
     for n in T.names():
         out = f"/tmp/theme-preview/{n.replace('/', '-')}"
-        env = dict(os.environ, THEME=n, PYTHONPATH=f".:talks/{talk}/scenes")
+        env = dict(os.environ, THEME=n, PYTHONPATH=f".:{root}/scenes")
         subprocess.run([".venv/bin/manim", "-ql", "-s", "--media_dir", out, src, scene],
                        env=env, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT, check=True)
         png = sorted(glob.glob(f"{out}/images/*/*.png"))
@@ -176,18 +178,8 @@ def cmd_from_pptx(path: str, name: str):
         if cand and T.contrast(cand, bg) >= 7:
             ink = cand
             break
-    acc = [cols.get(f"accent{i}") for i in range(1, 7)]
-    acc = [a or ink for a in acc]
-    # A hue near red is what an audience reads as "wrong"; borrow the closest accent, or make one.
-    def hue(c):
-        import colorsys
-        r, g, b = T.rgb(c)
-        return colorsys.rgb_to_hls(r, g, b)[0] * 360
-    reddish = sorted(acc, key=lambda c: min(abs(hue(c)), abs(360 - hue(c))))[0]
-    alert = reddish if min(abs(hue(reddish)), abs(360 - hue(reddish))) < 25 else ("#FF5D5D" if dark else "#C0272D")
-    slots = {"alert": T.lift(alert, bg, 3.2)}          # first, so spreading moves the other slots and "wrong" stays red
-    slots.update({f"a{i + 1}": T.lift(acc[i], bg, 3.2) for i in range(6)})
-    slots = _spread(slots, bg)
+    acc = [cols.get(f"accent{i}") or ink for i in range(1, 7)]
+    slots = _assign(acc, bg, dark)
     t = {
         "mode": "dark" if dark else "light",
         "description": f"Imported from {os.path.basename(path)}: its background, type and accents. Not committed.",
@@ -219,6 +211,41 @@ def cmd_from_pptx(path: str, name: str):
     for b in bad:
         print("   -", b)
     print("   themes/local is ignored by git: a company's palette does not belong in this repository.")
+
+
+# What each slot means, as the hue the house style uses for it: cool, warm, deep, fresh, growth, spice. An imported
+# palette is matched to these rather than taken in the template's own order, so a deck that calls its model "the deep
+# accent" still looks like itself in a company's colours.
+SLOT_HUES = {"a1": 191, "a2": 41, "a3": 260, "a4": 174, "a5": 111, "a6": 15}
+
+
+def _hue(c: str) -> float:
+    import colorsys
+    r, g, b = T.rgb(c)
+    return colorsys.rgb_to_hls(r, g, b)[0] * 360
+
+
+def _assign(acc: list, bg: str, dark: bool) -> dict:
+    """Six imported accents onto the six slots, by the closest match of hue to what each slot means, then an alert red
+    of their own character, then everything lifted off the background and pushed apart."""
+    import colorsys
+    import itertools
+
+    def gap(a, b):
+        d = abs(a - b) % 360
+        return min(d, 360 - d)
+    keys = list(SLOT_HUES)
+    best = min(itertools.permutations(range(6)),
+               key=lambda perm: sum(gap(_hue(acc[perm[i]]), SLOT_HUES[keys[i]]) for i in range(6)))
+    slots = {keys[i]: acc[best[i]] for i in range(6)}
+    # "Wrong" is a red the palette could have had: the hue of alarm, the saturation and lightness of these accents.
+    hls = [colorsys.rgb_to_hls(*T.rgb(c)) for c in acc]
+    sat = sorted(h[2] for h in hls)[len(hls) // 2]
+    lit = sorted(h[1] for h in hls)[len(hls) // 2]
+    alert = T.hex_of(colorsys.hls_to_rgb(2 / 360, min(0.72, max(0.3, lit)), max(0.55, sat)))
+    out = {"alert": T.lift(alert, bg, 3.2)}            # first, so spreading moves the other slots and "wrong" stays red
+    out.update({k: T.lift(v, bg, 3.2) for k, v in slots.items()})
+    return _spread(out, bg)
 
 
 def _spread(slots: dict, bg: str, need: float = 22.0) -> dict:

@@ -281,3 +281,15 @@ First principles that the passes confirmed, written to outlast the decks they ca
 - The pages and exports around a deck are part of the look: a light picture inside a dark frame reads as a mistake.
   Derive their chrome from the same file by mixing the ground with the ink, so they follow any style without a table of
   their own.
+
+## Samples and real work want different homes
+
+- A repository of worked examples and the real decks built from them are not the same thing. Examples are written to be
+  read and must stay readable; a real deck carries a client's palette, a customer's numbers, an audience's in-jokes, and
+  should never be committed beside them. Two roots and one lookup that searches both cost about thirty lines and stop the
+  two from mixing.
+- Make every tool take a name and resolve it, rather than teaching each tool a path. When the second root arrived, the
+  scripts that already resolved through one helper needed one line each; the ones that had built paths inline needed
+  reading first.
+- Starting a real deck as a copy of a sample is right, not lazy: the copy diverges the moment it meets an audience, and
+  the sample must not follow it. Say so in the copy's own README so the next reader knows which is which.

@@ -25,9 +25,22 @@ name becomes an address), `kubernetes` (desired state and the loops that chase i
 `transformers` (every token learns from every other), `agents` (a model, a list of messages, and a loop). Each has a
 `script.md` with its spine, moves and sources, and a `README.md`.
 
+## Two kinds of talk, and where they live
+
+    talks/<slug>/     the samples in this repository, written to be read as examples by the next agent
+    out/<slug>/       a real talk for a real audience: git ignores the whole folder
+
+Both are talks in every other respect, and every tool takes a name and finds it in either (`lib/talks.py`; `out/` is
+searched first, so a real deck may take a sample's name and shadow it). Put a deck in `out/` when it is for an
+audience rather than for this repository: a company's theme, a customer's numbers, a version of a sample edited for
+one room. Nothing under `out/` is ever committed, so a real deck can carry things this repository should not.
+
+Starting one from a sample is a copy, on purpose: `cp -R talks/<sample>/{scenes,script.md,README.md} out/<name>/`,
+then write its style into `out/<name>/.theme`. It is free to diverge, and the sample stays as the worked example.
+
 ## What you are making
 
-A talk is a folder `talks/<slug>/` with:
+A talk is a folder (`talks/<slug>/` or `out/<slug>/`) with:
 
 ```
 scenes/objects.py     the talk's vocabulary: which colour means what (set_thread), shared drawings
@@ -159,7 +172,8 @@ at the end. Keep terminal output short: renders are chatty, pipe them to a log a
 ## Starting a new talk
 
 ```bash
-cp -r talks/_template talks/<slug>
+cp -r talks/_template talks/<slug>        # a sample this repository will carry
+cp -r talks/_template out/<slug>          # a talk for an audience, which git ignores
 ```
 
 Then follow `docs/workflow.md`. The template has a title scene, one worked example scene that uses most of the

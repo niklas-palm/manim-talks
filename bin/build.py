@@ -10,6 +10,7 @@ import glob, json, os, re, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib import theme as _theme
+from lib.talks import dir_of
 
 TH = _theme.load()                       # the theme the render used (bin/render.sh exports THEME), so the page matches the picture
 def _mix(k):                             # k of the way from the background towards the ink: chrome that works dark or light
@@ -22,7 +23,7 @@ talk = sys.argv[1] if len(sys.argv) > 1 else None
 if not talk:
     sys.exit("usage: bin/build.py <talk> [ql|qm|qh]")
 Q = {"ql": "480p15", "qm": "720p30", "qh": "1080p60"}[sys.argv[2] if len(sys.argv) > 2 else "qm"]
-root = f"talks/{talk}"
+root = dir_of(talk)
 title_line = next((l for l in open(f"{root}/script.md") if l.startswith("# ")), f"# {talk}") if os.path.exists(f"{root}/script.md") else f"# {talk}"
 TITLE = title_line[2:].strip()
 scenes = []

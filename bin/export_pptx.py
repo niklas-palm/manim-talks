@@ -8,7 +8,7 @@ Manim writes with --save_sections are the natural unit; the JSON index gives the
 is the timing tree PowerPoint itself writes for a video set to "Start: Automatically"; python-pptx has no API for it,
 so the XML is inserted after the movie is added.
 
-Usage: bin/export_pptx.py <talk> [ql|qm|qh] [out.pptx] [--click]   default quality qh, output talks/<talk>/<talk>.pptx;
+Usage: bin/export_pptx.py <talk> [ql|qm|qh] [out.pptx] [--click]   default quality qh, output <talk>/<talk>.pptx;
 --click leaves the clips to start on click instead of automatically
 Requires python-pptx (pip install python-pptx) and ffmpeg (poster frames)."""
 import glob, json, os, re, subprocess, sys, tempfile
@@ -19,6 +19,7 @@ from pptx.util import Inches
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib import theme as _theme
+from lib.talks import dir_of
 
 BG_HEX = _theme.load()["bg"].lstrip("#")
 
@@ -26,7 +27,7 @@ CLICK = "--click" in sys.argv
 sys.argv = [a for a in sys.argv if a != "--click"]
 talk = sys.argv[1] if len(sys.argv) > 1 else sys.exit(__doc__)
 Q = {"ql": "480p15", "qm": "720p30", "qh": "1080p60"}[sys.argv[2] if len(sys.argv) > 2 else "qh"]
-root = f"talks/{talk}"
+root = dir_of(talk)
 out = sys.argv[3] if len(sys.argv) > 3 else f"{root}/{talk}.pptx"
 
 title_line = next((l for l in open(f"{root}/script.md") if l.startswith("# ")), f"# {talk}") if os.path.exists(f"{root}/script.md") else f"# {talk}"

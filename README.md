@@ -14,6 +14,7 @@ AGENTS.md            the entry point for an agent building a talk: rules, workfl
 docs/                principles, workflow, the library, Manim traps, the review checklist, presenting
 lib/palette.py       the illustration library: colours with meaning, TalkSlide, text, counters, gauges, grids ...
 lib/theme.py         the look: which colours, fonts, corners and strokes the library uses
+lib/talks.py         where a talk lives: talks/<slug> for the samples, out/<slug> for real ones (git ignores out/)
 themes/*.json        the styles a deck can be presented in, dark and light (bin/themes.py list)
 bin/                 render.sh, build.py, shots.py, seams.py, review.sh, check.py, serve.sh, serve.py, export_pptx.py
 talks/_template/     copy this to start a talk: title scene, a worked example scene, objects.py, script.md
