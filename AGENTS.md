@@ -88,7 +88,7 @@ bin/review.sh <talk> ql                 # a frame every two seconds per scene, f
 bin/check.py <talk> ql                  # structural checks: files, set_thread, notes per step, text sizes, sentences on screen
 bin/seams.py <talk> ql                  # every scene boundary: last frame beside first frame, with a difference score
 bin/serve.sh <talk>                     # one local server for the repository; opens the talk's presenter window
-bin/export_pptx.py <talk> qh            # optional: one PowerPoint slide per step, clip autoplaying, note in the notes
+bin/export_pptx.py <talk> qh            # optional: one PowerPoint slide per step, clip autoplaying, note in the notes; generated, not committed
 ```
 
 Never run two renders at once (shared text cache). Render one scene while you work on it; render everything once

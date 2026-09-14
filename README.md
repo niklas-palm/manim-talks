@@ -37,8 +37,8 @@ A talk is a folder of Manim scenes. Each scene is one continuous picture; `self.
 and records the speaker note. Manim writes one clip per click, `bin/build.py` strings the clips and notes into two
 pages: `present.html` for the audience and `presenter.html` for the speaker, with notes, a timer and a preview of
 where the next click lands. `bin/serve.sh` serves the talk over local http so the two windows can talk and the
-video can seek. `bin/export_pptx.py` writes the same deck as a PowerPoint file, one autoplaying clip per slide with the
-note in the slide notes, for rooms that insist on it.
+video can seek. `bin/export_pptx.py <talk> qh` writes the same deck as a PowerPoint file, one autoplaying clip per slide with
+the note in the slide notes, for rooms that insist on it; the file is generated from the render and not committed.
 
 ## Style, in five lines
 
