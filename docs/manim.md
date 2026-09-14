@@ -34,6 +34,9 @@ Manim Community Edition 0.21, Python 3.12, macOS, ffmpeg 7, no LaTeX. Each entry
 - **Objects appended to a list after the group was built are not in the group.** The cell stored inside a zoom was
   appended to `filled[0]` but not to `row0`; the zoom-out shifted the row and left the cell one slot to the left.
   Add to the group too (`row0.add(cell)`).
+- **`scene.remove(group)` after fading one member does nothing.** `FadeOut(group[k])` restructures the scene: the
+  group is replaced at top level by its remaining members, so the group is no longer in the scene and removing it
+  is a no-op; the members stay. Fade or remove the remaining members themselves.
 - **`become()` on `Text` with a different string produces garbage** mid-animation because the glyph counts differ.
   Fade out and in, or `Transform` between labels.
 - **Updaters need a stable anchor.** A counter's digits anchored to their own initial position stayed behind when

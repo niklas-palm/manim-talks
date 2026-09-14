@@ -13,7 +13,7 @@ Agents building a talk start at `AGENTS.md`. Humans start here.
 AGENTS.md            the entry point for an agent building a talk: rules, workflow, definition of done
 docs/                principles, workflow, the library, Manim traps, the review checklist, presenting
 lib/palette.py       the illustration library: colours with meaning, TalkSlide, text, counters, gauges, grids ...
-bin/                 render.sh, build.py, shots.py, review.sh, serve.sh, serve.py
+bin/                 render.sh, build.py, shots.py, review.sh, serve.sh, serve.py, export_pptx.py
 talks/_template/     copy this to start a talk: title scene, a worked example scene, objects.py, script.md
 talks/llm-serving/   the reference deck: 45 minutes on how open-weight LLMs are served, 76 steps, 14 scenes
 talks/<others>/      shorter example decks built with the same rules (DNS, Kubernetes, Kafka, transformers)
@@ -37,7 +37,8 @@ A talk is a folder of Manim scenes. Each scene is one continuous picture; `self.
 and records the speaker note. Manim writes one clip per click, `bin/build.py` strings the clips and notes into two
 pages: `present.html` for the audience and `presenter.html` for the speaker, with notes, a timer and a preview of
 where the next click lands. `bin/serve.sh` serves the talk over local http so the two windows can talk and the
-video can seek.
+video can seek. `bin/export_pptx.py` writes the same deck as a PowerPoint file, one autoplaying clip per slide with the
+note in the slide notes, for rooms that insist on it.
 
 ## Style, in five lines
 

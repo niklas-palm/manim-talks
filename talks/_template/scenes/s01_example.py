@@ -37,8 +37,8 @@ class Example(TalkSlide):
         self.play(FadeIn(burst, shift=DOWN * 0.1), run_time=0.4)
         for k in range(1, 5):
             self.play(burst[k].animate.move_to(server[2][k].get_center()).scale(0.9), run_time=0.25)
-            self.play(server[2][k].animate.set_fill(CLIENT, 0.9), FadeOut(burst[k]), load.set(0.2 + 0.2 * k), served.to(1 + k), run_time=0.2)
-        self.remove(burst)
+            last = [FadeOut(burst[0])] if k == 4 else []   # fading a member restructures the group, so the group cannot be removed as one; fade the members
+            self.play(server[2][k].animate.set_fill(CLIENT, 0.9), FadeOut(burst[k]), *last, load.set(0.2 + 0.2 * k), served.to(1 + k), run_time=0.2)
         self.next_slide("""Five requests arrive together. Same picture, more of it: each takes a slot, the gauge climbs with every one,
         and the fifth fills the server. The problem the next scene solves is now visible: the gauge is red.""")
         # --- zoom to open: the same box, its inside drawn where the audience was looking

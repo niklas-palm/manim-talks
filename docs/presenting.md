@@ -37,3 +37,19 @@ Step through the whole deck in the presenter with the audience window open, once
 Check that every step holds on its end frame, that back works, and that the next-step preview shows the right
 frame. Check the notes read well in the presenter's type size. Close other tabs that play media. Keep the laptop on
 power: a 1080p60 video plus a preview video is real decoding work.
+
+## Exporting to PowerPoint
+
+```bash
+.venv/bin/pip install python-pptx      # once
+bin/export_pptx.py <talk> qh            # -> talks/<talk>/<talk>.pptx
+```
+
+One slide per step: the step's clip fills the slide and is set to start automatically when the slide appears, so a
+click in PowerPoint does what a click in the presenter does; the clip holds on its last frame; the speaker note is in
+the slide's notes with the scene name and step number. The poster frame is the clip's first frame, so a slide looks
+like the end of the previous one until it plays. This is a convenience for people who must present from PowerPoint;
+the web presenter remains the reference, and the two-window flow, the timer and the next-step preview exist only
+there. The autoplay is the timing XML PowerPoint writes for "Start: Automatically"; open the file once in PowerPoint
+before relying on it, and if a slide does not start by itself, set the video to start automatically in the Playback
+tab and report the case in `LEARNINGS.md`.
