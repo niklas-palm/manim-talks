@@ -43,6 +43,16 @@ After every click the audience must be able to say in one sentence what changed.
 split the step. If nothing visible changed, the step has no reason to exist. A 45-minute talk is sixty to eighty
 clicks; a ten-minute one is fifteen to twenty.
 
+## 3a. Everything that moves has a source and a destination, and both are the real things
+
+A dot, a block, a copy that travels tells the audience "this goes from here to there". It must start at the object
+that produced it and end at the object that receives it: the exact slot in the list, the exact cell in the rack, the
+device that answers, never the edge of a container, a group's centre or a convenient empty spot. A result that comes
+back from a tool flies from that tool into the slot where it will sit, as the block that will sit there; a request
+goes from the thing that asks to the thing that answers. Two motions for one exchange (a dot to the box, then a
+block into the list) say two different things and the audience believes the first. Anchor to the slot, not to the
+container, and build the motion after both ends are in their final positions.
+
 ## 3b. Open on a still picture; start slow, then speed up
 
 The first click of a scene shows the starting picture and nothing moves: the title, the furniture, the objects the

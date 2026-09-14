@@ -67,7 +67,7 @@ VEC_Y = -1.0                              # where the embedding vectors sit unde
 SCORES = [1.2, 0.4, 2.1, 0.2, 0.9, 2.6]   # illustrative match strengths for "mat"; the mechanism is exact, the numbers are chosen
 QBIG_POS = [COLS[4] - 0.8, ROWS[2] - 0.7, 0]
 OUT_POS = [COLS[4] - 0.8, ROWS[4] + 0.45, 0]
-PIPE_Y = -0.5                             # the centre line of the layer and prediction pictures (moves 4 and 5)
+PIPE_Y = -0.85                            # the centre line of the layer and prediction pictures (moves 4 and 5); low enough that labels above the vectors clear the token row
 
 
 def big_tokens(side: float = 1.3, y: float = ROWS[1]) -> VGroup:

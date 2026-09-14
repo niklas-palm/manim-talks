@@ -35,9 +35,8 @@ class TheLoop(TalkSlide):
         for, none here, and a stop reason that says tool_use. The model chose that tool from the descriptions; nobody wrote
         a rule. It cannot run it; it can only ask.""")
         # --- the application runs it
-        travel(self, tu, cards[1], TOOL, text="run", edges=True, run_time=0.7)
-        travel(self, cards[1], app[0], RESULT, text="19 °C", edges=True, run_time=0.7)
-        msgs.append(self, message("tool_result", "user · tool_result: 19 °C"), frm=cards[1], run_time=0.6)
+        travel(self, tu, cards[1], TOOL, text="run", edges=True, run_time=0.7)          # the call goes to the tool that answers it
+        msgs.append(self, message("tool_result", "user · tool_result: 19 °C"), frm=cards[1], run_time=0.8)   # the result comes back from that tool into its slot
         ran = label("the application ran it; the model never does", 14, MUTED).next_to(app[0], DOWN, buff=GAP_TIGHT).align_to(app[0], LEFT)
         self.play(tools.to(1), FadeIn(ran), run_time=0.4)
         self.next_slide("""The application sees the tool call, finds the function behind the card, runs it against the real thermometer, and
@@ -58,8 +57,7 @@ class TheLoop(TalkSlide):
         tu2 = reply(self, msgs, model, "tool_use", 'assistant · tool_use: query_camera(2, "anyone there?")', run_time=0.3)
         self.play(calls.to(3), run_time=0.15)
         travel(self, tu2, cards[0], TOOL, edges=True, run_time=0.3)
-        travel(self, cards[0], app[0], RESULT, edges=True, run_time=0.3)
-        msgs.append(self, message("tool_result", "user · tool_result: a person by the shed"), frm=cards[0], run_time=0.3)
+        msgs.append(self, message("tool_result", "user · tool_result: a person by the shed"), frm=cards[0], run_time=0.4)
         self.play(tools.to(2), run_time=0.15)
         call_model(self, msgs, model, extra=cards, run_time=0.4)
         reply(self, msgs, model, "assistant", "assistant · yes, one person by the shed", run_time=0.3)

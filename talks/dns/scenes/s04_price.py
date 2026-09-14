@@ -36,6 +36,7 @@ class Price(TalkSlide):
         rl = label("resolvers around the world, each with its own copy", 16, MUTED).next_to(rs, UP, buff=GAP_TIGHT).align_to(rs, LEFT)
         copies = VGroup(*[record("www", "", "104.20.23.154", "", ADDRESS, width=2.7, size=15).move_to(r[0].get_center() + DOWN * 0.18) for r in rs])
         fuses = VGroup(*[fuse(cp, f) for cp, f in zip(copies, (0.9, 0.3, 0.6, 0.15))])
+        c["hops"].num.clear_updaters()   # see Delegation: a counter must stop redrawing before it can fade
         rest = VGroup(*[m for k, m in c.items() if k not in ("boxes", "recs")], c["boxes"][0], c["boxes"][1], c["recs"][0], c["recs"][1])
         t = retitle(self, t, "The price of remembering", "4  the price of remembering",
                     extra=[FadeOut(rest), ReplacementTransform(old_auth[0], auth[0]), ReplacementTransform(old_auth[1], auth[1]), FadeOut(old_auth[2]), FadeIn(auth[2]),

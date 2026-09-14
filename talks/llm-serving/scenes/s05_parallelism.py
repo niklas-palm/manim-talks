@@ -22,17 +22,28 @@ def timeline(segments, unit: float, y: float, x0: float = -6.4):
     return bars, x - x0
 
 
+TITLE_PAR = ("When the model does not fit one GPU", "4  more than one GPU")
+
+
+def start_parallelism(scene, add: bool = True) -> dict:
+    """The still Parallelism opens on: the model that does not fit, four empty GPUs, and the caption."""
+    model = layer_stack(6, 2.6).shift(UP * 2.2 + LEFT * 3.2)
+    ml = label("a 235B model: 236 GB of fp8 weights", 18, TEXT).next_to(model, RIGHT, buff=0.35)
+    g = gpu_row(4, 2.0, 2.2, buff=0.55).shift(UP * 0.25)
+    gl = label("four 80 GB GPUs", 16, DIM).next_to(g, DOWN, buff=0.12)
+    cap = pin(scene, label("No GPU holds 236 GB: divide the model, pay at the seams", 22, color=CAPTION, width=12.8, thread=True), buff=0.3)
+    parts = dict(model=model, ml=ml, g=g, gl=gl, cap=cap)
+    parts["shown"] = list(parts.values())
+    if add:
+        scene.add(*parts["shown"])
+    return parts
+
+
 class Parallelism(TalkSlide):
     def construct(self):
-        t = title(self, "When the model does not fit one GPU", "4  more than one GPU")
-        model = layer_stack(6, 2.6).shift(UP * 2.2 + LEFT * 3.2)
-        ml = label("a 235B model: 236 GB of fp8 weights", 18, TEXT).next_to(model, RIGHT, buff=0.35)
-        g = gpu_row(4, 2.0, 2.2, buff=0.55).shift(UP * 0.25)   # room between the GPUs for the exchange arrows to be seen
-        gl = label("four 80 GB GPUs", 16, DIM).next_to(g, DOWN, buff=0.12)
-        cap = caption(self, "No GPU holds 236 GB: divide the model, pay at the seams")
-        self.play(FadeIn(model), FadeIn(ml), FadeIn(g), FadeIn(gl))
-        self.next_slide("""236 GB of weights and no GPU that holds them: divide the model, and pay at the seams. Some models do not fit one card. A 235B mixture of experts in fp8 is 236 GB of weights; the largest single GPU
-        we can rent holds 96. So the model has to be divided over several GPUs, and how it is divided shows up as time.""")
+        t = title_still(self, *TITLE_PAR)
+        p = start_parallelism(self)
+        model, ml, g, gl, cap = p["model"], p["ml"], p["g"], p["gl"], p["cap"]
         # TP: slice every matrix; each GPU multiplies its slice, then all of them add their partial results
         cap = swap_caption(self, cap, "Tensor parallelism: whole vector everywhere, a quarter of every matrix each")
         self.play(FadeOut(gl))
@@ -132,7 +143,11 @@ class Parallelism(TalkSlide):
         s_two_b, _ = timeline([("c", 1.0), ("s", 0.6)] * 2, 0.9, -2.15)
         l_two = label("2 × TP = 4: 22.5 requests/s", 18, OUTPUT).next_to(s_two_a, RIGHT, buff=0.25)
         self.play(ReplacementTransform(one, two), FadeIn(s_two_a), FadeIn(s_two_b), FadeIn(l_two))
+        # --- hand-over: eight GPUs give way to one weight matrix, the question of what precision costs
+        from s06_quality import start_rounding, TITLE_ROUNDING
+        nxt = start_rounding(self, add=False)
+        t = handover(self, t, *TITLE_ROUNDING, leaving=[g8, two, s_one, l_one, s_two_a, s_two_b, l_two, cap], arriving=nxt["shown"])
         self.finish("""The alternative: two independent engines, each at tensor parallel four, behind the load balancer. Each does more arithmetic per step and synchronises across four GPUs instead of eight, and the two never wait for each other. Same model, same hardware, same load: 22.5 requests per second against 13.4. Sixty-eight percent more work from the same eight GPUs, by dividing them differently. The rule that falls out: use the smallest tensor-parallel degree at which the model fits, and spend the rest of
         the GPUs on more engines. One practical trap: block-quantised fp8 checkpoints refuse degrees that would split an
         expert's 128-wide tiles, so this 235B model would not start at TP=8 without expert parallelism. The engine tells you;
-        the docs record which combinations ran.""")
+        the docs record which combinations ran. Then the picture hands over: The still picture: a weight matrix, sixty-four cells here where a real one has millions, each cell a number stored in sixteen bits. Move one made these smaller. The next click picks one cell out.""")

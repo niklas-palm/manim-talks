@@ -6,24 +6,35 @@ from objects import *
 STEPS = [(1, 174, 174, 0.39), (8, 86, 688, 0.65), (32, 56, 1792, 0.76), (64, 48, 3072, 0.77), (128, 41, 5248, 0.77)]   # measured, one engine, 100-token prompts and 500-token answers: in flight, decode tokens/s per request, tokens/s in total, memory controller busy
 
 
+TITLE_BATCHING = ("Batching: the knob between latency and throughput", "2  why the engine batches")
+N, X0, W1, W4 = 8, -4.7, 0.92, 1.0                   # steps drawn, first step's x, step width alone and with four
+ROWS = [1.05, 0.35, -0.35, -1.05]                    # four requests spread over the band; the weights row above them
+
+
+def start_batching(scene, add: bool = True) -> dict:
+    """The still this scene opens on, and that DecodeCeiling hands over to: the empty timeline for one request."""
+    axis = Arrow([-5.3, 2.35, 0], [4.3, 2.35, 0], color=DIM, stroke_width=2, buff=0, tip_length=0.15)
+    al = label("time, one decode step after another", 14, DIM).next_to(axis, UP, buff=0.05).align_to(axis, LEFT)
+    wl = label("weights read", 15, WEIGHTS).move_to([-5.5, 1.75, 0], aligned_edge=RIGHT)
+    rl = VGroup(*[label(f"request {i + 1}", 15, DIM).move_to([-5.5, y, 0], aligned_edge=RIGHT) for i, y in enumerate(ROWS)])
+    reads = Counter("weights read, per step", 1, "", WEIGHTS, size=24).move_to([-6.4, -2.3, 0], aligned_edge=LEFT)
+    per_step = Counter("tokens produced, per step", 1, "", OUTPUT, size=24).move_to([-3.2, -2.3, 0], aligned_edge=LEFT)
+    cap = pin(scene, label("One request: every step reads all the weights and produces one token", 22, color=CAPTION, width=12.8, thread=True), buff=0.3)
+    parts = dict(axis=axis, al=al, wl=wl, rl=rl, reads=reads, per_step=per_step, cap=cap)
+    parts["shown"] = [axis, al, wl, rl[0], reads, per_step, cap]
+    if add:
+        scene.add(*parts["shown"])
+    return parts
+
+
 class Batching(TalkSlide):
     def construct(self):
-        t = title(self, "Batching: the knob between latency and throughput", "2  why the engine batches")
-        # --- part one: the mechanism, as a timeline of decode steps
-        N, X0, W1, W4 = 8, -4.7, 0.92, 1.0                   # steps drawn, first step's x, step width alone and with four
-        ROWS = [1.05, 0.35, -0.35, -1.05]          # four requests spread over the band; the weights row above them
-        axis = Arrow([-5.3, 2.35, 0], [4.3, 2.35, 0], color=DIM, stroke_width=2, buff=0, tip_length=0.15)
-        al = label("time, one decode step after another", 14, DIM).next_to(axis, UP, buff=0.05).align_to(axis, LEFT)
-        wl = label("weights read", 15, WEIGHTS).move_to([-5.5, 1.75, 0], aligned_edge=RIGHT)
-        rl = VGroup(*[label(f"request {i + 1}", 15, DIM).move_to([-5.5, y, 0], aligned_edge=RIGHT) for i, y in enumerate(ROWS)])
-        reads = Counter("weights read, per step", 1, "", WEIGHTS, size=24).move_to([-6.4, -2.3, 0], aligned_edge=LEFT)
-        per_step = Counter("tokens produced, per step", 1, "", OUTPUT, size=24).move_to([-3.2, -2.3, 0], aligned_edge=LEFT)
+        # --- the last frame of DecodeCeiling is this still
+        t = title_still(self, *TITLE_BATCHING)
+        ttl = t                                               # the loop below reuses t as its step counter
+        p = start_batching(self)
+        axis, al, wl, rl, reads, per_step, cap = p["axis"], p["al"], p["wl"], p["rl"], p["reads"], p["per_step"], p["cap"]
         steplen = label("step time: the weights read, plus a little arithmetic per request", 14, DIM).move_to([0.0, -2.3, 0], aligned_edge=LEFT)
-        self.play(Create(axis), FadeIn(al), FadeIn(wl), FadeIn(rl[0]), FadeIn(reads), FadeIn(per_step))
-        cap = caption(self, "One request: every step reads all the weights and produces one token")
-        self.next_slide("""The still picture: a time axis, one decode step after another from left to right; a row for the weights read
-        and a row for one request; two counters, weights read per step and tokens produced per step, both at one. Nothing
-        has happened yet. The next click runs the first steps.""")
         cols = []
         for k in range(N):
             x = X0 + k * W1
@@ -183,6 +194,7 @@ class Batching(TalkSlide):
         yl = label("tokens/s", 14, DIM).next_to(ax.y_axis, UP, buff=0.08)
         self.play(Create(ax), FadeIn(xl), FadeIn(yl))
         per_pts, agg_pts = [ax.c2p(1, 174 * 8)], [ax.c2p(1, 174)]     # per-request drawn x8 to share the axis
+        curve = VGroup()
         per_dot, agg_dot = Dot(per_pts[0], color=OUTPUT, radius=0.05), Dot(agg_pts[0], color=CACHE, radius=0.05)
         self.play(FadeIn(per_dot), FadeIn(agg_dot))
         POINT_NOTES = {
@@ -201,9 +213,11 @@ class Batching(TalkSlide):
         for n, per, agg, busy in STEPS[1:]:
             frac_c = min(0.95, n / 140)
             p2, a2 = ax.c2p(n, per * 8), ax.c2p(n, agg)
+            seg_p, seg_a = Line(per_pts[-1], p2, color=OUTPUT, stroke_width=3), Line(agg_pts[-1], a2, color=CACHE, stroke_width=3)
+            curve.add(seg_p, seg_a)
             self.play(inflight.to(n), each.to(per), total.to(agg), gpu.bandwidth.set(busy), gpu.compute.set(frac_c),
                       *gpu.light_cores(frac_c, PROMPT), gpu.set_cache(3 + n * 0.45),
-                      Create(Line(per_pts[-1], p2, color=OUTPUT, stroke_width=3)), Create(Line(agg_pts[-1], a2, color=CACHE, stroke_width=3)),
+                      Create(seg_p), Create(seg_a),
                       per_dot.animate.move_to(p2), agg_dot.animate.move_to(a2), run_time=1.4)
             per_pts.append(p2); agg_pts.append(a2)
             gpu.flash_weights(self)
@@ -223,6 +237,11 @@ class Batching(TalkSlide):
         a latency spike. So the number of requests a GPU can serve is set by the memory left after the weights.""")
         self.play(gpu.set_cache(3 + 128 * 0.45), run_time=0.5)
         cap = swap_caption(self, cap, "Shrink the weights and more requests fit. That is the next knob.")
+        # --- hand-over: the measured GPU becomes the 96 GB card with the model's weights in it; the curve gives way to the counters
+        from s04_knobs import start_quantisation, TITLE_Q
+        nxt = start_quantisation(self, add=False)
+        ttl = retitle(self, ttl, *TITLE_Q, extra=[FadeOut(VGroup(inflight, each, total, clk, ax, xl, yl, per_dot, agg_dot, curve, pl, al, cap)),
+                                            ReplacementTransform(gpu, nxt["gpu"]), FadeIn(VGroup(*[m for m in nxt["shown"] if m is not nxt["gpu"]]))], run_time=1.4)
         self.finish("""Which sets up the first thing anyone does when they host a model: make the weights smaller. Smaller weights
         mean fewer bytes per decode step, so faster tokens, and more memory left for cache, so a bigger batch. Both gauges move
-        in the right direction at once.""")
+        in the right direction at once. Then the picture hands over: this talk's model: a 30B mixture of experts, 3B active per token, on the 96 GB card. The 30B model as it ships, in 16-bit: 30 billion weights at two bytes each is 57 GB, and every decode step reads what a token needs from them. On the 96 GB card that leaves about 30 GB for the cache. Read the middle number carefully: 330,000 tokens of context is the whole cache, shared by every request in flight; at 96 kilobytes per token that is about forty conversations of 8,000 tokens, or one request at the model's full 262,000-token context. The cache, not the weights, is what limits how many requests fit. The bottom number is prefill work, prompt tokens per second, the measured throughput of one GPU inside an eight-second latency budget.""")

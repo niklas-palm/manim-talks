@@ -8,22 +8,32 @@ from objects import *
 XR = 0.0   # left edge of the right-hand column, on the centre grid line
 
 
+TITLE_CEILING = ("GPU latency and throughput", "1  two jobs, two costs")
+
+
+def start_ceiling(scene, add: bool = True) -> dict:
+    """The still this scene opens on, and that Mechanics hands over to: the card named, the model named, both gauges
+    of the argument. Built identically on both sides of the seam."""
+    gpu = GPU("one GPU", w=4.6, weights_gb=32).scale(0.85).shift(LEFT * 3.2 + UP * 0.2)
+    gauge_at(gpu.bandwidth, 0.97)
+    card = label("RTX PRO 6000 Blackwell Server Edition (g7e): 96 GB GDDR7", 14, MUTED, width=3.9).next_to(gpu, DOWN, buff=0.15)
+    bw = Counter("memory bandwidth", 1.6, "TB/s", OUTPUT, decimals=2).move_to([3.2, 1.3, 0], aligned_edge=LEFT)
+    mk = label("model", 13, MUTED).move_to([XR, 2.35, 0], aligned_edge=LEFT)
+    mname = label("dense, 32B parameters, fp8: one byte per weight", 17, TEXT).move_to([XR, 2.0, 0], aligned_edge=LEFT)
+    by = Counter("bytes read per token", 32, "GB", WEIGHTS).move_to([XR, 1.3, 0], aligned_edge=LEFT)
+    parts = dict(gpu=gpu, card=card, bw=bw, mk=mk, mname=mname, by=by)
+    parts["shown"] = list(parts.values())
+    if add:
+        scene.add(*parts["shown"])
+    return parts
+
+
 class DecodeCeiling(TalkSlide):
     def construct(self):
-        t = title(self, "GPU latency and throughput", "1  two jobs, two costs")
-        # --- the card, named
-        gpu = GPU("one GPU", w=4.6, weights_gb=32).scale(0.85).shift(LEFT * 3.2 + UP * 0.2)
-        card = label("RTX PRO 6000 Blackwell Server Edition (g7e): 96 GB GDDR7", 14, MUTED, width=3.9).next_to(gpu, DOWN, buff=0.15)
-        bw = Counter("memory bandwidth", 1.6, "TB/s", OUTPUT, decimals=2).move_to([3.2, 1.3, 0], aligned_edge=LEFT)
-        # --- the model, named
-        mk = label("model", 13, MUTED).move_to([XR, 2.35, 0], aligned_edge=LEFT)
-        mname = label("dense, 32B parameters, fp8: one byte per weight", 17, TEXT).move_to([XR, 2.0, 0], aligned_edge=LEFT)
-        by = Counter("bytes read per token", 32, "GB", WEIGHTS).move_to([XR, 1.3, 0], aligned_edge=LEFT)
-        self.play(FadeIn(gpu), FadeIn(card), gpu.bandwidth.set(0.97), FadeIn(bw), FadeIn(mk), FadeIn(mname), FadeIn(by), run_time=0.8)
-        self.next_slide("""The still picture first. Left, one GPU: the RTX PRO 6000 Blackwell Server Edition, the card in a g7e instance,
-        96 GB of memory, and its bus gauge pegged because we are about to ask what the bus can do at most. Right, the model,
-        named: a dense 32B in fp8, one byte per weight, so every token reads all 32 GB. Two numbers from two spec sheets, the
-        card's bandwidth and the model's bytes per token. The next click divides one by the other.""")
+        # --- the last frame of Mechanics is this still; nothing animates until the first click
+        t = title_still(self, *TITLE_CEILING)
+        p = start_ceiling(self)
+        gpu, card, bw, mk, mname, by = p["gpu"], p["card"], p["bw"], p["mk"], p["mname"], p["by"]
         # --- the division
         bar = Line(LEFT * 1.3, RIGHT * 1.3, color=TEXT).move_to([1.3, 0.0, 0])
         num = label("1.6 TB/s", 24, OUTPUT).next_to(bar, UP, buff=0.1)
@@ -72,6 +82,10 @@ class DecodeCeiling(TalkSlide):
                   FadeOut(meas), FadeOut(mlat), gpu.bandwidth.set(0.97), run_time=1.0)
         self.play(bw.to(3.35), res.to(1120), lat.to(0.9), run_time=2.0)
         self.play(FadeIn(dense2), FadeIn(meas2), run_time=0.6)
+        # --- hand-over: the ceiling gives way to the timeline of steps; the title changes with it
+        from s03_batching import start_batching, TITLE_BATCHING
+        nxt = start_batching(self, add=False)
+        t = handover(self, t, *TITLE_BATCHING, leaving=[gpu, card2, bw, mk, mname2, by, bar, num2, den2, eq, res, lat, dense2, meas2, d1, d2], arriving=nxt["shown"])
         self.finish("""The same division on a different card, because the card is half the answer. The H100 in a p5 instance moves
         3.35 terabytes per second, twice this card's 1.6, so both ceilings double: 105 tokens per second for the dense 32B,
         about 1,120 for this model, under a millisecond between tokens. That is what hardware buys, and it is the only thing
@@ -80,4 +94,6 @@ class DecodeCeiling(TalkSlide):
         to 54. Half again on both, not twice: part of every step is overhead that bandwidth does not shrink, and the faster
         the bus, the larger that part's share. So: the card sets the latency ceiling. Throughput is a different question,
         and one request answers it badly, with the bus idle most of the time. The engine's knob between the two words is
-        the batch, and that is the next scene.""")
+        the batch, and the picture becomes a timeline: a time axis, one decode step after another from left to right; a
+        row for the weights read and a row for one request; two counters, weights read per step and tokens produced per
+        step, both at one. Nothing moves yet.""")

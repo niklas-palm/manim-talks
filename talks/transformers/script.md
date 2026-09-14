@@ -4,13 +4,15 @@ Spine: a transformer is a stack of identical layers in which every token gathers
 in one parallel step, then is transformed on its own; stack that many times and the last position predicts the next word.
 Audience: engineers who use language models and have never seen the computation inside one. Afterwards they can name
 every stage from text to next token and say what attention, heads, the mask and the residual each do.
-Length: about 16 minutes, 32 clicks, 7 scene files across 5 moves plus the opening.
+Length: about 16 minutes, 31 clicks, 6 scene files across 5 moves; no opening slide. Every scene opens on the previous
+scene's last frame and the title changes in place with the first change, so the deck is one picture from the six
+tokens to the sampled word.
 
 ## 1. The parallel idea (3 min)
 - **Sequential.** Recurrent networks read one token at a time (sequential steps = length) -> the bottleneck -> the transformer reads every token at once (steps = 1) -> the cost is connections growing with the square of the length, work a GPU does in parallel. Leads to: first, words must become numbers.
 
 ## 2. Words become vectors (3 min)
-- **Embedding.** Text -> tokens with ids (byte-pair encoding, vocab 50,257) -> an embedding table, id selects a row, a vector per token -> a set of vectors has no order -> add a position vector to each. Leads to: now let the vectors read one another.
+- **Embedding.** Opens on move 1's frame: the connections and counters go, the tokens shrink, the sentence appears above them -> tokens with ids (byte-pair encoding, vocab 50,257) -> an embedding table, id selects a row, a vector per token -> a set of vectors has no order -> add a position vector to each. Leads to: now let the vectors read one another.
 
 ## 3. Attention (6 min)
 - **Attention.** Three matrices turn each vector into a query, key, value (the sweep, slow then fast) -> one token's query scored against every key (the fan, one dot product slow) -> softmax makes weights that sum to 1 (the bars) -> weighted sum of values is the token's new vector. Every token at once.
@@ -20,7 +22,7 @@ Length: about 16 minutes, 32 clicks, 7 scene files across 5 moves plus the openi
 - **Layer.** Feed-forward on each token alone: expand (512->2048), ReLU nonlinearity, contract -> the residual connection adds the update instead of replacing (LayerNorm as a note) -> the layer (attention + feed-forward) stacked N times (6 in the paper, 30-100 today).
 
 ## 5. One token at a time (2 min)
-- **Predict.** The last vector times the vocabulary matrix (shared with the embeddings) -> a score per vocab entry -> softmax to a distribution -> sample one token (temperature) -> append and run the whole model again -> why generation streams. Training vs inference as the closing note.
+- **Predict.** Opens on the stack; the small vector grows into the one we read from and "mat" leaves the row (it is the word to predict) -> the last vector times the vocabulary matrix (shared with the embeddings) -> a score per vocab entry -> softmax to a distribution -> sample one token (temperature) -> append and run the whole model again -> why generation streams. Training vs inference as the closing note.
 
 ## Sources (read 2026-09-14)
 - Vaswani et al., "Attention Is All You Need", 2017. arXiv:1706.03762 (abstract) and https://ar5iv.labs.arxiv.org/html/1706.03762 (body).

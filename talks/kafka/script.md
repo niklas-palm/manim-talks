@@ -3,7 +3,7 @@
 Spine: a topic is an append-only log split into partitions, and every reader keeps one integer, an offset into it;
 ordering, parallelism, replay and durability are consequences of those two facts.
 Audience: engineers who have produced to or consumed from Kafka and never seen the machinery.
-Length: about 15 minutes, 25 clicks, 6 scenes; each scene opens on a still picture and the mechanism starts on the next click.
+Length: about 15 minutes, 24 clicks, 5 scenes; no title scene: the deck opens on the log, and every later scene begins on the previous scene's last frame and retitles in place as the picture rearranges (bin/seams.py: all seams "title only").
 
 ## 1. The log (3 min)
 - **TheLog.** One producer, one broker, one partition drawn as a row of cells with offsets beneath. Records append

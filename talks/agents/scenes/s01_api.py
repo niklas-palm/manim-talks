@@ -24,9 +24,8 @@ class TheApi(TalkSlide):
         model calls, and tool calls, which stay at zero for a while. Nothing here is an agent yet.""")
         # --- one question, answered the pre-agent way
         msgs.append(self, message("user", "user · anyone in the backyard?"), frm=user, run_time=0.8)
-        travel(self, app[0], camera, MUTED, text="frame(2)", edges=True, run_time=0.7)
-        travel(self, camera, app[0], RESULT, text="image", edges=True, run_time=0.7)
-        msgs.append(self, message("user", "user · [frame from camera 2] + the question"), frm=camera, run_time=0.7)
+        travel(self, app[0], camera, MUTED, text="frame(2)", edges=True, run_time=0.7)   # the request goes from the application to the API
+        msgs.append(self, message("user", "user · [frame from camera 2] + the question"), frm=camera, run_time=0.9)   # the frame comes back from the API into its slot
         call_model(self, msgs, model, run_time=1.0)
         reply(self, msgs, model, "assistant", "assistant · yes, one person by the shed", run_time=0.7)
         self.play(calls.to(1), run_time=0.4)
@@ -38,8 +37,7 @@ class TheApi(TalkSlide):
         # --- a question the code cannot serve
         msgs.append(self, message("user", "user · warm enough to open the door?"), frm=user, run_time=0.5)
         travel(self, app[0], camera, MUTED, text="frame(2)", edges=True, run_time=0.35)
-        travel(self, camera, app[0], RESULT, text="image", edges=True, run_time=0.35)
-        msgs.append(self, message("user", "user · [frame from camera 2] + the question"), frm=camera, run_time=0.4)
+        msgs.append(self, message("user", "user · [frame from camera 2] + the question"), frm=camera, run_time=0.5)
         call_model(self, msgs, model, run_time=0.6)
         reply(self, msgs, model, "assistant", "assistant · I cannot read a temperature from a frame", run_time=0.5)
         thermo = device_box("thermometer", CARD_YS[1])

@@ -9,7 +9,7 @@ Audience: engineers at a large company who use DNS every day and have never watc
 can read a trace (`dig +trace`), explain why a change takes as long as its TTL to land, choose a TTL, and say what
 negative caching and a CNAME do.
 
-Length: 12 to 15 minutes, 26 clicks, 6 scenes. Every scene opens on its still picture (one click) before anything moves. One picture from move two on: the laptop on the left, the recursive
+Length: 12 to 15 minutes, 25 clicks, 5 scenes, no title slide. Every scene opens on the previous scene's last frame; its first click changes the title and transforms the picture into the new move's starting picture, which then holds before anything moves. One picture from move two on: the laptop on the left, the recursive
 resolver with its cache in the middle, the tree of zones on the right; questions travel right, answers left.
 
 ## 1. One list for the whole internet (2 min) — `OneList`, 4 clicks

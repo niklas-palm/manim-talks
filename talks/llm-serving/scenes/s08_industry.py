@@ -4,24 +4,53 @@ from lib.palette import *
 from objects import *
 
 
+TITLE_IND = ("Where this is going", "7  where the industry is")
+TITLE_CLOSE = ("Five things to take home", "close")
+
+
+def two_phases() -> VGroup:
+    """The prefill box, the decode box with its loop, and the arrow between: the picture every engine shares."""
+    pre = box(3.0, 1.1, "prefill", PROMPT, size=24).shift(LEFT * 2.8 + UP * 1.2)
+    dec = box(3.0, 1.1, "decode", OUTPUT, size=24).shift(RIGHT * 2.8 + UP * 1.2)
+    arrow = Arrow(pre[0].get_right(), dec[0].get_left(), buff=0.05, color=DIM)
+    loop = CurvedArrow(dec[0].get_bottom() + RIGHT * 0.6, dec[0].get_bottom() + LEFT * 0.6, angle=-TAU / 3, color=OUTPUT, stroke_width=2, tip_length=0.15)
+    return VGroup(pre, dec, arrow, loop)
+
+
+def start_industry(scene, add: bool = True) -> dict:
+    grp = two_phases()
+    pre, dec, arrow, loop = grp
+    cap = pin(scene, label("Every engine is a batching scheduler over these two phases", 22, color=CAPTION, width=12.8, thread=True), buff=0.3)
+    parts = dict(pre=pre, dec=dec, arrow=arrow, loop=loop, cap=cap); parts["shown"] = [pre, dec, arrow, loop, cap]
+    if add:
+        scene.add(*parts["shown"])
+    return parts
+
+
+def start_close(scene, add: bool = True) -> dict:
+    """The still Close opens on: the two phases as Industry left them (pushed apart), small, at the top."""
+    grp = two_phases()
+    pre, dec, arrow, loop = grp
+    pre.shift(LEFT * 0.4); dec.shift(RIGHT * 0.4); arrow.put_start_and_end_on(pre[0].get_right() + LEFT * 0.4, dec[0].get_left() + RIGHT * 0.4)
+    loop.shift(RIGHT * 0.4)
+    grp.scale(0.6).move_to([0, 2.0, 0])
+    parts = dict(phases=grp); parts["shown"] = [grp]
+    if add:
+        scene.add(*parts["shown"])
+    return parts
+
+
 class Industry(TalkSlide):
     def construct(self):
-        t = title(self, "Where this is going", "7  where the industry is")
-        pre = box(3.0, 1.1, "prefill", PROMPT, size=24).shift(LEFT * 2.8 + UP * 1.2)
-        dec = box(3.0, 1.1, "decode", OUTPUT, size=24).shift(RIGHT * 2.8 + UP * 1.2)
-        arrow = Arrow(pre[0].get_right(), dec[0].get_left(), buff=0.05, color=DIM)
-        loop = CurvedArrow(dec[0].get_bottom() + RIGHT * 0.6, dec[0].get_bottom() + LEFT * 0.6, angle=-TAU / 3, color=OUTPUT, stroke_width=2, tip_length=0.15)
-        self.play(FadeIn(pre), FadeIn(dec), Create(arrow), Create(loop))
-        cap = caption(self, "Every engine is a batching scheduler over these two phases")
-        self.next_slide("""vLLM, SGLang, TensorRT-LLM: different code, the same shape. A prefill phase, a decode loop, a scheduler that
-        decides which requests share each step. The frontier is not a new shape; it is a list of attacks on the two costs we
-        started with. Here are the five that matter this year, placed on the part of the pipeline they attack.""")
+        t = title_still(self, *TITLE_IND)
+        p = start_industry(self)
+        pre, dec, arrow, loop, cap = p["pre"], p["dec"], p["arrow"], p["loop"], p["cap"]
         def front(name, what, color, pos):
             g = VGroup(label(name, 20, color), label(what, 15, TEXT, width=3.6)).arrange(DOWN, aligned_edge=LEFT, buff=0.04).move_to(pos, aligned_edge=LEFT)
             self.play(FadeIn(g, shift=UP * 0.12), run_time=0.5)
             return g
         f1 = front("disaggregated serving", "prefill and decode on separate pools, each sized and tuned for its own gauge", PROMPT, LEFT * 4.7 + DOWN * 0.15)
-        self.play(pre.animate.shift(LEFT * 0.4), dec.animate.shift(RIGHT * 0.4), arrow.animate.put_start_and_end_on(pre[0].get_right() + LEFT * 0.4, dec[0].get_left() + RIGHT * 0.4), run_time=0.6)
+        self.play(pre.animate.shift(LEFT * 0.4), dec.animate.shift(RIGHT * 0.4), loop.animate.shift(RIGHT * 0.4), arrow.animate.put_start_and_end_on(pre[0].get_right() + LEFT * 0.4, dec[0].get_left() + RIGHT * 0.4), run_time=0.6)
         self.next_slide("""Disaggregated serving pulls the two phases onto different pools of GPUs: prefill on hardware and settings chosen
         for compute, decode on hardware and settings chosen for bandwidth, with the KV cache handed across between them. It is
         the logical end of the two-gauge picture, and the orchestration layers built for large fleets, NVIDIA Dynamo and llm-d
@@ -49,23 +78,28 @@ class Industry(TalkSlide):
         batch already uses the read; the engine documentation says the same, high gain at low load, medium at best when busy.""")
         f4 = front("4-bit as arithmetic", "Blackwell computes in NVFP4 natively; 4-bit stops being a decompression trick", OUTPUT, RIGHT * 1.7 + DOWN * 1.3)
         f5 = front("reasoning effort", "tokens per answer becomes the capacity setting: 1.7 to 3.5 times", OUTPUT, RIGHT * 1.7 + DOWN * 2.45)
+        # --- hand-over: the fronts fade, the two phases shrink to the top, and the close begins on them
+        grp = VGroup(pre, dec, arrow, loop)
+        t = retitle(self, t, *TITLE_CLOSE, extra=[FadeOut(VGroup(f1, f2, f6, f3, f4, f5, cap)), grp.animate.scale(0.6).move_to([0, 2.0, 0])], run_time=1.2)
         self.finish("""Two more on the decode side. Blackwell GPUs compute in four-bit floating point natively, with a scale per block of
         sixteen values, so NVFP4 weights stop being something the kernel decompresses and become something it multiplies:
         another 25 percent here, and the vendor's own numbers put the accuracy cost within a point of fp8 when the build is
         calibrated, which is exactly the caveat move five ended on. And reasoning models turn the number of tokens per answer
         into a knob, effort, which changes capacity by 1.7 to 3.5 times, more than any flag on the engine. Back to the spine:
         a model reads your prompt once and then writes one token at a time, and every item on this slide is an attack on one
-        of those two costs.""")
+        of those two costs. Then the picture hands over: The fronts fade and the two phases shrink to the top: five things to take home, each a measurement rather than an opinion.""")
 
 
 class Close(TalkSlide):
     def construct(self):
+        t = title_still(self, *TITLE_CLOSE)
+        start_close(self)
         lines = ["Measure one engine before sizing anything.",
                  "fp8 weights and fp8 cache: no measured cost, twice the work per GPU.",
                  "Smallest degree that fits, then replicas.",
                  "Route conversations home; a cache tier pays only if it outsizes the churn.",
                  "Score your own task, against your own baseline, knowing the noise."]
-        col = VGroup(*[label(s, 28, TEXT) for s in lines]).arrange(DOWN, aligned_edge=LEFT, buff=0.35).shift(UP * 0.3)
+        col = VGroup(*[label(s, 28, TEXT) for s in lines]).arrange(DOWN, aligned_edge=LEFT, buff=0.35).shift(DOWN * 0.35)
         for l in col:
             self.play(FadeIn(l, shift=UP * 0.12), run_time=0.5)
         self.next_slide("""Five things to take home, each of them a measurement rather than an opinion.""")

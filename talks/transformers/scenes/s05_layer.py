@@ -1,26 +1,35 @@
 """Move 4: after gathering from its neighbours, each token is transformed on its own, and the whole layer repeats.
-The feed-forward network expands the vector, zeroes the negatives, contracts it; the residual connection adds that
-update to the input, cell by cell, rather than replacing it; and the layer is stacked, drawn as the same layer picture
-repeated smaller with the token travelling down.
+Opens on the attention output for "mat" from the previous frame; that vector is what the feed-forward works on. It
+expands the vector, zeroes the negatives, contracts it; the residual connection adds that update to the input, cell
+by cell, rather than replacing it; and the layer is stacked, drawn as the same layer picture repeated smaller with the
+token travelling down. The token row stays across the top.
 """
 from lib.palette import *
 from objects import *
 import random
 
+Y = PIPE_Y
+
 
 class Layer(TalkSlide):
     def construct(self):
-        t = title(self, "Then the token thinks on its own", "4  the token thinks alone, many times")
-        Y = -0.5   # the pipeline's centre line
-        vec = vector(30, TOKEN, cell=0.24).move_to([COLS[2], Y, 0])   # alone at the centre first; it slides left when the network appears
+        # --- the previous frame, rebuilt
+        t = title_still(self, "Don't read the future; use many views", "3  attention")
+        row, vecs = token_row(0.16)
+        heads = head_tiles()
+        joined, jl, proj, pl, result, rl = projection_parts(filled=True)
+        self.add(row, heads, joined, jl, proj, pl, result, rl)
+        # --- the boundary: the heads and the projection go; the attention output for "mat" becomes the vector we work on
+        vec = vector(30, TOKEN, cell=0.24).move_to([COLS[2], Y, 0])
         vl = label('"mat" after attention', 18, TOKEN).next_to(vec, UP, buff=GAP)
-        self.play(FadeIn(vec), FadeIn(vl))
-        self.next_slide("""Attention let every token gather from the others. The second half of a layer does the opposite: it works on each
-        token entirely by itself, the same small network applied to every position independently. Its job is to take what the
-        token just gathered and compute something new from it.""")
+        t = retitle(self, t, "Then the token thinks on its own", "4  the token thinks alone, many times",
+                    extra=[FadeOut(heads), FadeOut(joined), FadeOut(jl), FadeOut(proj), FadeOut(pl), FadeOut(rl), ReplacementTransform(result, vec), FadeIn(vl)], run_time=0.9)
+        self.next_slide("""Attention let every token gather from the others; its output for "mat" comes to the centre. The second half of a
+        layer does the opposite: it works on each token entirely by itself, the same small network applied to every position
+        independently. Its job is to take what the token just gathered and compute something new from it.""")
         # --- expand
-        w1 = grid(16, 8, WEIGHTS, cell=0.18).move_to([COLS[1], Y, 0])
-        wide = vector(31, WEIGHTS, cell=0.18, n=16).move_to([-1.5, Y, 0])
+        w1 = grid(16, 8, WEIGHTS, cell=0.14).move_to([COLS[1], Y, 0])
+        wide = vector(31, WEIGHTS, cell=0.14, n=16).move_to([-1.5, Y, 0])
         el = label("expand 512 to 2048\n(drawn 8 to 16)", 17, WEIGHTS).next_to(wide, UP, buff=GAP)
         self.play(VGroup(vec, vl).animate.move_to([-5.2, Y, 0]).align_to(vec, DOWN), run_time=0.6)
         vl.next_to(vec, UP, buff=GAP)
@@ -32,18 +41,18 @@ class Layer(TalkSlide):
         # --- nonlinearity
         rnd = random.Random(3)
         killed = [i for i in range(16) if rnd.random() < 0.45]
-        rl = label("ReLU: every negative\nnumber becomes zero", 17, WEIGHTS).next_to(wide, DOWN, buff=GAP)
-        self.play(*[wide[i].animate.set_fill(DIM, 0.15) for i in killed], FadeIn(rl), run_time=0.8)
+        rl2 = label("ReLU: every negative\nnumber becomes zero", 17, WEIGHTS).next_to(wide, DOWN, buff=GAP)
+        self.play(*[wide[i].animate.set_fill(DIM, 0.15) for i in killed], FadeIn(rl2), run_time=0.8)
         self.next_slide("""Then a nonlinearity, ReLU in the paper: every negative number is set to zero, the cells that went dark. This is
         small but it is the point of the whole block. Without it, stacking layers would collapse into one big matrix and the
         model could only draw straight lines. The nonlinearity is what lets the network build up complicated functions,
         layer on layer.""")
         # --- contract
-        w2 = grid(8, 16, WEIGHTS, cell=0.18).move_to([1.3, Y, 0])
+        w2 = grid(8, 16, WEIGHTS, cell=0.14).move_to([1.3, Y, 0])
         out = vector(32, ATTN, cell=0.24).move_to([4.4, Y, 0])
         cl = label("contract back to 512:\nthe update", 17, ATTN).next_to(out, UP, buff=GAP)
         self.play(FadeIn(w2), run_time=0.3)
-        self.play(TransformFromCopy(wide, out), FadeIn(cl), FadeOut(rl), run_time=0.9)
+        self.play(TransformFromCopy(wide, out), FadeIn(cl), FadeOut(rl2), run_time=0.9)
         self.next_slide("""A second matrix contracts it back to the original length. So the feed-forward block is expand, throw away the
         negatives, contract. Out comes a vector the same size as the token's, an update the network computed from this token
         alone. The vast majority of a model's weights live in these two matrices, repeated in every layer.""")
@@ -59,8 +68,8 @@ class Layer(TalkSlide):
         lr = label("the token\ngoing out", 18, TOKEN).next_to(res, UP, buff=GAP)
         self.play(ReplacementTransform(vec, big_in), ReplacementTransform(out, upd), FadeIn(plus), FadeIn(li), FadeIn(lu), run_time=0.8)
         self.play(FadeIn(eq), TransformFromCopy(big_in, res), FadeIn(lr), run_time=0.6)
-        rl2 = label("residual: the input plus its update", 18, TOKEN).next_to(upd, DOWN, buff=GAP_WIDE)
-        self.play(FadeIn(rl2), run_time=0.3)
+        rl3 = label("residual: the input plus its update", 18, TOKEN).next_to(upd, DOWN, buff=GAP_WIDE)
+        self.play(FadeIn(rl3), run_time=0.3)
         rnd = random.Random(8)
         for i in range(D):
             piece = upd[i].copy()
@@ -74,15 +83,16 @@ class Layer(TalkSlide):
         that is best. The paper also normalises after each add; that keeps the numbers in range and does not change the shape
         of the story.""")
         # --- the layer, repeated: the same picture smaller, stacked, the token travelling down
-        self.play(FadeOut(VGroup(big_in, plus, upd, eq, li, lu, lr, rl2)), res.animate.scale(0.12 / 0.3).move_to([COLS[1] - 0.6, ROWS[0] - 0.3, 0]), run_time=0.7)
-        stack = VGroup(*[layer_glyph(5.0, 0.78) for _ in range(5)]).arrange(DOWN, buff=0.16).move_to([COLS[2] - 0.6, -0.3, 0])
-        nl = label("N layers:\n6 in 2017,\n30 to 100 today", 20, WEIGHTS).move_to([COLS[3], -0.3, 0], aligned_edge=LEFT)
+        stack, nl = layer_stack()
+        tiny = tiny_token(stack)
+        start = vector(30, TOKEN, cell=0.12).next_to(stack[0], LEFT, buff=GAP)
+        self.play(FadeOut(VGroup(big_in, plus, upd, eq, li, lu, lr, rl3)), ReplacementTransform(res, start), run_time=0.7)
         self.play(LaggedStart(*[FadeIn(b, shift=LEFT * 0.1) for b in stack], lag_ratio=0.1), FadeIn(nl), run_time=1.2)
         for b in stack:
-            self.play(res.animate.next_to(b, LEFT, buff=GAP), run_time=0.2)
+            self.play(start.animate.next_to(b, LEFT, buff=GAP), run_time=0.2)
             self.play(b[0].animate.set_fill(WEIGHTS, 0.3), run_time=0.12)
             self.play(b[0].animate.set_fill(WEIGHTS, 0.08), run_time=0.1)
-        self.play(res.animate.next_to(stack, DOWN, buff=GAP), run_time=0.3)
+        self.play(ReplacementTransform(start, tiny), run_time=0.3)
         self.finish("""And that is the whole layer: gather from the sentence with attention, then transform each token alone with the
         feed-forward, both wrapped in residual adds. Here it is again, smaller, five times: a vector goes in, becomes a
         query, a key and a value, reads the row, passes the feed-forward grid, comes out the same shape. Six layers in the

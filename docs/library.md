@@ -86,7 +86,7 @@ fade the old label out and a new one in, or `Transform` to a new label of the sa
 | `grid(rows, cols, color, cell, op)` | a matrix or a memory | indexed `grid[row * cols + col]` |
 | `dot_grid(n, cols, color, radius)` | n dots in rows | a population whose members change one by one |
 | `Gauge(name, color, height)` | a vertical gauge; `.set(level)` returns the animation | red above 0.9 |
-| `Counter(name, value, unit, color, size, decimals)` | a number with unit and name; `.to(value)` counts | the name must carry unit and clock |
+| `Counter(name, value, unit, color, size, decimals)` | a number with unit and name; `.to(value)` counts; `.stop()` freezes it before a FadeOut | the name must carry unit and clock; set `tracker.set_value()` for a still frame |
 | `Bars(heights, width, gap, color)` | a small bar chart | `Transform(bars, Bars(new))` to redraw |
 | `timeline(y, x0, [(kind, length)], colors)` | a horizontal bar of labelled segments | time along x |
 

@@ -53,7 +53,6 @@ class TheCode(TalkSlide):
             self.play(bar.animate.move_to(highlight_line(cd, 3)), run_time=rt)
             self.play(bar.animate.move_to(highlight_line(cd, 4)), run_time=rt)
             travel(self, b, mini_cards[1], TOOL, edges=True, run_time=rt * 1.5)
-            travel(self, mini_cards[1], b, RESULT, edges=True, run_time=rt * 1.5)
             self.play(bar.animate.move_to(highlight_line(cd, 5)), run_time=rt)
             mini.append(self, block("", RESULT, w=2.6, h=MINI_H, bare=True), frm=mini_cards[1], run_time=rt * 1.5)
             self.play(bar.animate.move_to(highlight_line(cd, 6)), run_time=rt)

@@ -29,10 +29,12 @@ class MaskAndHeads(TalkSlide):
         ck = label("attended token, through its key", 17, KEY).next_to(gridg, UP, buff=GAP_TIGHT)
         # the bars become the grid's last row: the weights of "mat" over every token
         lastrow = VGroup(*[gridg[N * (N - 1) + j] for j in range(N)])
+        upper = VGroup(*[gridg[i] for i in range(N * (N - 1))])
         t = retitle(self, t, "Don't read the future; use many views", "3  attention",
                     extra=[FadeOut(tri), FadeOut(wlabels), FadeOut(bl), FadeOut(qbig), FadeOut(qbl), FadeOut(out), FadeOut(outl),
-                           *[ReplacementTransform(b, c) for b, c in zip(bars, lastrow)], FadeIn(VGroup(*[gridg[i] for i in range(N * (N - 1))])),
+                           *[ReplacementTransform(b, c) for b, c in zip(bars, lastrow)], FadeIn(upper),
                            FadeIn(rowl), FadeIn(rk), FadeIn(ck)], run_time=1.0)
+        self.remove(upper, *lastrow); self.add(gridg)   # one group for the grid from here on, so it can be faded as one
         self.next_slide("""The bars we just computed fold into the bottom row of a grid: the row is the token doing the looking, the column is
         the token being looked at, and every cell is one attention weight. "mat" attending to all six is the row we built;
         the other five rows are the same computation for the other tokens, all done at once. Filled in full, this is every

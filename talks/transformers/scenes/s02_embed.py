@@ -15,6 +15,8 @@ class Embedding(TalkSlide):
         big = big_tokens(1.3)
         edges = all_edges(big)
         steps2, conns = sequential_counters(1, 30)
+        for c in (steps2, conns):   # static here: a Counter's updater would redraw its digits through the FadeOut
+            c.num.clear_updaters(); c.unit.clear_updaters()
         self.add(big, edges, steps2, conns)
         # --- the boundary: the title changes as the connections go and the tokens settle into their working size
         toks = big_tokens(1.0)

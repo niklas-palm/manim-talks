@@ -4,7 +4,9 @@ Spine: you write the state you want into one database; independent loops each wa
 forever. Everything Kubernetes does is one of those loops closing a gap between desired and actual.
 Audience: engineers who use kubectl daily and have not watched the machinery. Afterwards they can explain what happens
 between `kubectl apply` and a running container, why a lost node heals itself, and why a Service address is stable.
-Length: about 15 minutes, 27 clicks, 6 scenes. Every scene opens on a still picture; the mechanism starts on the second click.
+Length: about 15 minutes, 27 clicks, 5 scenes. No title slide: the deck opens on the first move's still picture and the
+speaker introduces the talk over it. Every scene begins on the previous scene's last frame and changes its title as the
+first thing moves, so the audience keeps one picture from the first click to the last.
 
 Colours: blue = records, the state you asked for; yellow = what actually runs and the status it reports; violet = the
 control plane and its loops; teal = the machines (nodes, kubelet, kube-proxy, and etcd's members); red = failure or a gap.
@@ -41,7 +43,9 @@ control plane and its loops; teal = the machines (nodes, kubelet, kube-proxy, an
 - The same loops close the gap: ReplicaSet controller creates one Pod record, scheduler filters (NotReady, memory) and
   binds to node 1, kubelet runs it. Self-healing is not a feature; it is what loops do when the gap reopens.
 
-## 5. A stable address, and change (3 min) — `ServiceRollout`, 7 clicks
+## 5. A stable address, and change (3 min) — `ServiceRollout`, 8 clicks
+- The cluster settles as the title changes: node two returns, the node controller fades, the four Pod records leave the
+  store to make room (they still exist; the note says so), the ReplicaSet card becomes "v1".
 - Problem: pods have their own IPs and the set changes with every replacement.
 - A Service record: selector and a cluster IP that never changes; the EndpointSlice controller derives the list of
   ready pod addresses, rewritten whenever pods change.

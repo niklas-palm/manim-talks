@@ -156,3 +156,22 @@ First principles that the passes confirmed, written to outlast the decks they ca
 - Known imperfections left on purpose in the reference deck: the Industry scene is a labelled list of fronts around the
   two-phase picture, and the Fleet scene's first two steps use the upper half. Both would be better as pictures that
   grow; recorded here rather than redesigned in this pass.
+
+## No cuts between scenes (2026-09-14, evening)
+
+- The seams were the last place the decks still cut: every scene opened on a black frame with its title being written,
+  because a scene is its own video. The rule that fixed it is mechanical: a scene's first frame is the previous scene's
+  last frame, rebuilt statically (`self.add`, `title_still`), and its first play is `retitle()` with the first change.
+  `bin/seams.py` puts the two frames side by side and scores the difference, so the rule can be checked, not argued.
+- Title slides went with it. A talk opens on its first picture and the speaker introduces it over that frame; the
+  agenda lives in the kicker above each title and in the notes.
+- A picture that hands over to the next move (the stage shrinking into a reminder beside the code, then growing back)
+  is the same illustration continuing; the audience keeps its bearings and the red thread is literally visible as the
+  same objects changing role.
+- The first frame of a scene must be sampled at t = 0 when measuring seams: the retitle starts at once, and 0.05 s in,
+  the objects being transformed are already a little faded, which reads as a jump that the audience never sees.
+- What each scene leaves behind belongs in `objects.py` as data (message histories, titles), so the next scene rebuilds
+  it from the same source and the two frames cannot drift apart.
+- A dot that flew from the thermometer to the application box's edge, followed by the result block flying from the
+  thermometer into the list, told the audience the result went somewhere else first. One motion per exchange, from the
+  producer to the exact slot, is now principle 3a and a checklist line; every deck was checked for it.

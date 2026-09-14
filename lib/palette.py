@@ -350,6 +350,12 @@ class Counter(VGroup):
     def to(self, value: float):
         return self.tracker.animate.set_value(value)
 
+    def stop(self):
+        """Freeze the digits: call before fading a counter out. The digit updater redraws the number at full opacity
+        every frame, so a FadeOut of a live counter leaves its digits on screen."""
+        self.num.clear_updaters(); self.unit.clear_updaters()
+        return self
+
 
 class Bars(VGroup):
     """A small bar chart: heights in scene units, one colour, the tallest optionally emphasised. bars[i] is a

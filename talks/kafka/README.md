@@ -19,5 +19,5 @@ bin/render.sh kafka ql      # preview; qh for the talk itself
 bin/serve.sh kafka          # presenter and audience windows
 ```
 
-Every scene opens on a still picture and the mechanism starts on the next click; first occurrences are slow, repeats fast. Sources and simplifications are in `script.md`; the speaker notes live next to the steps in `scenes/`. Defaults quoted
+There is no title scene; every scene opens on the previous scene's last frame and retitles in place while the picture rearranges (the one broker becomes three, the three partitions become three replicas, the leader's log opens into segment files, the compacted topic becomes the metadata log); the mechanism starts on the next click; first occurrences are slow, repeats fast. Sources and simplifications are in `script.md`; the speaker notes live next to the steps in `scenes/`. Defaults quoted
 on screen are from the Apache Kafka 4.3 configuration reference.

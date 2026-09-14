@@ -22,6 +22,7 @@ class Delegation(TalkSlide):
         # --- the first change: the lists go, and the first name of the list grows into the name we will read
         name = label("www.example.com.", 60, NAME).move_to([0, 1.1, 0])
         seed = e["lst"][0][1].copy()
+        e["count"].num.clear_updaters()   # a counter redraws its digits every frame; without this it survives its own fade
         gone = VGroup(e["lst"], e["ll"], e["more"], e["count"], e["cl"], e["copies"], e["cpl"], e["stale"])
         t = retitle(self, t, "Delegation: the name is a path", "2  delegation: the name is a path", extra=[FadeOut(gone), ReplacementTransform(seed, name)], run_time=0.9)
         self.next_slide("""The list is gone; one name from it stays and grows, with the dot at the end that is usually invisible, and the
