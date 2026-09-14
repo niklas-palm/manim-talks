@@ -66,9 +66,14 @@ class Parallelism(TalkSlide):
         sync = VGroup(*[DoubleArrow(g[i].get_right(), g[i + 1].get_left(), buff=0.04, color=HOT, stroke_width=4, tip_length=0.16) for i in range(3)])
         sl2 = label("all-reduce: partial sums exchanged; every GPU now holds the full output", 14, HOT).move_to(pl)
         self.play(FadeIn(sync), FadeOut(pl), FadeIn(sl2), run_time=0.4)
-        travellers = VGroup(*[parts[j].copy().set_opacity(0.6) for j in range(4) for _ in range(3)])
-        dests = [parts[k] for j in range(4) for k in range(4) if k != j]
-        self.play(*[t.animate.move_to(d) for t, d in zip(travellers, dests)], run_time=0.9)
+        # the exchange runs over the links drawn: each GPU hands its partial sums to its neighbours, edge to edge across the
+        # gap, above and below the arrow, so nothing flies over another GPU's contents
+        travellers, ends = VGroup(), []
+        for j in range(3):
+            a, b = g[j], g[j + 1]
+            travellers.add(parts[j].copy().scale(0.5).set_opacity(0.6).move_to(a.get_right() + LEFT * 0.2 + UP * 0.4)); ends.append(b.get_left() + RIGHT * 0.2 + UP * 0.4)
+            travellers.add(parts[j + 1].copy().scale(0.5).set_opacity(0.6).move_to(b.get_left() + RIGHT * 0.2 + DOWN * 0.4)); ends.append(a.get_right() + LEFT * 0.2 + DOWN * 0.4)
+        self.play(*[t.animate.move_to(e) for t, e in zip(travellers, ends)], run_time=0.9)
         self.play(FadeOut(travellers), *[c.animate.set_fill(OUTPUT, 0.95) for pc in parts for c in pc], run_time=0.5)
         tl_y = -1.95
         step1, w1 = timeline([("c", 4.0)], 1.0, tl_y + 0.45)
@@ -106,9 +111,9 @@ class Parallelism(TalkSlide):
         import random
         random.seed(5)
         for _ in range(3):
-            tok = Dot(color=OUTPUT, radius=0.09).move_to(g.get_center() + UP * (g.height / 2 + 0.35))   # from above the row, not above the first GPU
-            dest = random.randrange(4)
-            self.play(tok.animate.move_to(experts[dest][random.randrange(6)].get_center()), run_time=0.4)
+            tok = Dot(color=OUTPUT, radius=0.09).move_to(g.get_center() + UP * (g.height / 2 + 0.15))   # from above the row, not above the first GPU
+            target = experts[random.randrange(4)][random.randrange(2)]   # a top-row expert: the token drops straight in over nothing else
+            self.play(MoveAlongPath(tok, VMobject().set_points_as_corners([tok.get_center(), [target.get_x(), tok.get_y(), 0], target.get_center()])), run_time=0.4)
             self.play(FadeOut(tok), run_time=0.12)
         meas = VGroup(label("when it is used", 15, DIM),
                       label("too big for slicing alone: hundreds of experts spread across many GPUs", 16, TEXT),

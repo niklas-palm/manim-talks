@@ -37,7 +37,7 @@ class TheState(TalkSlide):
                                                       FadeIn(user), FadeIn(app), FadeIn(arrows), FadeIn(calls), FadeIn(tools)], run_time=1.2)
         window = DashedVMobject(RoundedRectangle(corner_radius=0.08, width=BW + 0.3, height=WINDOW * (BH + BGAP) + 0.1, stroke_color=PROBLEM, stroke_width=1.6, fill_opacity=0), num_dashes=60)
         window.move_to([LIST_X, LIST_TOP - (WINDOW * (BH + BGAP)) / 2 + BGAP / 2, 0])
-        wl = label("context window: drawn as 8 messages, counted in tokens", 14, PROBLEM).next_to(window, UP, buff=GAP_TIGHT).align_to(window, RIGHT)
+        wl = label("context window", 14, PROBLEM).next_to(window, UP, buff=GAP_TIGHT).align_to(window, RIGHT)   # drawn as 8 messages, counted in tokens: the note says so
         self.play(FadeIn(window), FadeIn(wl), run_time=0.6)
         self.next_slide("""The list as move three left it, eight messages, and around it a dashed frame: the context window, the most the
         model can take in one call. Drawn here as eight messages; a real window is counted in tokens, a few hundred thousand

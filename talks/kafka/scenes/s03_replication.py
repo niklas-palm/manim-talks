@@ -2,8 +2,8 @@
 fetch from it like consumers. The producer sits on the left margin column, the consumer on the right; the in-sync set
 is a row of markers inside the leader's box; counters and settings live in the two side columns.
 
-  Final frame: three broker rows (x -3.3 .. 3.3; y 1.7, 0, -1.7, filling the band) with copies of the log, in-sync markers in the
-  leader's box, the high-water mark on the leader, producer and consumer arrows pointing at whichever broker leads,
+  Final frame: three broker rows (x -3.3 .. 3.3; y 1.75, -0.15, -2.05, filling the band) with copies of the log, the consumer's
+  pointer under the leader's copy inside its box, in-sync markers in the leader's bottom-right corner, the high-water mark on the leader, producer and consumer arrows pointing at whichever broker leads,
   lag counters and the settings as code in the right column, the claim in the caption band.
   Clicks: 1 every record is copied to the followers before the producer is told it is committed; consumers see only
   committed records  2 a follower falls behind and leaves the in-sync set  3 too few in sync: the write is refused
@@ -24,28 +24,18 @@ class Replication(TalkSlide):
         st = replication_stage()
         boxes, logs, prod, cons = st["boxes"], st["logs"], st["prod"], st["cons"]
         gone = VGroup(d["hashc"], d["load"], *d["logs"], d["cons"][0], d["cons"][1], d["grp"], d["gl"], *d["ptrs"], d["olog"], d["claim"], *[b_[1] for b_ in d["brokers"]])
-        isr = Isr(3)
-
-        def isr_home(b):   # top-right corner inside a broker box
-            return isr.move_to([b[0].get_right()[0] - 0.25, b[0].get_top()[1] - 0.42, 0], aligned_edge=RIGHT)
-
-        isr_home(boxes[0])
+        isr = Isr(3).move_to(isr_pos(boxes[0]), aligned_edge=DR)
         t = retitle(self, t, "A broker dies: replication", "3  replication",
                     extra=[FadeOut(gone), *[Transform(d["brokers"][i][0], boxes[i][0]) for i in range(3)], *[FadeIn(boxes[i][1]) for i in range(3)],
                            Transform(d["prod"], prod), *[FadeIn(l) for l in logs], FadeIn(cons), FadeIn(isr)], run_time=1.0)
         self.remove(*[d["brokers"][i][0] for i in range(3)], d["prod"]); self.add(*[boxes[i][0] for i in range(3)], prod)
-        a_in = arrow(prod, boxes[0], "acks=all", MUTED)
-        a_out = arrow(boxes[0], cons, "fetch", MUTED)
+        a_in = harrow(prod, boxes[0], "acks=all")
+        a_out = harrow(boxes[0], cons, "fetch")
         self.play(Create(a_in[0]), FadeIn(a_in[1]), Create(a_out[0]), FadeIn(a_out[1]), run_time=0.4)
-        hwm = VGroup(Line(UP * 0.38, DOWN * 0.38, color=SYNC, stroke_width=3), label("HWM", 15, SYNC))
-        hwm[1].next_to(hwm[0], UP, buff=0.04)
-        hwm.move_to([logs[0].slot(0)[0] - logs[0].pitch / 2, logs[0].y + 0.17, 0])
+        hwm = hwm_marker().move_to(hwm_pos(logs[0], 0))
         self.play(FadeIn(hwm), run_time=0.3)
-        ptr = Pointer("consumer", READER).place(logs[0], 0, dy=0.55)
+        ptr = Pointer("consumer", READER).place(logs[0], 0, dy=R_PTR_DY)
         self.add(ptr)
-
-        def hwm_pos(log, i):
-            return [log.slot(i)[0] - log.pitch / 2, log.y + 0.17, 0]
 
         def replicate(color, followers=(1, 2), ack=True, rt=0.25):
             """One record: to the leader, copied by the followers that are in sync, then committed and acknowledged."""
@@ -66,14 +56,14 @@ class Replication(TalkSlide):
         cl = claim(self, None, "one partition, three copies: a leader and two followers", LOGC)
         self.next_slide("""The three brokers of the last move stack up, and the picture is now one partition on three of them. Broker one leads; brokers two and three are followers
         with empty copies. The producer writes to the leader with acks=all, the consumer fetches from the leader, the
-        in-sync markers at the top right say which copies are current, and the green line is the high-water mark, the
+        in-sync markers at the bottom right say which copies are current, and the green line is the high-water mark, the
         offset up to which everything is committed. Nothing has been written yet.""")
         for k, c in enumerate((KEY_A, KEY_B, KEY_C)):
             replicate(c, rt=(0.55, 0.3, 0.25)[k])   # the first record slowly: append, copy to the followers, acknowledge
         for i in range(3):
             rt = 0.4 if i == 0 else 0.18
             travel(self, logs[0].cells[i], cons, run_time=rt, carry=logs[0].cells[i])
-            self.play(ptr.to(logs[0], i + 1, dy=0.55), run_time=rt)
+            self.play(ptr.to(logs[0], i + 1, dy=R_PTR_DY), run_time=rt)
         cl = claim(self, cl, "committed: on every in-sync replica, below the HWM", SYNC)
         self.next_slide("""One partition, three copies. The broker that leads takes the writes; the two followers fetch from the leader
         exactly as a consumer would and append the same records at the same offsets. With acks=all, the default since
@@ -102,7 +92,7 @@ class Replication(TalkSlide):
         self.play(FadeIn(lag2), run_time=0.3)
         cell = logs[0].append(self, KEY_B, source=prod, rt=0.25)
         self.play(lag2.to(30), *isr.set({1}, out={2, 3}), boxes[1][1].animate.set_color(FAIL), boxes[1][0].animate.set_stroke(FAIL), run_time=0.6)
-        minc = config("min.insync.replicas\n= 2", 15).move_to([-3.55, YS[1] + 0.25, 0], aligned_edge=RIGHT)   # clear of the box edge
+        minc = config("min.insync.replicas\n= 2", 15).move_to([-XR, YS[1] + 0.25, 0], aligned_edge=RIGHT)   # clear of the box edge
         refused = label("NotEnoughReplicas", 16, FAIL).next_to(minc, DOWN, buff=GAP_TIGHT).align_to(minc, RIGHT)
         cell2 = Square(CELL, fill_color=KEY_C, fill_opacity=0.9, stroke_width=0).move_to(prod.get_center())
         self.add(cell2)
@@ -129,14 +119,14 @@ class Replication(TalkSlide):
         self.play(boxes[0][0].animate.set_stroke(FAIL).set_fill(FAIL, 0.12), boxes[0][1].animate.set_color(FAIL), logs[0].cells.animate.set_fill(opacity=0.25), logs[0].offs.animate.set_opacity(0.3),
                   FadeOut(hwm), FadeOut(ptr), FadeOut(a_in), FadeOut(a_out), run_time=0.7)
         self.play(prod.animate.move_to([-5.45, R_YS[1], 0]), cons.animate.move_to([5.45, R_YS[1], 0]), run_time=0.5)   # producer and consumer follow the leader: horizontal arrows, no crossing
-        newname = label("broker 2: leader", 17, SYNC).move_to(boxes[1][1], aligned_edge=LEFT)
-        a_in2 = arrow(prod, boxes[1], "acks=all", MUTED)
-        a_out2 = arrow(boxes[1], cons, "fetch", MUTED)
+        newname = name_right(label("broker 2: leader", 17, SYNC).move_to(boxes[1][1]), boxes[1])
+        a_in2 = harrow(prod, boxes[1], "acks=all")
+        a_out2 = harrow(boxes[1], cons, "fetch")
         hwm2 = hwm.copy().set_opacity(1).move_to(hwm_pos(logs[1], len(logs[1].cells)))
         self.play(FadeOut(boxes[1][1]), FadeIn(newname), Create(a_in2[0]), FadeIn(a_in2[1]), Create(a_out2[0]), FadeIn(a_out2[1]), FadeIn(hwm2),
-                  isr.animate.move_to([boxes[1][0].get_right()[0] - 0.25, boxes[1][0].get_top()[1] - 0.42, 0], aligned_edge=RIGHT), run_time=0.8)
+                  isr.animate.move_to(isr_pos(boxes[1]), aligned_edge=DR), run_time=0.8)
         self.play(*isr.set({2, 3}, gone={1}), run_time=0.3)
-        ptr2 = Pointer("consumer", READER).place(logs[1], 3, dy=0.55)
+        ptr2 = Pointer("consumer", READER).place(logs[1], 3, dy=R_PTR_DY)
         self.add(ptr2)
         for c in (KEY_A, KEY_C):
             cell = logs[1].append(self, c, source=prod, rt=0.25)
@@ -154,7 +144,7 @@ class Replication(TalkSlide):
         the records that replica missed for availability when the whole in-sync set is gone.""")
         # --- the old leader returns as a follower
         self.play(boxes[0][0].animate.set_stroke(LOGC).set_fill(LOGC, 0.10), FadeOut(boxes[0][1]), run_time=0.4)
-        oldname = label("broker 1: follower", 17, LOGC).move_to(boxes[0][1], aligned_edge=LEFT)
+        oldname = name_right(label("broker 1: follower", 17, LOGC).move_to(boxes[0][1]), boxes[0])
         self.play(FadeIn(oldname), logs[0].cells.animate.set_fill(opacity=0.9), logs[0].offs.animate.set_opacity(1.0), run_time=0.4)
         while len(logs[0].cells) < len(logs[1].cells):
             i = len(logs[0].cells)

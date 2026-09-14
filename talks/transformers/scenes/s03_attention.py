@@ -29,13 +29,13 @@ class Attention(TalkSlide):
         near "money". Attention is how each token pulls in what it needs from the others. It starts by giving every token
         three different views of itself.""")
         # --- three matrices turn one token's vector into q, k, v, drawn large
-        WY = -1.45   # the work band is centred here, under the token row and its triples
+        WY = -1.55   # the work band is centred here; its top clears the triples (bottom 0.25) by a GAP
         src = vector(25, TOKEN, cell=0.32).move_to([-4.8, WY, 0])
-        W = VGroup(grid(3, 8, cell=0.3), grid(3, 8, cell=0.3), grid(3, 8, cell=0.3)).arrange(DOWN, buff=GAP).move_to([-1.0, WY, 0])
+        W = VGroup(grid(3, 8, cell=0.28), grid(3, 8, cell=0.28), grid(3, 8, cell=0.28)).arrange(DOWN, buff=GAP).move_to([-1.0, WY, 0])
         wl = VGroup(*[label(s, 22, WEIGHTS).next_to(m, LEFT, buff=GAP) for s, m in zip(("Wq", "Wk", "Wv"), W)])
-        q = column(3, QUERY, 0.3, op=0.0).move_to([2.5, W[0].get_y(), 0])
-        k = column(3, KEY, 0.3, op=0.0).move_to([2.5, W[1].get_y(), 0])
-        v = column(3, VALUE, 0.3, op=0.0).move_to([2.5, W[2].get_y(), 0])
+        q = column(3, QUERY, 0.28, op=0.0).move_to([2.5, W[0].get_y(), 0])
+        k = column(3, KEY, 0.28, op=0.0).move_to([2.5, W[1].get_y(), 0])
+        v = column(3, VALUE, 0.28, op=0.0).move_to([2.5, W[2].get_y(), 0])
         ql = VGroup(*[label(s, 22, c).move_to([4.5, col.get_y(), 0], aligned_edge=LEFT) for s, col, c in zip(("query", "key", "value"), (q, k, v), (QUERY, KEY, VALUE))])
         self.play(TransformFromCopy(vecs[FOCUS], src), run_time=0.7)
         self.play(FadeIn(W), FadeIn(wl), FadeIn(q), FadeIn(k), FadeIn(v))
@@ -66,9 +66,9 @@ class Attention(TalkSlide):
         self.remove(qbig); self.add(qbig_t)   # the exact object move 3's second scene rebuilds
         self.play(FadeIn(qbl), run_time=0.3)
         keys = [tri[j][1] for j in range(6)]
-        lines = VGroup(*[Line(qbig_t.get_corner(UL) + DOWN * 0.05, kc.get_bottom(), color=MUTED, stroke_width=1.8, stroke_opacity=0.65) for kc in keys])   # to the query's top corner, so the fan stays above the scores
+        lines = VGroup(*[Line(qbig_t.get_left(), kc.get_bottom(), color=MUTED, stroke_width=1.8, stroke_opacity=0.65) for kc in keys])   # from the query's left edge up to each key's bottom: the fan stays under the triples and left of the query's label
         self.play(LaggedStart(*[Create(l) for l in lines], lag_ratio=0.08), run_time=1.0)
-        slabels = VGroup(*[label(f"{s:.1f}", 20, TEXT).move_to([XS[j], ROWS[2] - 0.55, 0]) for j, s in enumerate(SCORES)])   # below the lowest line of the fan
+        slabels = VGroup(*[label(f"{s:.1f}", 20, TEXT).next_to(tri[j], RIGHT, buff=GAP_TIGHT) for j, s in enumerate(SCORES)])   # beside each token's triple, above the fan, so no line crosses a score
         self.play(LaggedStart(*[FadeIn(s, shift=DOWN * 0.05) for s in slabels], lag_ratio=0.06), run_time=0.8)
         sl = label('score: query of "mat" times each key', 18, MUTED).move_to([0, ROWS[3] - 0.2, 0])
         self.play(FadeIn(sl))

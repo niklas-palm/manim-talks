@@ -17,7 +17,6 @@ IDS = ["791", "8415", "7731", "389", "279"]
 ROWS = (2, 9, 6, 11, 4)            # the embedding-table row each token selects
 ANSWER = ["mat", ".", "It", "slept", "."]
 L, TOK = 4, 10                     # layers drawn, token columns in the cache rack
-ZOOM = 0.4
 BRIGHT = "#A9F5EE"                 # a cache cell while it is being read
 
 
@@ -77,7 +76,7 @@ def single_parts(y: float):
     """The open layer for one token: three projections and their outputs, the attention vector, the feed-forward matrix
     and the output vector, at the single-column layout."""
     W = VGroup(*[grid(3, 8) for _ in range(3)])
-    for m, dy in zip(W, (0.42, 0.0, -0.42)):
+    for m, dy in zip(W, (0.38, 0.0, -0.38)):
         m.move_to([-3.35, y + dy, 0])
     wl = VGroup(*[small(s_, WEIGHTS).next_to(m, LEFT, buff=0.06) for s_, m in zip(("Wq", "Wk", "Wv"), W)])
     q, k, v = column(3, TEXT, op=0.0), column(3, CACHE, op=0.0), column(3, CACHE, op=0.0)
@@ -113,8 +112,32 @@ def replay_layer(scene, y: float, vec, keys: list, own_slot, rt: float = 0.07, c
     sweep(scene, att, color, [(ff, outv, color)], rt=rt)
     return VGroup(W, wl, q, k, v, att, ff, outv, eq), outv, cell
 
-ZP = 0.42                          # the prefill zoom is a little wider: five columns of work need the room
+# The two zooms. The open layer box is widened so its contents sit inside it with padding, layer two drops far enough to
+# clear layer one, and the cache row moves up to 0.25 from the box. The camera frame runs from just left of the box to the
+# clear space after the row's sixth slot (the last one the zooms fill); the four slots past it are hidden while zoomed,
+# so no slot is cut in half at the frame edge.
+OPEN_W, OPEN_DX, OPEN2_DY = 4.36, 0.35, 0.26     # the open box's width and shift right; how far layer two drops when it opens
+RACK_DX = 0.72                                    # the cache row's shift left in the prefill zoom (box 4.36 wide)
+ZP_LEFT, ZP_RIGHT = -4.58, 2.29
+ZP = (ZP_RIGHT - ZP_LEFT) / FRAME_W
+ZP_X = (ZP_LEFT + ZP_RIGHT) / 2
+RACK_DX2 = 1.55                                   # the same in the decode zoom, where the box keeps its 3.6 width
+ZD_LEFT, ZD_RIGHT = -4.58, 1.46
+ZOOM = (ZD_RIGHT - ZD_LEFT) / FRAME_W
+ZD_X = (ZD_LEFT + ZD_RIGHT) / 2
 XW, XATT, XFF, XEQ, XOUT = -3.2, -1.9, -1.15, -0.72, -0.45
+
+
+def slide_row(row, cells, dx: float, tail_opacity: float):
+    """Shift a cache row and its filled cells, member by member (a group and one of its members in the same play fight),
+    hiding (0) or showing (1) the slots past the sixth, which the zooms do not reach."""
+    return [m.animate.shift(RIGHT * dx) for m in (*row[:6], *cells)] + [c.animate.shift(RIGHT * dx).set_stroke(opacity=tail_opacity) for c in row[6:]]
+
+
+def hide_tail(row):
+    """The same for a row that is off screen and about to be faded in."""
+    for c in row[6:]:
+        c.set_stroke(opacity=0)
 
 
 def block_of(n: int, color: str, rows: int = 8, cell: float = 0.07, op: float = 0.9) -> VGroup:
@@ -227,7 +250,7 @@ class Mechanics(TalkSlide):
         integer from a vocabulary of thirty to two hundred thousand entries. The model never sees letters, only these integers.
         The two 'the's differ, capitalised and not: two entries.""")
         # --- embedding: each integer selects a row of a table and becomes a vector
-        table = VGroup(*[Square(0.13, fill_color=WEIGHTS, fill_opacity=0.5, stroke_width=0) for _ in range(14 * 8)]).arrange_in_grid(rows=14, cols=8, buff=0.02).move_to([3.4, 1.4, 0])
+        table = VGroup(*[Square(0.13, fill_color=WEIGHTS, fill_opacity=0.5, stroke_width=0) for _ in range(14 * 8)]).arrange_in_grid(rows=14, cols=8, buff=0.02).move_to([3.0, 1.4, 0])
         tl = label("embedding table: one row per vocabulary entry, a few thousand numbers each", 13, WEIGHTS).next_to(table, UP, buff=0.12)
         self.play(FadeIn(table), FadeIn(tl))
         cap = swap_caption(self, cap, "Embedding: each integer selects a row; the token becomes a vector")
@@ -254,8 +277,8 @@ class Mechanics(TalkSlide):
         rl = label("KV cache: one column per token, one row per layer", 13, CACHE).next_to(rack, UP, buff=0.12).align_to(rack, LEFT)
         bus, comp = Gauge("bus", OUTPUT, 1.5), Gauge("compute", PROMPT, 1.5)
         gauges = VGroup(bus, comp).arrange(RIGHT, buff=0.35).move_to([-6.0, -0.5, 0])
-        reads = Counter("full reads of the model", 0, "", WEIGHTS, size=22).move_to([3.2, -2.7, 0], aligned_edge=LEFT)
-        produced = Counter("tokens produced", 0, "", OUTPUT, size=22).move_to([5.3, -2.7, 0], aligned_edge=LEFT)
+        reads = Counter("full reads of the model", 0, "", WEIGHTS, size=22).move_to([2.5, -2.7, 0], aligned_edge=LEFT)   # three counters in one row, 0.4 apart, ending at the 6.4 margin
+        produced = Counter("tokens produced", 0, "", OUTPUT, size=22).move_to([4.9, -2.7, 0], aligned_edge=LEFT)
         self.play(FadeOut(cap), FadeOut(table), FadeOut(tl), FadeIn(layers), FadeIn(ll), FadeIn(more), FadeIn(rack), FadeIn(rl), FadeIn(gauges), FadeIn(reads), FadeIn(produced))
         self.next_slide("""The stage; everything from here on happens on it. The five vectors wait at the top. Left, the model: a stack of
         layers, four drawn of thirty to a hundred, each a set of weight matrices sitting in GPU memory. Right, the KV cache,
@@ -268,8 +291,8 @@ class Mechanics(TalkSlide):
         cap = caption(self, "Inside one layer: the five vectors arrive as a block", 22)
         ctx = VGroup(t, sentence, toks, rl, gauges, reads, produced, more, ll)   # captions never go in: a faded-out caption would come back with the group
         others = VGroup(*layers[2:], *rack[2:])
-        self.play(frame.animate.scale(ZP).move_to([-1.5, y0 - 0.15, 0]), FadeOut(ctx), FadeOut(others), FadeOut(layers[1]), FadeOut(rack[1]), rack[0].animate.shift(LEFT * 1.0),
-                  layers[0][0].animate.stretch_to_fit_height(1.3).stretch_to_fit_width(4.2).shift(RIGHT * 0.3),
+        self.play(frame.animate.scale(ZP).move_to([ZP_X, y0 - 0.15, 0]), FadeOut(ctx), FadeOut(others), FadeOut(layers[1]), FadeOut(rack[1]), *slide_row(rack[0], [], -RACK_DX, 0),
+                  layers[0][0].animate.stretch_to_fit_height(1.3).stretch_to_fit_width(OPEN_W).shift(RIGHT * OPEN_DX),
                   block.animate.scale(0.07 / 0.065).arrange(RIGHT, buff=0.02).move_to([-4.05, y0, 0]), run_time=1.6)
         self.next_slide("""Inside one layer: the five vectors arrive together as a block, and the layer opens up. This is prefill, and we go inside it. The five vectors line up as a block, side by side, and go into layer one
         together. Zoom in and let the layer open up. The block arrives at the left. Everything the layer does, it does to this
@@ -316,11 +339,11 @@ class Mechanics(TalkSlide):
         # --- the output block drops into layer two, which does the same thing at speed: no new click, the picture repeating once
         y1 = layers[1].get_y()
         nxt = outv.copy()
-        layers[1][0].stretch_to_fit_height(1.2).stretch_to_fit_width(4.2).shift(RIGHT * 0.3 + DOWN * 0.12)   # not on screen yet, so its open shape is set directly; opens downward, clear of layer one
-        y1 -= 0.12
-        rack[1].shift(LEFT * 1.0)
+        layers[1][0].stretch_to_fit_height(1.3).stretch_to_fit_width(OPEN_W).shift(RIGHT * OPEN_DX + DOWN * OPEN2_DY)   # not on screen yet, so its open shape is set directly; opens downward, clear of layer one
+        y1 -= OPEN2_DY
+        rack[1].shift(LEFT * RACK_DX); hide_tail(rack[1])
         layer1 = VGroup(W, wl, q, k, v, ql, att, al, ff, fl, outv, eq)
-        self.play(frame.animate.move_to([-1.5, y0 - 0.55, 0]), FadeOut(layer1), FadeOut(block), layers[0][0].animate.stretch_to_fit_height(0.5),
+        self.play(frame.animate.move_to([ZP_X, y0 - 0.65, 0]), FadeOut(layer1), FadeOut(block), layers[0][0].animate.stretch_to_fit_height(0.5),
                   FadeIn(layers[1]), FadeIn(rack[1]), nxt.animate.move_to([-4.05, y1, 0]), run_time=1.4)
         layer2, out2, cells2 = replay_layer_block(self, y1, nxt, [rack[1][i] for i in range(5)])
         nxt2 = out2.copy()
@@ -335,9 +358,9 @@ class Mechanics(TalkSlide):
         exactly the same thing at speed: project, store five keys and values, attend, feed-forward, hand on. Thirty to a
         hundred times. So one layer, one block: read all the weights once, write one cache cell per token.""")
         self.play(FadeOut(layer2), FadeOut(nxt), FadeOut(cap), run_time=0.4)   # clear the open layer first, so the camera pulls back on a clean box
-        block.scale(0.065 / 0.07).move_to([layers[0].get_x(), y1 + 0.12, 0])   # inside layer two, where the zoom left it
-        self.play(frame.animate.scale(1 / ZP).move_to(ORIGIN), FadeIn(others), VGroup(rack[0], *cells1).animate.shift(RIGHT * 1.0), VGroup(rack[1], *cells2).animate.shift(RIGHT * 1.0),
-                  layers[0][0].animate.stretch_to_fit_width(3.6).shift(LEFT * 0.3), layers[1][0].animate.stretch_to_fit_height(0.5).stretch_to_fit_width(3.6).shift(LEFT * 0.3 + UP * 0.12),
+        block.scale(0.065 / 0.07).move_to([layers[0].get_x(), y1 + OPEN2_DY, 0])   # inside layer two, where the zoom left it
+        self.play(frame.animate.scale(1 / ZP).move_to(ORIGIN), FadeIn(others), *slide_row(rack[0], cells1, RACK_DX, 1), *slide_row(rack[1], cells2, RACK_DX, 1),
+                  layers[0][0].animate.stretch_to_fit_width(3.6).shift(LEFT * OPEN_DX), layers[1][0].animate.stretch_to_fit_height(0.5).stretch_to_fit_width(3.6).shift(LEFT * OPEN_DX + UP * OPEN2_DY),
                   FadeIn(block), FadeIn(ctx), run_time=1.6)
         # --- prefill continues: the block goes down the rest of the stack at the speed it really happens
         filled = [list(cells1), list(cells2), [], []]
@@ -379,7 +402,7 @@ class Mechanics(TalkSlide):
         the answer has its first token, 'mat'. It joins the sentence. Prefill has done two things: filled the cache with the
         prompt, and produced one token.""")
         # --- decode loop
-        cread = Counter("cache cells read, this token", 0, "", CACHE, size=22).move_to([1.0, -2.7, 0], aligned_edge=LEFT)
+        cread = Counter("cache cells read, this token", 0, "", CACHE, size=22).move_to([-0.4, -2.7, 0], aligned_edge=LEFT)
         cap = swap_caption(self, cap, "Decode: the sampled token goes back in alone")
         self.play(FadeIn(cread), run_time=0.4)
         for k_, w in enumerate(ANSWER[1:], start=1):
@@ -398,8 +421,7 @@ class Mechanics(TalkSlide):
                 one. Watch the gauges swap: the bus is pegged and the compute grid nearly idle. To see why, go back inside the
                 layer with this one column.""")
                 wide = VGroup(t, sentence, toks, words, rl, gauges, ratio, reads, produced, cread, more, ll, logits, lgl, *sum(filled[2:], []))   # row two's cells stay out: they travel with rack[1], and a FadeIn would drag them back to where the fade started
-                row0 = VGroup(rack[0], *filled[0])
-                self.play(frame.animate.scale(ZOOM).move_to([-1.8, y0 - 0.15, 0]), FadeOut(wide), FadeOut(cap), FadeOut(others), FadeOut(layers[1]), FadeOut(rack[1]), *[FadeOut(c) for c in filled[1]], row0.animate.shift(LEFT * 1.8),
+                self.play(frame.animate.scale(ZOOM).move_to([ZD_X, y0 - 0.15, 0]), FadeOut(wide), FadeOut(cap), FadeOut(others), FadeOut(layers[1]), FadeOut(rack[1]), *[FadeOut(c) for c in filled[1]], *slide_row(rack[0], filled[0], -RACK_DX2, 0),
                           layers[0][0].animate.stretch_to_fit_height(1.3), col_.animate.scale(0.08 / 0.065).move_to([-4.2, y0, 0]), run_time=1.6)
                 cap = caption(self, "Decode inside the layer: the same stages for one column", 22)
                 wlab = small("weights: read in full again; the same bytes for one column as for five", WEIGHTS).move_to([-2.6, y0 + 0.8, 0])
@@ -410,7 +432,7 @@ class Mechanics(TalkSlide):
                 sweep(self, col_, OUTPUT, [(W[0], q, TEXT), (W[1], k, CACHE), (W[2], v, CACHE)], rt=0.2)
                 self.play(FadeIn(ql), run_time=0.3)
                 cell1 = store_kv(self, VGroup(k), VGroup(v), [rack[0][5]])[0]
-                filled[0].append(cell1); row0.add(cell1)   # the new cell rides back with its row at the zoom-out
+                filled[0].append(cell1)   # the new cell rides back with its row at the zoom-out
                 self.next_slide("""Decode inside the layer: the same stages, for one column. Weights read in full; cache read in full. Inside, decode is prefill for one token; nothing is skipped. The same three matrices, read in full, give this
                 token its query, key and value, one column of arithmetic per row instead of five. Its key and value go into the
                 cache as the sixth column of this layer's row. The label over the matrices is the point: exactly the bytes prefill
@@ -424,21 +446,21 @@ class Mechanics(TalkSlide):
                 # layer two at speed, then back out with the vector inside layer two
                 y1 = layers[1].get_y()
                 nxt = outv.copy()
-                layers[1][0].stretch_to_fit_height(1.2).shift(DOWN * 0.12)
-                y1 -= 0.12
-                row1 = VGroup(rack[1], *filled[1]).shift(LEFT * 1.8)
+                layers[1][0].stretch_to_fit_height(1.3).shift(DOWN * OPEN2_DY)
+                y1 -= OPEN2_DY
+                row1 = VGroup(rack[1], *filled[1]).shift(LEFT * RACK_DX2); hide_tail(rack[1])
                 layer1 = VGroup(W, wl, q, k, v, ql, att, al, ff, fl, outv, eq, wlab, clab)
-                self.play(frame.animate.move_to([-1.8, y0 - 0.55, 0]), FadeOut(layer1), FadeOut(col_), layers[0][0].animate.stretch_to_fit_height(0.5),
+                self.play(frame.animate.move_to([ZD_X, y0 - 0.65, 0]), FadeOut(layer1), FadeOut(col_), layers[0][0].animate.stretch_to_fit_height(0.5),
                           FadeIn(layers[1]), FadeIn(row1), nxt.animate.move_to([-4.2, y1, 0]), run_time=1.2)
                 layer2, out2, cell2 = replay_layer(self, y1, nxt, list(filled[1]), rack[1][5], rt=0.07, color=OUTPUT)
-                filled[1].append(cell2); row1.add(cell2)
+                filled[1].append(cell2)
                 nxt2 = out2.copy()
                 self.play(nxt2.animate.move_to([-1.0, y1 - 1.1, 0]).set_opacity(0.0), run_time=0.6)
                 self.remove(nxt2)
                 self.play(FadeOut(layer2), FadeOut(nxt), FadeOut(cap), run_time=0.4)
-                col_.scale(0.065 / 0.08).move_to([layers[0].get_x(), y1 + 0.12, 0])
-                self.play(frame.animate.scale(1 / ZOOM).move_to(ORIGIN), FadeIn(others), row0.animate.shift(RIGHT * 1.8), row1.animate.shift(RIGHT * 1.8),
-                          layers[1][0].animate.stretch_to_fit_height(0.5).shift(UP * 0.12), FadeIn(col_), FadeIn(wide), run_time=1.6)
+                col_.scale(0.065 / 0.08).move_to([layers[0].get_x(), y1 + OPEN2_DY, 0])
+                self.play(frame.animate.scale(1 / ZOOM).move_to(ORIGIN), FadeIn(others), *slide_row(rack[0], filled[0], RACK_DX2, 1), *slide_row(rack[1], filled[1], RACK_DX2, 1),
+                          layers[1][0].animate.stretch_to_fit_height(0.5).shift(UP * OPEN2_DY), FadeIn(col_), FadeIn(wide), run_time=1.6)
                 cap = caption(self, "Decode: one token per step, the whole model read every step")
                 first_layer = 2
             for r in range(first_layer, L):

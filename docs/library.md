@@ -79,7 +79,7 @@ fade the old label out and a new one in, or `Transform` to a new label of the sa
 | `tokens(n, color, side, gap)` | a row of squares | tokens, messages, requests, records |
 | `box(w, h, name, color, name_align)` | rounded box with a name inside its top edge | a machine, an engine, a service; `box[0]` is the rectangle; `name_align="left"` frees the top-right corner for markers |
 | `node(name, color, w, h, sub)` | a named component with an optional subtitle | system diagrams; `node[0]` rectangle, `node[1]` name |
-| `arrow(a, b, text, color)` | an arrow between two objects' edges with a small label | build it after both ends are in place |
+| `arrow(a, b, text, color)` | an arrow between two objects' edges with a small label | build it after both ends are in place; ends meet the box where the centre-to-centre line crosses it (`edge_point`), so put the two objects on one axis for a horizontal or vertical arrow |
 | `travel(scene, a, b, color, flash=..., carry=..., text=..., edges=...)` | a dot travels from a to b and vanishes, optionally flashing b; `carry=cell` sends a shrunken copy of an object, `text` rides above the dot, `edges=True` goes edge to edge | the unit of motion in every system picture: a request, a query and its answer, an observe and an act |
 | `dashed(a, b, text, color)` | a dashed line between two objects with a small label | a watch, a subscription, a heartbeat; hub-and-spoke systems are one hub and several of these |
 | `column(n, color, cell, op)` | a vector: a thin column of cells | shades vary per cell to look like numbers (see the reference deck's `vector()`) |

@@ -28,7 +28,7 @@ class GPU(VGroup):
         self.cores = VGroup(*[Square(side, fill_color=DIM, fill_opacity=0.9, stroke_width=0) for _ in range(32)]).arrange_in_grid(rows=2, cols=16, buff=0.05)
         self.cores.next_to(self.mem, DOWN, buff=0.45).align_to(self.mem, LEFT)
         self.cores_label = label("compute", 15, DIM).next_to(self.cores, DOWN, buff=0.08).align_to(self.cores, LEFT)
-        self.bandwidth = Gauge("bus", OUTPUT).move_to(self.outer.get_right() + LEFT * 1.15 + DOWN * 0.25)
+        self.bandwidth = Gauge("bus", OUTPUT).move_to(self.outer.get_right() + LEFT * 1.25 + DOWN * 0.25)   # 0.75 from the compute gauge: the two names never touch
         self.compute = Gauge("compute", PROMPT).move_to(self.outer.get_right() + LEFT * 0.5 + DOWN * 0.25)
         self.add(self.outer, self.title, self.mem, self.weights, self.cache, self.mem_label, self.cores, self.cores_label, self.bandwidth, self.compute)
 

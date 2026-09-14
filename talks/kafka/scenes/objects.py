@@ -31,6 +31,14 @@ def broker(name: str, w: float, h: float, color: str = LOGC) -> VGroup:
     return box(w, h, name, color, size=18)
 
 
+def harrow(a, b, text: str, color: str = MUTED) -> VGroup:
+    """A horizontal arrow from a's right edge to b's left edge at a's height, its label above the middle. The library's
+    arrow() aims at a box's boundary point, which for a rounded box is a corner: skewed. Keep a and b at one y."""
+    y = a.get_center()[1]
+    ar = Arrow([a.get_right()[0] + 0.1, y, 0], [b.get_left()[0] - 0.1, y, 0], buff=0, color=color, stroke_width=2.2, tip_length=0.18)
+    return VGroup(ar, label(text, 14, color).next_to(ar, UP, buff=0.05))
+
+
 def claim(scene, old, text: str, color: str = LOGC):
     """The one line a step claims, in the caption band, left-aligned to the margin: at most eight words, size 17. Every
     scene uses this one slot, so the eye knows where to look; the sentence behind it is in the note."""
@@ -88,13 +96,12 @@ def legend() -> VGroup:
 
 def log_stage() -> dict:
     """Move 1's picture before anything is written: producer, one broker spanning the band, an empty partition."""
-    prod = producer().move_to([-5.45, LOG_Y, 0])
-    brk = broker("broker", 10.6, 3.0).move_to([1.1, 1.1, 0])
+    prod = producer(w=1.6).move_to([-5.6, LOG_Y, 0])
+    brk = broker("broker", 10.3, 3.0).move_to([1.25, 1.1, 0])   # 0.7 between producer and broker: room for the append arrow and its label
     brk[1].align_to(brk[0].get_left() + RIGHT * 0.25, LEFT)
     log = Log(-3.6, LOG_Y, capacity=12, name="topic payments, one partition", cell=LOG_CELL, gap=GAP)
     leg = legend().move_to([6.15, 2.35, 0], aligned_edge=RIGHT)
-    ar = Arrow(prod.get_right() + RIGHT * 0.1, [brk[0].get_left()[0] - 0.1, LOG_Y, 0], buff=0, color=MUTED, stroke_width=2.2, tip_length=0.18)
-    al = label("append", 14, MUTED).next_to(ar, UP, buff=0.05)
+    ar, al = harrow(prod, brk, "append")
     return {"prod": prod, "brk": brk, "log": log, "leg": leg, "ar": ar, "al": al}
 
 
@@ -151,26 +158,39 @@ def partitions_end() -> dict:
 
 
 # move 3, replication
-R_YS, R_BW, R_X0, R_CAP, R_CELL, R_XR = [1.7, 0.0, -1.7], 6.6, -3.05, 8, 0.5, 3.3
+R_YS, R_BW, R_BH, R_X0, R_CAP, R_CELL, R_XR = [1.75, -0.15, -2.05], 6.6, 1.75, -3.05, 8, SIDE, 3.55
+R_LOG_DY, R_PTR_DY = 0.175, 0.68      # the log sits above a box's centre so the consumer pointer under it stays inside the box
 R_SEQ = [KEY_A, KEY_B, KEY_C, KEY_A, KEY_A, KEY_B, KEY_A, KEY_C]   # the eight records every replica holds at the end of move 3
 
 
 def replication_stage(names=("broker 1: leader", "broker 2: follower", "broker 3: follower")) -> dict:
-    boxes = VGroup(*[box(R_BW, 1.55, n, LOGC, size=17, name_align="left").move_to([0.0, y, 0]) for y, n in zip(R_YS, names)])
-    logs = [Log(R_X0, y - 0.2, capacity=R_CAP, cell=R_CELL, gap=GAP) for y in R_YS]
+    boxes = VGroup(*[box(R_BW, R_BH, n, LOGC, size=17, name_align="left").move_to([0.0, y, 0]) for y, n in zip(R_YS, names)])
+    for b in boxes:
+        name_right(b[1], b)   # the name at the top right: the HWM label rides above the log at the top left
+    logs = [Log(R_X0, y + R_LOG_DY, capacity=R_CAP, cell=R_CELL, gap=GAP) for y in R_YS]
     prod = producer().move_to([-5.45, R_YS[0], 0])
     cons = consumer("consumer", w=1.9).move_to([5.45, R_YS[0], 0])
     return {"boxes": boxes, "logs": logs, "prod": prod, "cons": cons}
 
 
+def name_right(name, b):
+    """A box name aligned to the box's top-right corner."""
+    return name.align_to(b[0].get_right() + LEFT * 0.2, RIGHT)
+
+
+def isr_pos(b):
+    """Where the in-sync markers sit: the bottom-right corner inside a broker box, clear of the log and its pointer."""
+    return [b[0].get_right()[0] - 0.25, b[0].get_bottom()[1] + 0.12, 0]
+
+
 def hwm_marker() -> VGroup:
-    hwm = VGroup(Line(UP * 0.38, DOWN * 0.38, color=SYNC, stroke_width=3), label("HWM", 15, SYNC))
+    hwm = VGroup(Line(UP * 0.29, DOWN * 0.29, color=SYNC, stroke_width=3), label("HWM", 15, SYNC))   # the rail's height
     hwm[1].next_to(hwm[0], UP, buff=0.04)
     return hwm
 
 
 def hwm_pos(log: Log, i: int):
-    return [log.slot(i)[0] - log.pitch / 2, log.y + 0.17, 0]
+    return [log.slot(i)[0] - log.pitch / 2, log.y, 0]
 
 
 def replication_end() -> dict:
@@ -181,11 +201,11 @@ def replication_end() -> dict:
     for log in d["logs"]:
         for c in R_SEQ:
             log.put(c)
-    d["isr"] = Isr(3).move_to([d["boxes"][1][0].get_right()[0] - 0.25, d["boxes"][1][0].get_top()[1] - 0.42, 0], aligned_edge=RIGHT)
+    d["isr"] = Isr(3).move_to(isr_pos(d["boxes"][1]), aligned_edge=DR)
     d["hwm"] = hwm_marker().move_to(hwm_pos(d["logs"][1], 8))
-    d["ptr"] = Pointer("consumer", READER).place(d["logs"][1], 3, dy=0.55)
-    d["a_in"] = arrow(d["prod"], d["boxes"][1], "acks=all", MUTED)
-    d["a_out"] = arrow(d["boxes"][1], d["cons"], "fetch", MUTED)
+    d["ptr"] = Pointer("consumer", READER).place(d["logs"][1], 3, dy=R_PTR_DY)
+    d["a_in"] = harrow(d["prod"], d["boxes"][1], "acks=all")
+    d["a_out"] = harrow(d["boxes"][1], d["cons"], "fetch")
     d["claim"] = claim_still("back as a follower: fetch, catch up, rejoin", LOGC)
     return d
 

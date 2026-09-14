@@ -10,10 +10,10 @@ TITLE_CLOSE = ("Five things to take home", "close")
 
 def two_phases() -> VGroup:
     """The prefill box, the decode box with its loop, and the arrow between: the picture every engine shares."""
-    pre = box(3.0, 1.1, "prefill", PROMPT, size=24).shift(LEFT * 2.8 + UP * 1.2)
-    dec = box(3.0, 1.1, "decode", OUTPUT, size=24).shift(RIGHT * 2.8 + UP * 1.2)
+    pre = box(3.0, 1.3, "prefill", PROMPT, size=24).shift(LEFT * 2.8 + UP * 1.2)
+    dec = box(3.0, 1.3, "decode", OUTPUT, size=24).shift(RIGHT * 2.8 + UP * 1.2)
     arrow = Arrow(pre[0].get_right(), dec[0].get_left(), buff=0.05, color=DIM)
-    loop = CurvedArrow(dec[0].get_bottom() + RIGHT * 0.6, dec[0].get_bottom() + LEFT * 0.6, angle=-TAU / 3, color=OUTPUT, stroke_width=2, tip_length=0.15)
+    loop = CurvedArrow(dec[0].get_center() + RIGHT * 0.6, dec[0].get_center() + LEFT * 0.6, angle=-TAU / 3, color=OUTPUT, stroke_width=2, tip_length=0.15)   # the loop inside its box, under the name
     return VGroup(pre, dec, arrow, loop)
 
 
@@ -46,7 +46,7 @@ class Industry(TalkSlide):
         p = start_industry(self)
         pre, dec, arrow, loop, cap = p["pre"], p["dec"], p["arrow"], p["loop"], p["cap"]
         def front(name, what, color, pos):
-            g = VGroup(label(name, 20, color), label(what, 15, TEXT, width=3.6)).arrange(DOWN, aligned_edge=LEFT, buff=0.04).move_to(pos, aligned_edge=LEFT)
+            g = VGroup(label(name, 20, color), label(what, 15, TEXT, width=4.2)).arrange(DOWN, aligned_edge=LEFT, buff=0.04).move_to(pos, aligned_edge=LEFT)
             self.play(FadeIn(g, shift=UP * 0.12), run_time=0.5)
             return g
         f1 = front("disaggregated serving", "prefill and decode on separate pools, each sized and tuned for its own gauge", PROMPT, LEFT * 4.7 + DOWN * 0.15)

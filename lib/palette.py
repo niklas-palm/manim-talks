@@ -237,12 +237,28 @@ def node(name: str, color: str = BLUE, w: float = 2.2, h: float = 0.8, size: flo
     return g
 
 
+def edge_point(m: Mobject, towards) -> np.ndarray:
+    """Where the line from m's centre towards a point leaves m's bounding box. Manim's get_boundary_point returns the
+    extreme point in a direction, which for a diagonal is a corner and makes lines between boxes look skewed; this
+    meets the edge on the way to the other object, so a line between two boxes is straight and lands where it looks
+    like it should."""
+    c, t = m.get_center(), np.array(towards, dtype=float)
+    d = t - c
+    if abs(d[0]) < 1e-9 and abs(d[1]) < 1e-9:
+        return c
+    hw, hh = m.width / 2, m.height / 2
+    k = min(hw / abs(d[0]) if abs(d[0]) > 1e-9 else np.inf, hh / abs(d[1]) if abs(d[1]) > 1e-9 else np.inf)
+    return c + d * k
+
+
 def arrow(a: Mobject, b: Mobject, text: str = "", color: str = MUTED, buff: float = 0.12, size: float = 14, above: bool = True) -> VGroup:
     """An arrow from the edge of a to the edge of b with a small label beside its middle. Build it after both ends are
-    in their final positions (an arrow built before a move points at the old place)."""
-    ar = Arrow(a.get_center(), b.get_center(), buff=0, color=color, stroke_width=2.2, tip_length=0.18)
-    start = a.get_boundary_point(ar.get_unit_vector()) + ar.get_unit_vector() * buff
-    end = b.get_boundary_point(-ar.get_unit_vector()) - ar.get_unit_vector() * buff
+    in their final positions (an arrow built before a move points at the old place). Ends meet the boxes where the
+    centre-to-centre line crosses their edges, so the arrow is straight; align the two objects on one axis when the
+    picture allows it and the arrow is horizontal or vertical."""
+    u = (b.get_center() - a.get_center()); u = u / max(np.linalg.norm(u), 1e-9)
+    start = edge_point(a, b.get_center()) + u * buff
+    end = edge_point(b, a.get_center()) - u * buff
     ar = Arrow(start, end, buff=0, color=color, stroke_width=2.2, tip_length=0.18)
     g = VGroup(ar)
     if text:
@@ -262,9 +278,9 @@ def travel(scene, path_from: Mobject, path_to: Mobject, color: str = BLUE, radiu
     for objects that sit side by side."""
     start, end = path_from.get_center(), path_to.get_center()
     if edges:
-        direction = end - start
-        start = path_from.get_boundary_point(direction) + direction / max(np.linalg.norm(direction), 1e-6) * 0.1
-        end = path_to.get_boundary_point(-direction) - direction / max(np.linalg.norm(direction), 1e-6) * 0.1
+        u = (end - start) / max(np.linalg.norm(end - start), 1e-6)
+        start = edge_point(path_from, path_to.get_center()) + u * 0.1
+        end = edge_point(path_to, path_from.get_center()) - u * 0.1
     d = carry.copy().scale(0.6) if carry is not None else Dot(color=color, radius=radius)
     d.move_to(start)
     if text:
@@ -281,8 +297,7 @@ def dashed(a: Mobject, b: Mobject, text: str = "", color: str = MUTED) -> VGroup
     """A dashed line between two objects' edges with a small label at its middle: a watch, a subscription, a
     heartbeat, any standing relation that is not a flow. Hub-and-spoke systems (a control plane, a broker) are drawn
     as one hub and several of these."""
-    ln = DashedLine(a.get_boundary_point(b.get_center() - a.get_center()), b.get_boundary_point(a.get_center() - b.get_center()),
-                    color=color, stroke_width=1.6, dash_length=0.1, stroke_opacity=0.7)
+    ln = DashedLine(edge_point(a, b.get_center()), edge_point(b, a.get_center()), color=color, stroke_width=1.6, dash_length=0.1, stroke_opacity=0.7)
     g = VGroup(ln)
     if text:
         g.add(label(text, 12, MUTED).move_to(ln.get_center() + UP * 0.14))

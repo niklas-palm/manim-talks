@@ -78,7 +78,7 @@ class Retention(TalkSlide):
         # --- a tombstone
         tomb = Square(SIDE, fill_opacity=0, stroke_color=KEY_B, stroke_width=2.5).move_to(cprod.get_center())   # born at the producer, like every record
         cross = VGroup(Line(UL * 0.11, DR * 0.11, color=KEY_B, stroke_width=2), Line(UR * 0.11, DL * 0.11, color=KEY_B, stroke_width=2)).move_to(tomb)
-        tl = label("tombstone: key bob, value null", 15, KEY_B).next_to(cprod, UP, buff=GAP_TIGHT).align_to(cprod, LEFT)
+        tl = label("tombstone:\nkey bob, value null", 15, KEY_B).next_to(cprod, UP, buff=GAP_TIGHT).align_to(cprod, LEFT)   # two lines: clear of the topic name
         self.play(FadeIn(tomb), FadeIn(cross), FadeIn(tl), run_time=0.4)
         n = len(clog.cells)
         self.play(VGroup(tomb, cross).animate.move_to(clog.slot(n)), FadeOut(tl), run_time=0.5)

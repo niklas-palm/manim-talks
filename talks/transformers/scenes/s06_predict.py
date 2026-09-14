@@ -29,11 +29,12 @@ class Predict(TalkSlide):
         shaped by the entire sentence and carries everything the model knows about what should come next. We only need this
         one vector: whatever the last token has become is the model's summary of "what word follows".""")
         # --- vocabulary matrix -> a score per vocab entry, by the same sweep
-        vocab = grid(12, 8, WEIGHTS, cell=0.21).move_to([COLS[1], Y, 0])
+        vocab = grid(12, 8, WEIGHTS, cell=0.2).move_to([COLS[1], Y, 0])
         vocl = label("vocabulary matrix\n50,257 rows, one per token", 17, WEIGHTS).next_to(vocab, UP, buff=GAP)
-        scores = column(12, TEXT, 0.21, op=0.0).move_to([-1.3, Y, 0])
+        scores = column(12, TEXT, 0.2, op=0.0).move_to([-1.6, Y, 0])
         scl = label("a score for every\npossible next token", 17, TEXT).next_to(scores, RIGHT, buff=GAP)
-        self.play(vec.animate.move_to([-5.6, Y, 0]), vll.animate.move_to([-5.6, Y + 1.35, 0]), run_time=0.6)
+        dest = vec.copy().move_to([-5.6, Y, 0])
+        self.play(vec.animate.move_to(dest), vll.animate.next_to(dest, UP, buff=GAP), run_time=0.6)   # the label keeps its GAP above the moved vector
         self.play(FadeIn(vocab), FadeIn(vocl), FadeIn(scores), FadeIn(scl))
         sweep(self, vec, TOKEN, [(vocab, scores, TEXT)], rt=0.1)
         rnd = random.Random(5)
@@ -46,7 +47,7 @@ class Predict(TalkSlide):
         rnd = random.Random(5)
         hs = [rnd.uniform(0.1, 0.5) for _ in range(12)]
         hs[7] = 2.3
-        dist = Bars(hs, width=0.55, gap=0.12, color=ATTN).move_to([2.5, ROWS[4], 0], aligned_edge=DOWN)   # clear of the right frame edge
+        dist = Bars(hs, width=0.36, gap=0.1, color=ATTN).move_to([3.9, ROWS[4], 0], aligned_edge=DOWN)   # right of the scores and their label, 0.5 from the frame edge
         dl = label("softmax: a probability per token, summing to 1", 18, ATTN).next_to(dist, UP, buff=GAP_WIDE)
         self.play(FadeOut(VGroup(vocab, vocl)), TransformFromCopy(scores, dist), FadeIn(dl), run_time=1.0)
         self.next_slide("""Softmax again turns the scores into probabilities that sum to one: the model's guess at the next word, spread over
@@ -66,7 +67,7 @@ class Predict(TalkSlide):
         back[1].next_to(back[0], UP, buff=GAP_TIGHT)
         self.play(FadeOut(VGroup(vec, vll, scores, scl)), picked.animate.scale(0.3).move_to(back[0].get_center()), run_time=0.7)
         self.play(FadeOut(picked), FadeIn(back), run_time=0.4)
-        loop = CurvedArrow(back[0].get_bottom() + DOWN * 0.15, vecs[0].get_bottom() + DOWN * 0.15, color=MUTED, stroke_width=3.5, angle=-PI / 4)
+        loop = CurvedArrow(back[0].get_bottom() + DOWN * 0.25, vecs[0].get_bottom() + DOWN * 0.25, color=MUTED, stroke_width=3.5, angle=-PI / 4)
         loopl = label("append, then run the whole model again", 20, MUTED).next_to(loop, DOWN, buff=GAP_TIGHT)
         self.play(Create(loop), FadeIn(loopl), run_time=0.9)
         self.next_slide("""Then the sampled word is appended: "mat" takes its place at the end of the row, in the colour of something the

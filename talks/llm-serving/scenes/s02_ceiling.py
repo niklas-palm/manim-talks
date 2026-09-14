@@ -16,7 +16,7 @@ def start_ceiling(scene, add: bool = True) -> dict:
     of the argument. Built identically on both sides of the seam."""
     gpu = GPU("one GPU", w=4.6, weights_gb=32).scale(0.85).shift(LEFT * 3.2 + UP * 0.2)
     gauge_at(gpu.bandwidth, 0.97)
-    card = label("RTX PRO 6000 Blackwell Server Edition (g7e): 96 GB GDDR7", 14, MUTED, width=3.9).next_to(gpu, DOWN, buff=0.15)
+    card = label("RTX PRO 6000 Blackwell Server Edition (g7e): 96 GB GDDR7", 14, MUTED, width=3.6).next_to(gpu, DOWN, buff=0.15)
     bw = Counter("memory bandwidth", 1.6, "TB/s", OUTPUT, decimals=2).move_to([3.2, 1.3, 0], aligned_edge=LEFT)
     mk = label("model", 13, MUTED).move_to([XR, 2.35, 0], aligned_edge=LEFT)
     mname = label("dense, 32B parameters, fp8: one byte per weight", 17, TEXT).move_to([XR, 2.0, 0], aligned_edge=LEFT)
@@ -35,7 +35,7 @@ class DecodeCeiling(TalkSlide):
         p = start_ceiling(self)
         gpu, card, bw, mk, mname, by = p["gpu"], p["card"], p["bw"], p["mk"], p["mname"], p["by"]
         # --- the division
-        bar = Line(LEFT * 1.3, RIGHT * 1.3, color=TEXT).move_to([1.3, 0.0, 0])
+        bar = Line(LEFT * 1.2, RIGHT * 1.2, color=TEXT).move_to([1.2, 0.0, 0])   # from the column line; the '=' after it stays clear of the result's digits
         num = label("1.6 TB/s", 24, OUTPUT).next_to(bar, UP, buff=0.1)
         den = label("32 GB per token", 24, WEIGHTS).next_to(bar, DOWN, buff=0.1)
         eq = label("=", 30, TEXT).next_to(bar, RIGHT, buff=0.3)

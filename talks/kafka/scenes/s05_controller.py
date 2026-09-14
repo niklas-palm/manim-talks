@@ -4,7 +4,7 @@ appended and propagates. Closing: Kafka's own state is a log.
 
   Final frame: three controller boxes (y 2.1), the metadata log across the middle (y 0.2) spanning all three columns,
   vertical dashed Raft and fetch relations in each column, three brokers (y -1.7), the event label beside broker 3's
-  relation, the claim in the caption band.
+  relation above the broker, the claim in the caption band.
   Clicks: 1 the quorum and its log  2 an event travels: appended, replicated, fetched  3 KRaft only since 4.0.
 """
 from lib.palette import *
@@ -21,8 +21,8 @@ class Controller(TalkSlide):
         t = title_still(self, "Disks fill: retention and compaction", "4  retention and compaction")
         self.add(d["segs"][1], d["segs"][2], d["logs"][1], d["logs"][2], d["ptr"], d["pl"], d["active"], d["cprod"], d["clog"], d["headl"], d["compc"], d["delc"], d["dr"], d["claim"])
         ctrls = VGroup(*[broker(n, 3.6, 1.0, SYNC if i == 0 else LOGC).move_to([x, 2.1, 0]) for i, (n, x) in enumerate(zip(("controller 1: active", "controller 2: standby", "controller 3: standby"), CX))])
-        mlog = Log(-4.35, LY, capacity=14, name="__cluster_metadata: the cluster's state", cell=CELL, gap=GAP)   # spans the three columns
-        mlog.name.set_x(2.0)   # between the middle and right relations, so no line crosses it
+        mlog = Log(-4.46, LY, capacity=15, name="__cluster_metadata: the cluster's state", cell=CELL, gap=GAP)   # centred: 0.46 past the outer columns on both sides
+        mlog.name.set_x(-2.0)   # between the left and middle relations, so no line crosses it
         for c in (LOGC, LOGC, SYNC, LOGC, LOGC, LOGC):
             mlog.put(c)
         brks = VGroup(*[broker(f"broker {i + 1}", 3.6, 1.0).move_to([x, -1.7, 0]) for i, x in enumerate(CX)])
@@ -46,7 +46,7 @@ class Controller(TalkSlide):
         broker fetches that log from the active controller and keeps a local copy, so it learns cluster state the way a
         consumer learns anything: by reading a log from an offset.""")
         # --- an event travels
-        ev = label("broker 3 fenced", 16, FAIL).move_to([CX[2] - 0.15, -0.72, 0], aligned_edge=RIGHT)   # beside broker 3's own relation, between log and broker
+        ev = label("broker 3 fenced", 16, FAIL).next_to(brks[2], UP, buff=GAP_TIGHT).align_to(brks[2], LEFT)   # attached to broker 3, left of its fetch relation
         self.play(brks[2][0].animate.set_stroke(FAIL), brks[2][1].animate.set_color(FAIL), FadeIn(ev), run_time=0.5)
         cell = mlog.append(self, FAIL, source=ctrls[0], rt=0.4)
         for k in (1, 2):

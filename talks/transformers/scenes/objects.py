@@ -65,9 +65,9 @@ def layer_glyph(w: float = 4.2, h: float = 0.74) -> VGroup:
 
 VEC_Y = -1.0                              # where the embedding vectors sit under their tokens (move 2)
 SCORES = [1.2, 0.4, 2.1, 0.2, 0.9, 2.6]   # illustrative match strengths for "mat"; the mechanism is exact, the numbers are chosen
-QBIG_POS = [COLS[4] - 0.8, ROWS[2] - 0.7, 0]
-OUT_POS = [COLS[4] - 0.8, ROWS[4] + 0.45, 0]
-PIPE_Y = -1.05                            # the centre line of the layer and prediction pictures (moves 4 and 5); low enough that labels above the vectors clear the token row
+QBIG_POS = [5.4, ROWS[2] - 0.7, 0]        # the chosen query, right of the "mat" bar; its label sits to its right, so the fan to the keys crosses nothing
+OUT_POS = [5.4, ROWS[4] + 0.45, 0]
+PIPE_Y = -1.25                            # the centre line of the layer and prediction pictures (moves 4 and 5); low enough that two-line labels above the vectors clear the token row
 
 
 def big_tokens(side: float = 1.3, y: float = ROWS[1]) -> VGroup:
@@ -120,7 +120,7 @@ def triples(vecs) -> VGroup:
 def softmax_bars() -> tuple:
     """The attention weights of "mat" as bars under the tokens, with their values and the label. Returns (bars, labels, caption)."""
     weights = softmax(SCORES)
-    bars = VGroup(*[Rectangle(width=0.6, height=max(0.05, w * 3.4), fill_color=ATTN, fill_opacity=0.45 + 0.5 * (w == max(weights)), stroke_width=0)
+    bars = VGroup(*[Rectangle(width=0.5, height=max(0.05, w * 3.4), fill_color=ATTN, fill_opacity=0.45 + 0.5 * (w == max(weights)), stroke_width=0)
                     .move_to([XS[j], ROWS[4], 0], aligned_edge=DOWN) for j, w in enumerate(weights)])
     wlabels = VGroup(*[label(f"{w:.2f}", 18, ATTN).next_to(b, UP, buff=GAP_TIGHT) for b, w in zip(bars, weights)])
     bl = label("softmax: weights that sum to 1", 18, ATTN).move_to([0, ROWS[4] - 0.35, 0])
@@ -130,9 +130,9 @@ def softmax_bars() -> tuple:
 def attention_result() -> tuple:
     """The chosen query and the new vector for "mat", at the right (move 3's last frame). Returns (qbig, qbl, out, outl)."""
     qbig = column(3, QUERY, 0.28).move_to(QBIG_POS)
-    qbl = label('query of "mat"', 18, QUERY).next_to(qbig, UP, buff=GAP_TIGHT)
+    qbl = label('query\nof "mat"', 18, QUERY).next_to(qbig, RIGHT, buff=GAP_TIGHT)
     out = column(3, ATTN, 0.28, op=0.95).move_to(OUT_POS)
-    outl = label('new vector\nfor "mat"', 18, ATTN).next_to(out, DOWN, buff=GAP_TIGHT)
+    outl = label('new vector\nfor "mat"', 18, ATTN).next_to(out, DOWN, buff=GAP_TIGHT).align_to(out, LEFT)   # under it, left-aligned: clear of the "mat" bar and of the frame edge
     return qbig, qbl, out, outl
 
 
@@ -140,21 +140,21 @@ def head_tiles() -> VGroup:
     """Three attention heads side by side, each with its own query, key, value and output (move 3, second scene)."""
     heads = VGroup()
     for hh in range(3):
-        tile = VGroup(RoundedRectangle(corner_radius=0.12, width=3.9, height=1.9, stroke_color=ATTN, stroke_width=2, fill_color=ATTN, fill_opacity=0.07),
+        tile = VGroup(RoundedRectangle(corner_radius=0.12, width=3.9, height=1.5, stroke_color=ATTN, stroke_width=2, fill_color=ATTN, fill_opacity=0.07),
                       label(f"head {hh + 1}: its own Wq, Wk, Wv", 17, ATTN))
         tile[1].next_to(tile[0].get_top(), DOWN, buff=GAP_TIGHT)
         trio = VGroup(column(3, QUERY, 0.22), column(3, KEY, 0.22), column(3, VALUE, 0.22)).arrange(RIGHT, buff=0.1)
         ar = Arrow(ORIGIN, RIGHT * 0.9, buff=0, color=MUTED, stroke_width=2.5, tip_length=0.18)
         outc = column(3, ATTN, 0.24)
-        inner = VGroup(trio, ar, outc).arrange(RIGHT, buff=GAP).move_to(tile[0]).shift(DOWN * 0.18)
+        inner = VGroup(trio, ar, outc).arrange(RIGHT, buff=GAP).move_to(tile[0]).shift(DOWN * 0.2)
         tile.add(inner)
         heads.add(tile)
-    return heads.arrange(RIGHT, buff=0.4).move_to([0, 0.15, 0])
+    return heads.arrange(RIGHT, buff=0.4).move_to([0, 0.0, 0])   # top at 0.75: clear of the token row (bottom 1.13)
 
 
 def projection_parts(filled: bool = False) -> tuple:
     """The concatenated head outputs, the matrix Wo and the attention output for "mat". Returns (joined, jl, proj, pl, result, rl)."""
-    y = -1.62
+    y = -1.8   # under the head tiles (bottom -0.75) with a full GAP
     joined = column(9, ATTN, 0.16).move_to([COLS[1], y, 0])
     jl = label("concatenate\nthe three outputs", 17, ATTN).next_to(joined, LEFT, buff=GAP)
     proj = grid(8, 9, WEIGHTS, cell=0.16).move_to([COLS[2], y, 0])
@@ -166,11 +166,11 @@ def projection_parts(filled: bool = False) -> tuple:
 
 def layer_stack() -> tuple:
     """The layer repeated, as miniatures, with the count beside it (move 4's last frame). Returns (stack, label)."""
-    stack = VGroup(*[layer_glyph(5.0, 0.58) for _ in range(5)]).arrange(DOWN, buff=0.1).move_to([COLS[2] - 0.6, -0.55, 0])
-    nl = label("N layers:\n6 in 2017,\n30 to 100 today", 20, WEIGHTS).move_to([COLS[3], -0.55, 0], aligned_edge=LEFT)
+    stack = VGroup(*[layer_glyph(5.0, 0.58) for _ in range(5)]).arrange(DOWN, buff=0.08).move_to([COLS[2] - 0.6, -0.8, 0])   # top at 0.81, clear of the token row
+    nl = label("N layers:\n6 in 2017,\n30 to 100 today", 20, WEIGHTS).move_to([COLS[3], -0.8, 0], aligned_edge=LEFT)
     return stack, nl
 
 
 def tiny_token(stack: VGroup) -> VGroup:
     """The token after the whole stack, small, under the last layer."""
-    return vector(30, TOKEN, cell=0.12).next_to(stack, DOWN, buff=GAP)
+    return vector(30, TOKEN, cell=0.1).next_to(stack, DOWN, buff=GAP)

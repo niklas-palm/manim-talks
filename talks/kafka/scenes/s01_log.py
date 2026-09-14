@@ -2,7 +2,7 @@
 one partition as a large row of cells with offsets, the consumers in a row on the grid below, one counter beside
 them, and the step's claim in the caption band.
 
-  Final frame: producer (x -5.5), broker (x -4.2 .. 6.4, y 2.6 .. -0.4), log of 8 records, two pointers, two consumer
+  Final frame: producer (x -5.6), broker (x -3.9 .. 6.4, y 2.6 .. -0.4), log of 8 records, two pointers, two consumer
   boxes on columns -3.2 and 0 at row -1.3, the position counter at column 3.2, the claim at y -3.3.
   Clicks: 1 records append, offsets never change  2 a consumer reads by pulling, its position is one integer
   3 a second consumer with its own offset; records are not deleted by reading  4 replay: the offset moves back.

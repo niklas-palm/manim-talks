@@ -78,13 +78,13 @@ class Batching(TalkSlide):
         # A request is one colour from the queue to its slot to its last token; an empty slot is a hollow cell: the weights read
         # was paid, and nothing came out for that row.
         self.play(FadeOut(VGroup(*cols)), FadeOut(steplen), FadeOut(rl), FadeOut(wl), FadeOut(al), FadeOut(axis), FadeOut(reads), FadeOut(per_step), run_time=0.6)
-        SLOTS, X_NEW, X_END, W1S = 8, 3.4, -4.9, 0.26
+        SLOTS, X_NEW, X_END, W1S = 8, 2.9, -4.9, 0.26   # a new column enters at X_NEW and slides left by its own width: the axis reaches past X_NEW + w
         ys = [1.3 - 0.33 * i for i in range(SLOTS)]
         yw, yq = 1.78, -1.7
         sl = VGroup(*[label(f"slot {i + 1}", 13, DIM).move_to([-5.15, y, 0], aligned_edge=RIGHT) for i, y in enumerate(ys)])
         wr = label("weights read", 13, WEIGHTS).move_to([-5.15, yw, 0], aligned_edge=RIGHT)
         ql = label("waiting", 13, HOT).move_to([-5.15, yq, 0], aligned_edge=RIGHT)
-        axis2 = Arrow([-5.0, 2.15, 0], [3.6, 2.15, 0], color=DIM, stroke_width=2, buff=0, tip_length=0.15)
+        axis2 = Arrow([-5.0, 2.15, 0], [3.5, 2.15, 0], color=DIM, stroke_width=2, buff=0, tip_length=0.15)
         al2 = label("time: one decode step after another, the newest at the right", 13, DIM).next_to(axis2, UP, buff=0.04).align_to(axis2, LEFT)
         legend = VGroup(label("column: one step, width = its time; colour: one request, outlined at prefill", 12, DIM),
                         label("hollow: an idle slot; 8 slots drawn, the engine's limit is max_num_seqs (256)", 12, DIM)).arrange(DOWN, aligned_edge=LEFT, buff=0.05).move_to([-5.0, -2.4, 0], aligned_edge=LEFT)
@@ -93,9 +93,9 @@ class Batching(TalkSlide):
             m.set_z_index(2)
         busg = Gauge("bus", OUTPUT, 1.6).move_to([5.2, 1.15, 0])
         compg = Gauge("compute", PROMPT, 1.6).move_to([6.0, 1.15, 0])
-        nreq_c = Counter("requests sharing the step", 0, "", TEXT, size=22).move_to([4.1, -0.35, 0], aligned_edge=LEFT)
-        ms_c = Counter("step time", 0, "ms", WEIGHTS, size=22, decimals=1).move_to([4.1, -1.3, 0], aligned_edge=LEFT)
-        tps_c = Counter("tokens per second, all together", 0, "", OUTPUT, size=22).move_to([4.1, -2.25, 0], aligned_edge=LEFT)
+        nreq_c = Counter("requests sharing the step", 0, "", TEXT, size=22).move_to([3.7, -0.35, 0], aligned_edge=LEFT)   # the longest name ends at the 6.4 margin
+        ms_c = Counter("step time", 0, "ms", WEIGHTS, size=22, decimals=1).move_to([3.7, -1.3, 0], aligned_edge=LEFT)
+        tps_c = Counter("tokens per second, all together", 0, "", OUTPUT, size=22).move_to([3.7, -2.25, 0], aligned_edge=LEFT)
         HUES = ["#FFD166", "#F4845F", "#EF476F", "#C77DFF", "#06D6A0", "#8ECAE6", "#FFB703", "#B5E48C", "#F9C74F", "#90BE6D", "#F8961E", "#9BF6FF"]
         # arrivals per step, each number the length of a request in steps (its first step is the prefill). Light load, then more than the slots can take, then quiet.
         arrivals = {0: [7], 4: [9], 9: [6], 14: [8, 10], 15: [9, 7], 16: [11, 8, 9], 17: [9], 18: [10, 8], 19: [7, 9], 20: [8], 21: [10, 9], 22: [8], 23: [9], 25: [8], 27: [7], 30: [9], 32: [8], 34: [8], 36: [9], 37: [8], 38: [9], 39: [10]}
@@ -177,10 +177,10 @@ class Batching(TalkSlide):
         cap = swap_caption(self, cap, "Measured on this GPU as the batch grows")
         gpu = GPU("one GPU", w=4.8, weights_gb=29).scale(0.9).shift(LEFT * 3.3 + DOWN * 0.3)
         self.play(FadeIn(gpu), gpu.bandwidth.set(0.39), gpu.set_cache(3))
-        inflight = Counter("requests in flight", 1, "", TEXT, size=26).move_to([0.0, 1.9, 0], aligned_edge=LEFT)
-        each = Counter("tokens/s, each request", 174, "", OUTPUT, size=26).move_to([2.5, 1.9, 0], aligned_edge=LEFT)
-        total = Counter("tokens/s, whole GPU", 174, "", CACHE, size=26).move_to([5.0, 1.9, 0], aligned_edge=LEFT)
-        clk = label("latency and throughput, both measured while decoding", 12, MUTED).move_to([2.5, 1.3, 0], aligned_edge=LEFT)
+        inflight = Counter("requests in flight", 1, "", TEXT, size=26).move_to([-0.5, 1.9, 0], aligned_edge=LEFT)   # three counters 2.5 apart, the last ending inside the 6.4 margin
+        each = Counter("tokens/s, each request", 174, "", OUTPUT, size=26).move_to([2.0, 1.9, 0], aligned_edge=LEFT)
+        total = Counter("tokens/s, whole GPU", 174, "", CACHE, size=26).move_to([4.5, 1.9, 0], aligned_edge=LEFT)
+        clk = label("latency and throughput, both measured while decoding", 12, MUTED).move_to([2.0, 1.3, 0], aligned_edge=LEFT)
         self.play(FadeIn(inflight), FadeIn(each), FadeIn(total), FadeIn(clk))
         self.next_slide("""Now measured, on this GPU: each request's speed and the total, as the batch grows. Now the same thing measured. The GPU from before with one request decoding: the bus busy about forty percent of
         the time, the compute grid nearly idle, and three counters: requests in flight, tokens per second each one gets, and
@@ -188,8 +188,8 @@ class Batching(TalkSlide):
         number: this is the latency and the throughput from the last scene, side by side. Both count tokens produced; the bus
         gauge is what counts bytes read.""")
         cap = swap_caption(self, cap, "A GPU is a budget you share: throughput up, speed per request down")
-        ax = Axes(x_range=[0, 140, 32], y_range=[0, 5200, 1000], x_length=5.0, y_length=2.7,
-                  axis_config={"color": DIM, "include_tip": False, "font_size": 14}).move_to([3.6, -1.0, 0])
+        ax = Axes(x_range=[0, 140, 32], y_range=[0, 5200, 1000], x_length=4.6, y_length=2.7,
+                  axis_config={"color": DIM, "include_tip": False, "font_size": 14}).move_to([3.4, -1.0, 0])   # the "all together" label after the last point ends inside the margin
         xl = label("requests in flight", 14, DIM).next_to(ax.x_axis, DOWN, buff=0.12)
         yl = label("tokens/s", 14, DIM).next_to(ax.y_axis, UP, buff=0.08)
         self.play(Create(ax), FadeIn(xl), FadeIn(yl))

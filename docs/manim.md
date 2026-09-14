@@ -58,6 +58,9 @@ Manim Community Edition 0.21, Python 3.12, macOS, ffmpeg 7, no LaTeX. Each entry
 - **Arcs bow toward the side given by the sign of `angle`.** Thirty arcs between points on one line all went through
   the squares they connected until the sign was flipped; a "loop back" `CurvedArrow` with a positive angle bows up
   through the title, a negative one bows down. Check the shot.
+- **`get_boundary_point(direction)` returns a corner for a diagonal direction.** Arrows and dashed lines between two
+  boxes that are not on one axis came out skewed, ending at corners. The library's `edge_point()` meets the box where
+  the centre-to-centre line crosses it; `arrow`, `dashed` and `travel(edges=True)` use it.
 - **`set_opacity` fills hollow shapes.** It sets fill and stroke opacity together, so a stroke-only cell becomes a
   filled one. Hide scrolling things under a background-coloured mask with a higher `z_index` instead.
 - **`rate_func=linear` on the play** makes a conveyor move at constant speed; the default smooth easing makes it
