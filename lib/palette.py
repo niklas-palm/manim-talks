@@ -7,7 +7,8 @@ What lives here
   text          label, title, small, caption, swap_caption, pin, thread colouring of a talk's nouns
   objects       tokens, box, node, arrow, dashed, column, grid, dot_grid, Counter, Gauge, Bars, travel
   vectors       vector, shades, restore, dot_product, sweep: the picture of a matrix multiplication
-  lists         Log and Pointer (a row of cells with offsets and a reader), Stack and block (a list that grows), code_lines
+  lists         Log and Pointer (a row of cells with offsets and a reader), Stack and block (a list that grows)
+  code          code (syntax-highlighted block) and highlight_line (a bar that walks the lines)
   layout        the frame constants and the bands titles, pictures and captions live in
 
 Rules the helpers encode (see docs/principles.md for the why):
@@ -51,6 +52,18 @@ FRAME_W, FRAME_H = 14.22, 8.0
 TITLE_Y = 3.3                      # title baseline band (title() puts the title at the top edge with buff 0.5)
 CONTENT_TOP, CONTENT_BOTTOM = 2.6, -2.3
 CAPTION_Y = -3.3
+MARGIN = 6.4                       # nothing closer to the frame edge than this (x); the columns below are the alignment grid
+COLS = [-6.4, -3.2, 0.0, 3.2, 6.4]  # five column lines; align edges and centres of fixed furniture to these
+ROWS = [2.6, 1.3, 0.0, -1.3, -2.3]  # row lines inside the content band
+GAP_TIGHT, GAP, GAP_WIDE = 0.12, 0.25, 0.5   # the three gaps a scene uses: label to object, object to object, group to group
+
+
+def guides() -> VGroup:
+    """The alignment grid as faint lines, for review renders only: GUIDES=1 bin/render.sh <talk> ql <Scene>.
+    Titles, content band, caption band, the five columns. Nothing in a deck should sit a little off these lines."""
+    g = VGroup(*[Line([x, -4, 0], [x, 4, 0], color=DIM, stroke_width=1, stroke_opacity=0.35) for x in COLS],
+               *[Line([-7.1, y, 0], [7.1, y, 0], color=DIM, stroke_width=1, stroke_opacity=0.35) for y in ROWS + [CAPTION_Y, 3.3]])
+    return g.set_z_index(-5)
 
 # ------------------------------------------------------------------------------------------------ the scene
 
@@ -63,6 +76,10 @@ class TalkSlide(MovingCameraScene):
     def __init__(self, **kw):
         super().__init__(**kw)
         self._notes = []
+
+    def setup(self):
+        if os.environ.get("GUIDES"):
+            self.add(guides())
 
     def next_slide(self, note: str = ""):
         self._notes.append(" ".join(note.split()))
@@ -504,13 +521,27 @@ class Stack(VGroup):
         return b
 
 
-def code_lines(lines, size: float = 18, color: str = TEXT) -> VGroup:
-    """Code as a VGroup of monospaced lines, left-aligned, for a walk-through that highlights one line at a time
-    while the picture does the step. About 0.13 units per character at size 18: shorten identifiers before shrinking
-    the font. Highlight a line with a BG-toned rectangle behind it or by recolouring the line to HI."""
-    mk = lambda t: Text(t, font=CODE_FONT, font_size=BASE_SIZE, color=color, disable_ligatures=True).scale(size / BASE_SIZE)
-    char_w = mk("0000000000").width / 10
-    g = VGroup(*[mk(l.strip() or " ") for l in lines]).arrange(DOWN, aligned_edge=LEFT, buff=0.08)
-    for t, l in zip(g, lines):   # Manim aligns on the glyphs, so leading spaces vanish; put the indentation back by measure
-        t.shift(RIGHT * char_w * (len(l) - len(l.lstrip(" "))))
+def code(source, language: str = "python", size: float = 18, width: float = 0.0) -> VGroup:
+    """Syntax-highlighted code as a block: a dark panel with the lines highlighted by Pygments (one-dark style), no
+    line numbers, laid out at BASE_SIZE and scaled to `size` so the spacing is exact. `source` is a string or a list
+    of lines. The block's lines are `block.lines` (a VGroup, one per line) for walking through with highlight_line();
+    the panel is `block.panel`. `width` scales the block to that many units if given. Indentation is kept."""
+    text = source if isinstance(source, str) else "\n".join(source)
+    c = Code(code_string=text, language=language, formatter_style="one-dark", add_line_numbers=False, background="rectangle",
+             background_config={"fill_color": "#171A21", "fill_opacity": 1.0, "stroke_color": DIM, "stroke_width": 1.2, "corner_radius": 0.12, "buff": 0.45},
+             paragraph_config={"font": CODE_FONT, "font_size": BASE_SIZE, "line_spacing": 0.6, "disable_ligatures": True})
+    c.scale(size / BASE_SIZE)
+    if width:
+        c.scale_to_fit_width(width)
+    c.background.set_z_index(-1)   # so a highlight bar added later sits between the panel and the text
+    g = VGroup(c)
+    g.panel, g.lines = c.background, c.code_lines
     return g
+
+
+def highlight_line(block: VGroup, i: int, color: str = HI) -> Rectangle:
+    """A translucent bar behind line i of a code block, to move down the code while the picture does each step:
+    `bar = highlight_line(code, 0); ...; self.play(bar.animate.move_to(highlight_line(code, 3)))`."""
+    line = block.lines[i]
+    r = Rectangle(width=block.panel.width - 0.2, height=line.height + 0.12, fill_color=color, fill_opacity=0.13, stroke_width=0)
+    return r.move_to([block.panel.get_center()[0], line.get_center()[1], 0])

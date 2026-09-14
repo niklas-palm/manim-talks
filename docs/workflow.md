@@ -67,7 +67,9 @@ bin/shots.py <talk> ql                  # then open talks/<talk>/media/shots/<Sc
 ```
 
 Look at the end frame of every step: collisions, clipped text, wrong colours, a label the animation left behind, a
-counter that says the wrong thing. Then `bin/review.sh <talk> ql` for what happens mid-animation. Fix, render, look
+counter that says the wrong thing. Then render once with `GUIDES=1` and look for anything that sits a little off the
+grid lines, a label floating away from its object, unequal gaps, an empty third of the frame (docs/principles.md
+rule 12). Then `bin/review.sh <talk> ql` for what happens mid-animation. Fix, render, look
 again. Extract single frames with ffmpeg when a moment needs checking:
 
 ```bash

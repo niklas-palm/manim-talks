@@ -28,6 +28,9 @@ deck is not done. Look at `media/shots/<Scene>.png` and `media/review/<Scene>.pn
 - [ ] Grey text is `MUTED`, never `DIM`; no text under size 12 except `small()` in a zoom.
 - [ ] No text clipped at the frame edge, no label over another label or over a shape it does not name.
 - [ ] Fixed furniture (title, kicker, gauges, counters) sits in the same place across the scene's steps.
+- [ ] Rendered once with `GUIDES=1`: furniture on the grid lines, labels attached to their objects, three gaps only,
+      numbers in a column right-aligned, rows sharing a y, no empty third of the frame.
+- [ ] Code is a `code()` block with highlighting, never plain text; the highlight bar walks the lines.
 - [ ] Smallest cells at least 0.07 units at a 0.4 zoom; grids read as cells at 1080p.
 - [ ] The main object fills at least half the content band; unzoomed cells 0.14 to 0.25 units; no scene is a small
       drawing in an empty frame. Viewed at half size, everything is still legible.

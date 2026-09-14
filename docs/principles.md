@@ -99,19 +99,37 @@ size 15 or larger. A small drawing surrounded by empty canvas reads as a diagram
 teaches. If the mechanism needs small parts, zoom the camera into the part (rule 10) rather than drawing it small.
 Check the shots at half size: if you have to lean in, the audience cannot see it.
 
-## 12. The speaker's note is the explanation
+## 12. Aligned and organised
+
+A frame is read as professional or as sloppy in the first second, before anything moves. The rules:
+- One grid. Fixed furniture sits on the column lines `COLS` (x = -6.4, -3.2, 0, 3.2, 6.4) and the row lines `ROWS`
+  (y = 2.6, 1.3, 0, -1.3, -2.3) from the library; nothing sits a little off a line. Render with `GUIDES=1` to see the
+  grid while you work.
+- Three gaps, not thirty: `GAP_TIGHT` (0.12) between a label and its object, `GAP` (0.25) between objects, `GAP_WIDE`
+  (0.5) between groups. Equal things have equal gaps.
+- Every text is attached: a label aligns to its object's left edge (`align_to(obj, LEFT)`) or is centred on it;
+  numbers in a column share a right edge; a row of boxes shares a y and a height. No text floats in empty space.
+- Related things are enclosed or aligned, never both loose: a group of tool cards shares a column and a box; a set of
+  counters sits in one row at one y.
+- Use the whole content band. The main object is centred in the space left after the fixed furniture; empty thirds
+  of the frame mean the drawing is too small or the furniture is in the wrong place.
+- Nothing within 0.3 units of the frame edge; nothing overlapping unless the overlap is the point.
+- Symmetry where the content is symmetric (two things compared side by side), and left-to-right flow where it is a
+  process (source on the left, result on the right).
+
+## 13. The speaker's note is the explanation
 
 Each step's note is one paragraph the speaker can read aloud: what the audience is looking at, what just changed,
 why it matters, and the one fact or number that anchors it. Notes carry the nuance, the caveats, the measured
 figures and the sources. Write them as you write the step; notes written afterwards drift from the picture.
 
-## 13. Teach, do not report
+## 14. Teach, do not report
 
 The audience is engineers who want to understand a system, not an account of your experiments. Every example,
 measurement and product name is there because it makes a mechanism concrete. Say what is generally true; then say
 what you measured that confirms it; then stop.
 
-## 14. Review with your eyes
+## 15. Review with your eyes
 
 Render at preview quality, look at the end frame of every step (`bin/shots.py`), then at the contact sheet of
 frames through the animation (`bin/review.sh`). Every collision, clipped label, colour mistake and mistimed reveal

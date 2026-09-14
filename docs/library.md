@@ -26,7 +26,16 @@ set_thread({"prefill": PROMPT, "decode": OUTPUT, "weights": WEIGHTS, "cache": CA
 
 `set_thread` makes `title()` and `caption()` colour those words (whole words, any case) wherever they appear.
 
-## Layout constants
+## Layout grid
+
+`FRAME_W, FRAME_H = 14.22, 8.0`; the origin is the centre. Titles sit at the top edge (`title()`), content between
+`CONTENT_TOP = 2.6` and `CONTENT_BOTTOM = -2.3`, captions around `CAPTION_Y = -3.3`. The alignment grid is `COLS`
+(x = -6.4, -3.2, 0, 3.2, 6.4) and `ROWS` (y = 2.6, 1.3, 0, -1.3, -2.3); the gaps are `GAP_TIGHT` 0.12, `GAP` 0.25,
+`GAP_WIDE` 0.5. `GUIDES=1 bin/render.sh <talk> ql <Scene>` draws the grid into the render so shots show what is
+off. Put fixed furniture on the grid with `move_to([x, y, 0], aligned_edge=LEFT)`; attach labels to objects with
+`next_to(obj, DOWN, buff=GAP_TIGHT).align_to(obj, LEFT)`.
+
+## Layout constants (detail)
 
 `FRAME_W, FRAME_H = 14.22, 8.0`; the origin is the centre. Titles sit at the top edge (`title()`), content between
 `CONTENT_TOP = 2.6` and `CONTENT_BOTTOM = -2.3`, captions around `CAPTION_Y = -3.3`. Put fixed furniture at fixed
@@ -104,10 +113,13 @@ Three decks independently drew state as a list that only grows; these are the sh
 | `Pointer(name, color)` | a reader's position under a Log; `place(log, i)`, `to(log, i)` returns the Transform. Replay is the pointer moving back |
 | `block(text, color, w, h, size, bare)` | one item of a Stack: a coloured block with a bar and one line of text; `"role · text"` colours the role |
 | `Stack(x, top, h, gap)` | a list of blocks growing downward; `append(scene, block, frm)` flies a block in from what produced it; the whole list is one VGroup so a copy can travel as one thing |
-| `code_lines(lines, size, color)` | code as left-aligned monospaced lines (`CODE_FONT`, Menlo) for a walk-through that highlights one line while the picture does the step |
+| `code(source, language, size, width)` | syntax-highlighted code (Pygments one-dark) on a dark panel, laid out large and scaled so spacing is exact; `block.lines[i]` per line, `block.panel` |
+| `highlight_line(block, i)` | a translucent bar behind line i; add it after the code and move it down the lines while the picture does each step |
 
 Budget 0.45 units under a Log's offsets for a pointer and its tag, and 1.4 units between stacked logs that each carry
-one. Code at size 18 is about 0.13 units per character: shorten identifiers before shrinking the font.
+one. Code at size 18 is about 0.13 units per character: shorten identifiers before shrinking the font. Never build
+`Text` directly in a scene: every helper lays text out at `BASE_SIZE` and scales it, which is what keeps letter spacing
+even; a bare `Text(font_size=14)` comes out with vanished spaces and crowded glyphs.
 
 ## Patterns from the reference deck
 
