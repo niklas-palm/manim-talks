@@ -14,16 +14,18 @@ class TheLoop(TalkSlide):
         user, app, model, arrows, calls, tools = st["user"], st["app"], st["model"], st["arrows"], st["calls"], st["tools"]
         cards = tool_cards()
         code2 = code(SRC2, "python", 15).move_to([LIST_X, -0.05, 0])
-        stays = label("stays here: the code, the API, the credentials", 14, MUTED).next_to(code2, DOWN, buff=GAP_TIGHT).align_to(code2, LEFT)
-        to_model = label("to the model: name, description, input schema", 14, TOOL).move_to([MODEL_C[0] - CARD_W / 2, 0.9, 0], aligned_edge=LEFT)
-        self.add(user, app, model, arrows, calls, tools, cards, code2, stays, to_model)
+        stays = label(STAYS_LABEL, 14, MUTED).next_to(code2, DOWN, buff=GAP_TIGHT).align_to(code2, LEFT)
+        to_model = label(TO_MODEL_LABEL, 14, TOOL).move_to([MODEL_C[0] - CARD_W / 2, 0.9, 0], aligned_edge=LEFT)
+        chooses = under_app(CHOOSES_LABEL, 15, TEXT, app=app)
+        self.add(user, app, model, arrows, calls, tools, cards, code2, stays, to_model, chooses)
         msgs = messages()
-        # --- the first change: the code steps aside; the cards stay; the list is empty and ready
-        t = retitle(self, t, *TITLES["loop"], extra=[FadeOut(code2), FadeOut(stays), FadeOut(to_model)])
+        # --- the first change: the code steps aside; the cards stay; the list is empty and ready for the loop
+        t = retitle(self, t, *TITLES["loop"], extra=[FadeOut(code2), FadeOut(stays), FadeOut(to_model), FadeOut(chooses)])
         self.add(msgs)
         self.next_slide("""The same picture with the three tool cards in place and an empty list. Read the arrow into the model once more:
         the system prompt, the tools, and the messages. From here on every call carries the cards too, so the model knows
-        what it can ask for.""")
+        what it can ask for. Nothing on the right has a loop in it yet; the loop is something the application is about to
+        do, with its own code.""")
         # --- the question that failed, slowly
         msgs.append(self, message("user", "user · warm enough to open the door?"), frm=user, run_time=0.8)
         call_model(self, msgs, model, extra=cards, run_time=1.0)
@@ -65,5 +67,5 @@ class TheLoop(TalkSlide):
         self.finish("""Now the first question again, at speed, through the same loop: the model asks for camera two with a question of
         its own choosing, the application fetches, the result joins the list, the model answers. Compare with move one: the
         code no longer decides what to look at; it only executes what the model asks for and keeps the list. That shift is
-        the whole definition of an agent. Four model calls and two tool calls for two questions, and the list has grown to
-        eight messages; keep an eye on that.""")
+        the whole definition of an agent, and notice who runs the loop: the application, in its own code. Four model calls and
+        two tool calls for two questions, and the list has grown to eight messages; keep an eye on that.""")

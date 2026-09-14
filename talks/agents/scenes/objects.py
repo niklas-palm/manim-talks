@@ -54,12 +54,12 @@ def call_arrows(app: VGroup, model: VGroup) -> VGroup:
     y_call, y_reply = 2.05, 1.35
     call = Arrow([APP_X1 + 0.08, y_call, 0], [MODEL_C[0] - MODEL_W / 2 - 0.08, y_call, 0], buff=0, color=MUTED, stroke_width=2.2, tip_length=0.18)
     reply = Arrow([MODEL_C[0] - MODEL_W / 2 - 0.08, y_reply, 0], [APP_X1 + 0.08, y_reply, 0], buff=0, color=MODEL, stroke_width=2.2, tip_length=0.18)
-    cl = label("system prompt + tools + messages", 13, MUTED).next_to(call, UP, buff=0.05)
+    cl = label("system prompt +\ntools + messages", 13, MUTED).next_to(call, UP, buff=0.05)   # two lines: it must fit between the boxes
     rl = label("one reply", 13, MODEL).next_to(reply, DOWN, buff=0.05)
     return VGroup(VGroup(call, cl), VGroup(reply, rl))
 
 
-def device_link(device: VGroup, text: str = "called by the application's code") -> VGroup:
+def device_link(device: VGroup, text: str = "the application's\ncode calls it") -> VGroup:
     """A horizontal dashed line from the application's right edge to a device, labelled underneath: the application's
     own code reaches this thing. Horizontal on purpose, so it never crosses the arrows to the model."""
     y = device.get_center()[1]
@@ -136,11 +136,64 @@ HIST_LOOP = [("user", "user · warm enough to open the door?"), ("tool_use", "as
              ("tool_result", "user · tool_result: 19 °C"), ("assistant", "assistant · 19 °C: yes, open it"),
              ("user", "user · anyone in the backyard?"), ("tool_use", 'assistant · tool_use: query_camera(2, "anyone there?")'),
              ("tool_result", "user · tool_result: a person by the shed"), ("assistant", "assistant · yes, one person by the shed")]
-TITLES = {"api": ("An application, an API, and one model call", "1  an application, an API, one model call"),
-          "tool": ("From an API to a tool", "2  from an API to a tool"),
-          "loop": ("The loop", "3  the loop"),
-          "code": ("The same loop as code, and where to intercept it", "4  the loop as code"),
-          "state": ("The list is the only state", "5  the list is the only state")}
+TITLES = {"api": ("An application with one model call", "1  a plain application"),
+          "tool": ("The whole process becomes a tool", "2  from a process to tools"),
+          "loop": ("The application runs the loop itself", "3  the agentic loop"),
+          "code": ("The loop behind a framework call, and the hooks into it", "4  what a framework hides"),
+          "state": ("The list is the only state", "5  the list is the only state"),
+          "every": ("Every agent today works like this", "6  the same loop, generic tools")}
+
+# the plain application of move one: one function, one model call, the frame fetched by the code every time
+APP_SRC = '''def answer(question):
+    frame = camera_api.frame(2)   # camera 2, always
+    return llm(system, [frame, question])'''
+
+FRAMEWORK_SRC = '''agent = Agent(
+    model="claude-sonnet-5",
+    system_prompt=system,
+    tools=[query_camera,
+           query_temperature,
+           camera_history],
+)
+agent("warm enough to open the door?")'''
+
+# the same definition with the hook of move four registered: one more line
+FRAMEWORK_HOOKS_SRC = FRAMEWORK_SRC.replace("           camera_history],\n", "           camera_history],\n    hooks=[RefuseDeletions()],\n")
+
+# the small list move four ends with: one question, two tool exchanges, an answer, then the refused call and its result
+CODE_END_KINDS = ["user", "tool_use", "tool_result", "tool_use", "tool_result", "assistant", "tool_use", "tool_result"]
+
+GENERIC_TOOLS = [("bash", "run a shell command", "command: str", "shell", CARD_YS[0]),
+                 ("read_file", "read a file from the repository", "path: str", "disk", CARD_YS[1]),
+                 ("write_file", "write or edit a file", "path: str, content: str", "disk", CARD_YS[2])]
+HIST_STATE = [("summary", "summary · door opened at 19 °C; one person by the shed"), ("assistant", "assistant · yes, one person by the shed"),
+              ("tool_result", "user · tool_result: camera_history, 40,000 tokens of detections")]
+
+
+# the labels one scene leaves for the next to start from; one string, two frames, so the seam cannot drift
+STAYS_LABEL = "stays here: the code, the API, the credentials"
+TO_MODEL_LABEL = "to the model: name, description, input schema"
+CHOOSES_LABEL = "the model chooses; the application runs it; then asks the model again"
+FRAMEWORK_LABEL = "the loop, the list and the hook: behind one call"
+SUMMARY_LABEL = "summarisation: the oldest messages become one; the most recent stay verbatim"
+WINDOW = 8   # messages the drawn context window holds; a real window is counted in tokens (the note says so)
+
+
+def under_app(text: str, size: float = 14, color: str = MUTED, app: VGroup = None) -> Text:
+    """A label under the application box, aligned to its left edge: where each move states its problem or its lesson."""
+    ref = (app or app_box())[0]
+    return label(text, size, color).next_to(ref, DOWN, buff=GAP_TIGHT).align_to(ref, LEFT)
+
+
+def context_window() -> VGroup:
+    """The context window drawn around the list: room for WINDOW messages, dashed, in the problem colour. Its label sits
+    centred on the top edge over a background, so it reads across the application box's border and clear of the arrow
+    labels. window[0] frame, [1] label."""
+    h = WINDOW * (BH + BGAP)
+    frame = DashedVMobject(RoundedRectangle(corner_radius=0.08, width=BW + 0.3, height=h + 0.1, stroke_color=PROBLEM, stroke_width=1.6, fill_opacity=0), num_dashes=60)
+    frame.move_to([LIST_X, LIST_TOP - h / 2 + BGAP / 2, 0])
+    lbl = label("context window", 14, PROBLEM).next_to(frame, UP, buff=GAP_TIGHT)
+    return VGroup(frame, VGroup(BackgroundRectangle(lbl, color=BG, fill_opacity=1, buff=0.05), lbl))
 
 
 def put_history(msgs: Stack, history) -> Stack:
@@ -152,6 +205,11 @@ def put_history(msgs: Stack, history) -> Stack:
 
 # the reminder picture of move four: the same three things, small, on the left of the code
 MINI_X, MINI_TOP, MINI_H, MINI_GAP = -5.0, 1.45, 0.18, 0.04
+
+
+def app_code():
+    """The plain application's code, small, in the lower part of the application box."""
+    return code(APP_SRC, "python", 13).move_to([LIST_X, -1.55, 0])
 
 
 def mini_stage(kinds) -> tuple:

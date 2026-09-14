@@ -220,3 +220,32 @@ First principles that the passes confirmed, written to outlast the decks they ca
 - Fresh agents with a written brief did this pass as well as forks with the whole session in context, and the forks
   started to fail once the session grew past the model's input limit. Long sessions should hand work to fresh agents
   with `AGENTS.md` and the docs as their context; that is what the docs are for.
+
+## The argument, not only the mechanism
+
+- A deck can draw every mechanism correctly and still lack its argument. Before touching scenes, write the red thread as one
+  paragraph in the script: each move must be a sentence of it, and the hinge the speaker says out loud (the moment one
+  thing turns into another) must be a click the audience can see, not a sentence in a note.
+- The thread is visible only when the same object changes role: the code that becomes the named unit, the box that
+  becomes a tag on a card, the mechanism run by hand before it is shown as code, the code that folds into one call. A new
+  object appearing next to an old one says nothing about how they relate.
+- If a click adds no new object and names no new problem, it is a sentence, not a step. A step that only restated a
+  mechanism already shown in passing was cut by the speaker on first viewing; the fact moved into the previous note.
+- Name a product before showing its features. A feature that belongs to one framework, shown before that framework is
+  on screen, reads as a property of the mechanism itself and misleads. The order that holds: the mechanism by hand, the
+  product that hides it, the product opened up, then the product's features on the opened picture.
+- Show the abstraction working before opening it: one run at speed with nothing to read, then the same run slowly with
+  the code. The fast run is the claim ("this is hidden"); the slow one is the proof. Rewinding the picture to the same
+  starting state between the two keeps the walk honest.
+- When code is walked against a picture, the first pass wants one line per click with a note per line; only the
+  repetitions run inside one click. A single click that walks all the lines at reading speed is watched, not followed.
+- Blank lines between the blocks of a code panel cost nothing and make the walk legible. Keep a small map from the beat's
+  name to its line number so the scene stays readable when the source changes; highlight only non-blank lines.
+- A label placed on a connector must fit between the boxes at its ends, not only clear of other labels; a short arrow
+  wants a two-line label. A label that sits on a frame's edge needs a background so it breaks the line rather than
+  lying across it.
+- Whatever one scene leaves for the next, a string or a drawing, belongs in the shared objects file even when it is one
+  line: the second hand-written copy is where a seam starts to drift.
+- A session that grows past the model's input limit should hand the work to a fresh agent with the entry document, the
+  docs, the scene files and the shot sheets. The repository is the memory; if a fresh agent cannot continue from it,
+  the missing knowledge belongs in the docs.

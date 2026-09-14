@@ -4,41 +4,26 @@ summarisation."""
 from lib.palette import *
 from objects import *
 
-WINDOW = 8   # messages the drawn window holds; a real window is counted in tokens (the note says so)
-
-
 class TheState(TalkSlide):
     def construct(self):
-        # --- the last frame of move four, rebuilt: the small picture with sixteen messages, the code, the hooks, the refusal
-        from s04_code import SRC, HOOKS
+        # --- the last frame of move four, rebuilt: the small picture with eight messages, the last one refused, and the framework call with its hook
         t = title_still(self, *TITLES["code"])
-        kinds = [k for k, _ in HIST_LOOP] + ["tool_use", "tool_result", "tool_use", "tool_result", "assistant", "tool_use", "tool_result"]
-        mini_model, mini, mini_cards = mini_stage(kinds)
+        mini_model, mini, mini_cards = mini_stage(CODE_END_KINDS)
         mini.blocks[-1].set_fill(PROBLEM, 0.16).set_stroke(PROBLEM); mini.blocks[-1][1].set_fill(PROBLEM, 0.95)
-        cd = code(SRC, "python", 20).move_to([3.4, 0.35, 0])
-        cl = label("the loop, eight lines: every agent framework is this plus bookkeeping", 14, MUTED).next_to(cd, DOWN, buff=GAP_TIGHT).align_to(cd, LEFT)
-        hooks = VGroup()
-        for i, name, dy in HOOKS:
-            y = cd.lines[i].get_center()[1] + dy
-            col = PROBLEM if name == "BeforeToolCall" else TEAL
-            d = Dot(color=col, radius=0.06).move_to([cd.panel.get_left()[0] - 0.2, y, 0])
-            hooks.add(d, label(name, 13, col).next_to(d, LEFT, buff=0.1))
-        bar2 = highlight_line(cd, 4, PROBLEM)
-        cross = label("delete_recording(...): refused by policy", 14, PROBLEM).move_to([-6.3, -2.45, 0], aligned_edge=LEFT)
-        self.add(mini_model, mini, mini_cards, cd, bar2, cl, hooks, cross)
+        fw = code(FRAMEWORK_HOOKS_SRC, "python", 18).move_to([3.4, 0.35, 0])
+        fwl = label(FRAMEWORK_LABEL, 14, MUTED).next_to(fw, DOWN, buff=GAP_TIGHT).align_to(fw, LEFT)
+        self.add(mini_model, mini, mini_cards, fw, fwl)
         # --- the first change: the code has done its job; the picture grows back to full size with the nine messages of move three
         st = stage()
         user, app, model, arrows, calls, tools = st["user"], st["app"], st["model"], st["arrows"], st["calls"], st["tools"]
         cards = tool_cards()
         msgs = put_history(messages(), HIST_LOOP)
         calls.tracker.set_value(4); tools.tracker.set_value(2)
-        t = retitle(self, t, *TITLES["state"], extra=[FadeOut(cd), FadeOut(bar2), FadeOut(cl), FadeOut(hooks), FadeOut(cross),
+        t = retitle(self, t, *TITLES["state"], extra=[FadeOut(fw), FadeOut(fwl),
                                                       ReplacementTransform(mini_model, model), ReplacementTransform(mini, msgs), ReplacementTransform(mini_cards, cards),
                                                       FadeIn(user), FadeIn(app), FadeIn(arrows), FadeIn(calls), FadeIn(tools)], run_time=1.2)
-        window = DashedVMobject(RoundedRectangle(corner_radius=0.08, width=BW + 0.3, height=WINDOW * (BH + BGAP) + 0.1, stroke_color=PROBLEM, stroke_width=1.6, fill_opacity=0), num_dashes=60)
-        window.move_to([LIST_X, LIST_TOP - (WINDOW * (BH + BGAP)) / 2 + BGAP / 2, 0])
-        wl = label("context window", 14, PROBLEM).next_to(window, UP, buff=GAP_TIGHT).align_to(window, RIGHT)   # drawn as 8 messages, counted in tokens: the note says so
-        self.play(FadeIn(window), FadeIn(wl), run_time=0.6)
+        window = context_window()
+        self.play(FadeIn(window), run_time=0.6)
         self.next_slide("""The list as move three left it, eight messages, and around it a dashed frame: the context window, the most the
         model can take in one call. Drawn here as eight messages; a real window is counted in tokens, a few hundred thousand
         for current models, and a long tool result or a large document eats it fast. The list is the only state the loop
@@ -65,7 +50,7 @@ class TheState(TalkSlide):
         msgs.blocks = keep
         self.play(big[0].animate.set_stroke(RESULT, 1.4), big[1].animate.set_fill(RESULT, 0.95), FadeOut(refused), run_time=0.3)   # members first, the group move after: never both in one play
         self.play(*[b.animate.move_to(msgs.slot(i)) for i, b in enumerate(keep)], run_time=0.8)
-        sw = label("sliding window: the oldest exchange leaves, a tool call and its result together", 14, MUTED).next_to(app[0], DOWN, buff=GAP_TIGHT).align_to(app[0], LEFT)
+        sw = under_app("sliding window: the oldest exchange leaves, a tool call and its result together", app=app)
         self.play(FadeIn(sw), run_time=0.4)
         self.next_slide("""The first remedy: a sliding window. The oldest messages leave, and they leave in pairs: a tool call and its result
         go together, because a result without its call, or a call without its result, is a malformed conversation that
@@ -80,7 +65,7 @@ class TheState(TalkSlide):
         msgs.blocks = [summary] + msgs.blocks[3:]
         msgs.add(summary)
         self.play(*[b.animate.move_to(msgs.slot(i)) for i, b in enumerate(msgs.blocks)], run_time=0.7)
-        sm = label("summarisation: the oldest messages become one; the most recent stay verbatim", 14, MUTED).move_to(sw, aligned_edge=LEFT)
+        sm = label(SUMMARY_LABEL, 14, MUTED).move_to(sw, aligned_edge=LEFT)
         self.play(FadeOut(sw), FadeIn(sm), run_time=0.4)
         self.finish("""The second remedy: summarisation. The oldest messages are replaced by one message that says what happened in
         them, written by a model call of its own, and the most recent messages stay word for word because that is where

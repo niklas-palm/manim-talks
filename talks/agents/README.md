@@ -1,30 +1,40 @@
-# How an agent works: an API, a tool, a model, a list of messages, and a loop
+# How an agent works: an application, a tool, a model, a list of messages, and a loop
 
-A 13-minute talk for engineers who have used chat assistants and want to see what an agent is, in the machinery: an
-application that calls an API and one model call, and why that is not enough; the API turned into a tool by a
-decorator and a docstring; the loop in which the model asks and the application runs; the same loop as eight lines of
-code with the eight places to intercept it; and the list of messages as the only state, with its limit and the two
-remedies. One picture throughout, growing.
+A 16-minute talk for engineers who have used chat assistants and want to see what an agent is, in the machinery. A plain
+application answers questions about a camera with one model call, and its code decides what to fetch. That whole
+process, named, is a tool, and then there are several; the model chooses among them, and the application ends up running
+a loop in its own code. A framework hides that loop behind one `Agent(...)` call; under the hood it is eight lines, with
+hooks at the places the loop has. The list of messages as the only state, with its window and the two remedies. And
+every agent in use today: the same loop, with tools generic enough that the agent makes its own. One picture throughout,
+growing.
 
 | Move | Scene | Clicks | Minutes |
 |---|---|---|---|
-| Opening | `Opening` | 1 | 0.5 |
-| 1. An application, an API, and one model call | `TheApi` | 4 | 2.5 |
-| 2. From an API to a tool | `ToolFromApi` | 3 | 2.5 |
-| 3. The loop | `TheLoop` | 5 | 3 |
-| 4. The same loop as code, and where to intercept it | `TheCode` | 4 | 3 |
+| 1. An application with one model call | `TheApi` | 3 | 2 |
+| 2. The whole process becomes a tool | `ToolFromApi` | 4 | 2.5 |
+| 3. The application runs the loop itself | `TheLoop` | 5 | 3 |
+| 4. The loop behind a framework call, and the hooks into it | `TheCode` | 12 | 5 |
 | 5. The list is the only state | `TheState` | 4 | 2 |
+| 6. Every agent today works like this | `EveryAgent` | 3 | 1.5 |
 
 ```bash
 bin/render.sh agents ql      # preview; qh for the talk itself
 bin/serve.sh agents          # presenter and audience windows
+bin/export_pptx.py agents qh # optional PowerPoint, one autoplaying clip per step (generated, not committed)
 ```
 
 Sources and simplifications are in `script.md`; speaker notes live next to the steps in `scenes/`.
 
 ## Decisions
 
-Tool cards carry three lines (name 17, description 14, schema 13) in a 3.6 by 0.95 card; the description is read aloud
-in the note. The context window is drawn as nine messages because tokens cannot be drawn; the label and the note say so.
-The camera API box of move one becomes the device tag on the first tool card in move two, so the audience sees the same
-thing change role rather than a new thing appear.
+The deck opens on the plain application, not on an agent: the audience must see the code decide what to fetch before the
+tool, the choice and the loop mean anything. The three-line application and the decorated tool function are the same
+process; the camera API box of move one becomes the device tag on the first tool card in move two, so the audience sees
+the same thing change role rather than a new thing appear. The loop is run first by the application's own code (move
+three); then the framework call that hides it is shown and run once with nothing to read, and only then is the call
+opened into the eight lines and walked one line per click (move four). Hooks come after the framework is named, because
+they are the framework's feature, not the loop's; the move closes by folding the code back into the definition with the
+hook as one more line, so the audience sees what the framework took and what it gave. Tool cards carry three lines (name
+17, description 14, schema 13) in a 3.6 by 0.95 card. The context window is drawn as eight messages because tokens
+cannot be drawn; the label and the note say so. Every label one scene leaves for the next is a constant in `objects.py`,
+and the window is one builder, so the seams cannot drift.
