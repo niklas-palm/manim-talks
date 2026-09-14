@@ -1,5 +1,9 @@
 # DNS: how a name becomes an address
 
+This deck is the repository's worked example of a light style: `talks/dns/.theme` names `studio-light`, so it renders
+on paper white while every other talk stays dark. Nothing in its scenes knows that; the look is a theme
+(AGENTS.md, "Choosing the look"). Delete the file to present it dark.
+
 A 12 to 15 minute talk for engineers who use DNS all day and have never watched the mechanism. One picture that
 grows: the laptop, the recursive resolver with its cache, the tree of zones. Two rules carry it: every answer is the
 address or a pointer to who to ask next; every level remembers what it heard for exactly as long as it was told to.

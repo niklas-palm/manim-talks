@@ -13,6 +13,8 @@ Agents building a talk start at `AGENTS.md`. Humans start here.
 AGENTS.md            the entry point for an agent building a talk: rules, workflow, definition of done
 docs/                principles, workflow, the library, Manim traps, the review checklist, presenting
 lib/palette.py       the illustration library: colours with meaning, TalkSlide, text, counters, gauges, grids ...
+lib/theme.py         the look: which colours, fonts, corners and strokes the library uses
+themes/*.json        the styles a deck can be presented in, dark and light (bin/themes.py list)
 bin/                 render.sh, build.py, shots.py, seams.py, review.sh, check.py, serve.sh, serve.py, export_pptx.py
 talks/_template/     copy this to start a talk: title scene, a worked example scene, objects.py, script.md
 talks/llm-serving/   the reference deck: 45 minutes on how open-weight LLMs are served, 82 steps, 13 scenes

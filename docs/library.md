@@ -4,11 +4,46 @@ Everything a scene needs beyond Manim itself, in one file, imported with `from l
 on purpose: helpers exist where the same drawing was needed three times or where Manim has a trap worth hiding.
 Compose Manim directly for everything else; the patterns section shows how the reference deck does it.
 
+## The theme
+
+Nothing in the library carries a colour, a font, a corner radius or a stroke width of its own. They come from the
+active theme, loaded once at import (`lib/theme.py`; `THEME=<name>`, a talk's `.theme`, the repository's `.theme`, else
+`themes/studio-dark.json`). AGENTS.md, "Choosing the look", lists the styles that ship and how to pick or import one.
+What a scene may use:
+
+| token | what it is |
+|---|---|
+| `A1` `A2` `A3` `A4` `A5` `A6` | the accent slots, each with a character every theme keeps: cool, warm, deep, fresh, growth, spice |
+| `ALERT` | wrong, hot, refused, over a limit. Never a second meaning |
+| `ACCENT` | `[A1..A6]`, for a talk that needs to walk them |
+| `TEXT` `MUTED` `CAPTION` `DIM` | ink, small text, the footnote, shapes out of focus. `DIM` is never text |
+| `BG` | the ground; a mask that hides something is drawn in it |
+| `HI` | the momentary highlight of a cell being read or a line being run. Neutral, never a meaning |
+| `PANEL` `CODE_STYLE` `CODE_FONT` `FONT` | what a code block sits on, its Pygments style, and the two families |
+| `rad(k)` `sw(k)` | a corner radius and a stroke width derived from the theme's, so every drawing squares off or thickens together |
+| `FILL` `SOLID` | a container's fill opacity (0 in brutalist: outlines only) and a filled mark's |
+| `MODE` | `"dark"` or `"light"`; a scene should not need to ask |
+| `cased(s)` | a title as the theme writes it; `title()` already applies it |
+
+Two rules follow, and `bin/check.py` enforces the first:
+
+- **A scene never names a hue.** `objects.py` maps the talk's nouns onto slots (`USER, MODEL = A1, A3`) and the scenes
+  use those names. `BLUE`, `YELLOW`, `VIOLET`, `TEAL`, `GREEN`, `ORANGE` and `RED` still exist as aliases for the slots
+  so older decks keep working, but a hue in a scene file is a hue that will not follow the theme.
+- **A scene never invents a corner, a stroke or a fill.** Use `rad()`, `sw()`, `FILL`, `SOLID`, scaled if it must be
+  smaller: `rad(0.4)`, `sw(0.56)`, `FILL * 1.6`. A literal `0.06` is what stops a style from reaching a drawing.
+
+Runtime opacity changes (`set_fill(colour, 0.25)` to ghost something, `set_opacity` on a copy that travels) are still
+written as plain numbers: they are a fraction of whatever the theme gave, not a value from it. Scale a member's own
+opacity rather than replacing it when several members must fade together (see `docs/manim.md`).
+
 ## Colours
+
+The seven accent slots and the five roles above, as the active theme sets them. The house style (`studio-dark`):
 
 | name | hex | use |
 |---|---|---|
-| `BLUE` `YELLOW` `VIOLET` `TEAL` `RED` `GREEN` `ORANGE` | accents | a talk assigns each ONE meaning in `objects.py` |
+| `A1` `A2` `A3` `A4` `A5` `A6` `ALERT` | accents | a talk assigns each ONE meaning in `objects.py` |
 | `DIM` | #4A4F5C | shapes out of focus: outlines, empty slots, faded members. Never text. |
 | `MUTED` | #8B93A5 | small text: names, units, axis labels. `label()` substitutes it when asked for DIM. |
 | `TEXT` | #E8E8E8 | body text and titles |
@@ -16,11 +51,11 @@ Compose Manim directly for everything else; the patterns section shows how the r
 | `BG` | #0f1116 | background, for masks that hide things |
 | `HI` | #F4F6FA | the momentary highlight of a cell being read or a line being run; neutral so it never reads as a meaning |
 
-In `objects.py` give the accents names that carry the talk's meaning and register the nouns:
+In `objects.py` give the slots names that carry the talk's meaning and register the nouns:
 
 ```python
 from lib.palette import *
-PROMPT, OUTPUT, WEIGHTS, CACHE, HOT = BLUE, YELLOW, VIOLET, TEAL, RED
+PROMPT, OUTPUT, WEIGHTS, CACHE, HOT = A1, A2, A3, A4, ALERT
 set_thread({"prefill": PROMPT, "decode": OUTPUT, "weights": WEIGHTS, "cache": CACHE})
 ```
 

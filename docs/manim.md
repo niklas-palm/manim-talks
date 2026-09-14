@@ -127,3 +127,19 @@ Manim Community Edition 0.21, Python 3.12, macOS, ffmpeg 7, no LaTeX. Each entry
   duration; a seek past the end writes nothing and you review last time's file.
 - **Reading the output.** A render prints hundreds of lines. Pipe to a log; `grep -c Traceback` tells you whether it
   worked; `grep -A8 Traceback` shows why.
+
+## `set_opacity` on a group replaces what its members were given
+
+`group.set_opacity(k)` sets every member's fill and stroke opacity to `k`. A row whose strip was drawn at 7 per cent
+and whose text is at full strength becomes a row where both are at `k`: the strip turns into a bar. It is invisible on
+a dark ground when `k` is small and glaring when it is not, and on a light ground it reads as a black block. To fade
+several members together, scale what each already has:
+
+```python
+for m in row.family_members_with_points():
+    m.set_fill(opacity=m.get_fill_opacity() * k)
+    m.set_stroke(opacity=m.get_stroke_opacity() * k)
+```
+
+The same applies to a copy that travels as a ghost: a flat opacity on the copy is fine only when every member was
+drawn at the same opacity to begin with.

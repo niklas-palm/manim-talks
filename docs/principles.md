@@ -67,12 +67,19 @@ first step costs nothing.
 
 ## 4. Colours are vocabulary
 
-Pick four to six accent colours and give each one meaning for the whole deck: in the reference deck prompt blue,
-output yellow, weights violet, cache teal, hot red. Declare them in `objects.py` with `set_thread`, and the titles
-and labels colour those words automatically wherever they appear. The audience learns the legend in the first
-scene and reads every later picture without one. Never reuse a colour for a second meaning, not even in a different
-scene. Grey (`DIM`) means "not in focus"; `MUTED` is for small text; `RED`/hot means saturated, wrong, or the
-problem.
+Pick four to six accents and give each one meaning for the whole deck: in the reference deck prompt, output, weights,
+cache and hot. Declare them in `objects.py` with `set_thread`, and the titles and labels colour those words
+automatically wherever they appear. The audience learns the legend in the first scene and reads every later picture
+without one. Never reuse a colour for a second meaning, not even in a different scene. Grey (`DIM`) means "not in
+focus"; `MUTED` is for small text; `ALERT` means saturated, wrong, or the problem.
+
+Name the meaning, not the hue. A talk binds its nouns to accent slots (`PROMPT, OUTPUT = A1, A2`) and the hue comes
+from the theme, which also decides the ground, the type, the corners and the strokes. This is what lets one deck be
+presented in a dark room, in a bright one, or in a company's own palette without a scene changing; and it is why the
+slots keep their character in every theme (A1 cool, A2 warm, A3 deep, A4 fresh, A5 growth, A6 spice, ALERT wrong).
+What must not change with the theme is the count and the discipline: four to six meanings, one hue each, forever.
+A theme is refused if two of its accents are close enough to be read as one (`bin/themes.py check`), because the
+vocabulary is the argument.
 
 ## 5. Words on screen name things that are visible
 

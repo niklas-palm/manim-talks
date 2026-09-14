@@ -185,8 +185,8 @@ def cmd_from_pptx(path: str, name: str):
         return colorsys.rgb_to_hls(r, g, b)[0] * 360
     reddish = sorted(acc, key=lambda c: min(abs(hue(c)), abs(360 - hue(c))))[0]
     alert = reddish if min(abs(hue(reddish)), abs(360 - hue(reddish))) < 25 else ("#FF5D5D" if dark else "#C0272D")
-    slots = {f"a{i + 1}": T.lift(acc[i], bg, 3.2) for i in range(6)}
-    slots["alert"] = T.lift(alert, bg, 3.2)
+    slots = {"alert": T.lift(alert, bg, 3.2)}          # first, so spreading moves the other slots and "wrong" stays red
+    slots.update({f"a{i + 1}": T.lift(acc[i], bg, 3.2) for i in range(6)})
     slots = _spread(slots, bg)
     t = {
         "mode": "dark" if dark else "light",

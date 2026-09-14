@@ -249,3 +249,35 @@ First principles that the passes confirmed, written to outlast the decks they ca
 - A session that grows past the model's input limit should hand the work to a fresh agent with the entry document, the
   docs, the scene files and the shot sheets. The repository is the memory; if a fresh agent cannot continue from it,
   the missing knowledge belongs in the docs.
+
+## The look belongs in one file, not in the drawings
+
+- A house style that lives in the drawing code is a house style you cannot change. Colour, type, corner radius, stroke
+  width and fill opacity are one layer; the drawings are another. Put the first in a data file the library reads once,
+  have every helper derive its values from it, and a deck written for one room can be presented in another, or in
+  someone else's palette, without a scene changing.
+- A style is not only its palette. Square corners with heavy strokes and no fills read as one thing; soft corners, thin
+  strokes and low contrast read as another; capitals in the titles change the register again. Give the style layer those
+  numbers too, and derive the smaller variants from them proportionally so everything squares off or thickens together.
+- Name meanings, never hues. A drawing that says "the cool accent" survives a change of palette; one that says "blue"
+  becomes a lie the first time the palette changes. Keep the slots' character fixed (one cool, one warm, one deep, one
+  for wrong) so a reader of the code can still picture what a scene looks like.
+- A style layer needs a validator, or it will quietly ruin a deck: body text far enough from the ground to read at the
+  back, every accent far enough from the ground to be seen, and no two accents close enough to be read as one colour.
+  Perceptual distance, not hex distance. Refuse the style rather than let two meanings look alike.
+- Importing a style from a document format is mostly repair work: the palettes real organisations use are three blues
+  and two greys on a ground they were never meant to be seen against. Lift each colour away from the ground until it
+  passes, then push the set apart until no two collide, and keep whichever colour means "wrong" fixed while you do it.
+  Import colour and type only; a logo or a picture background belongs to a slide, not to a picture that unfolds.
+- Anything imported from someone else's brand is theirs. Write it where the repository ignores it, say so in the tool's
+  own output, and never commit it.
+- Prove a style layer is a no-op before trusting it: render the same frames before and after and compare them as
+  images. Any difference must be one you can name.
+- The second style is what finds the bugs the first one hid. Assumptions about a dark ground (a near-white fill used as
+  a highlight, an opacity that only looks faint because the ground is dark) are invisible until the ground flips, so
+  build a light style early and render a whole deck in it, not one frame.
+- Probing the system for installed fonts during a render can perturb the text engine enough to move every glyph by a
+  fraction of a pixel. Check the environment in the checker, not in the thing that draws.
+- The pages and exports around a deck are part of the look: a light picture inside a dark frame reads as a mistake.
+  Derive their chrome from the same file by mixing the ground with the ink, so they follow any style without a table of
+  their own.

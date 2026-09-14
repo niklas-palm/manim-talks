@@ -10,8 +10,9 @@ DIR=talks/$TALK; [[ -d $DIR/scenes ]] || { echo "no such talk: $DIR"; exit 1; }
 export PYTHONPATH=.:$DIR/scenes
 # The look: THEME wins, then this talk's .theme, then the repository's .theme (lib/theme.py). Exported so the render,
 # the pages bin/build.py writes and the PowerPoint export all use one theme.
-[[ -z ${THEME:-} && -f $DIR/.theme ]] && export THEME=$(tr -d '[:space:]' < "$DIR/.theme")
-echo "theme: ${THEME:-$( [[ -f .theme ]] && tr -d '[:space:]' < .theme || echo studio-dark )}"
+if [[ -z ${THEME:-} && -f $DIR/.theme ]]; then export THEME=$(tr -d '[:space:]' < "$DIR/.theme"); fi
+if [[ -z ${THEME:-} && -f .theme ]]; then export THEME=$(tr -d '[:space:]' < .theme); fi
+echo "theme: ${THEME:-studio-dark}"
 SCENES=("$@"); [[ ${#SCENES[@]} -eq 0 ]] && SCENES=($(grep -ho "^class [A-Za-z0-9]*(TalkSlide)" $DIR/scenes/s*.py | sed 's/class //; s/(TalkSlide)//'))
 for s in "${SCENES[@]}"; do
   f=$(grep -l "^class $s(TalkSlide)" $DIR/scenes/s*.py)

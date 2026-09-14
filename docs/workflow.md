@@ -3,6 +3,16 @@
 Budget for a 45-minute talk built well: research half a day, script and storyboard a few hours, scenes two to
 four days with rendering and review, presenter test an hour. A ten-minute talk scales down but skips nothing.
 
+## 0. Agree the look
+
+Ask, once, before anything is drawn: dark or light, and which of the styles in AGENTS.md ("Choosing the look"). Dark
+(`studio-dark`) is the default and what most rooms want. If the answer is a company's own PowerPoint template, import
+it with `bin/themes.py from-pptx` and render with that theme; it lands in `themes/local`, which is never committed.
+Write the answer into `talks/<talk>/.theme` (or the repository's `.theme` if it is the project's style) so every later
+render, the two pages and the PowerPoint export agree, and note it in the talk's README. Then look at one frame in it
+(`bin/themes.py preview <talk> <Scene>`) before building the rest: a palette that reads on a laptop can lose a colour
+on a projector, and finding that out at the end costs a re-review of every scene.
+
 ## 1. Research until you can state the spine
 
 Read primary sources: official documentation, the RFC, the paper, the source code, measured numbers. Use the
@@ -65,6 +75,7 @@ margin where gauges and counters live.
 
 ```bash
 bin/render.sh <talk> ql <Scene>         # preview; a scene renders in seconds to a couple of minutes
+THEME=<name> bin/render.sh <talk> ql <Scene>   # the same scene in another style, to check the deck is not tied to one
 bin/shots.py <talk> ql                  # then open talks/<talk>/media/shots/<Scene>.png
 bin/seams.py <talk> ql                  # last frame of each scene beside the first of the next (media/seams/seams.png): identical or title only
 ```
