@@ -175,3 +175,14 @@ First principles that the passes confirmed, written to outlast the decks they ca
 - A dot that flew from the thermometer to the application box's edge, followed by the result block flying from the
   thermometer into the list, told the audience the result went somewhere else first. One motion per exchange, from the
   producer to the exact slot, is now principle 3a and a checklist line; every deck was checked for it.
+- Both sides of a seam must come from one builder (`start_<scene>()` or `<scene>_end()` in `objects.py`); two hand-written
+  copies of "the previous frame" drift within a day. The reference deck's twelve seams and the examples' twenty all read
+  identical once the builders were shared.
+- A hand-over can be the last step of a scene or the first of the next; the identical frame at the seam is what matters.
+  Doing it last lets the speaker close a move on the picture that opens the next one; doing it first ties "click" to
+  "new move". Pick one per deck and keep it.
+- A scene with no producer drawn has nowhere for a new record to come from (the tombstone in Kafka's retention scene).
+  Every object that arrives needs a visible source; if the source is not in the picture, draw it or have the object
+  come from where it would be.
+- `bin/review.sh` at half-second spacing still misses where a dot starts and lands; sample eight frames across the
+  step's clip with ffmpeg when checking a travel.

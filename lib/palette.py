@@ -338,9 +338,13 @@ class Counter(VGroup):
         self.size, self.color = size, color
         self._layout()
         self.add(self.num, self.unit, self.name)
-        # The name is the anchor: it moves with the group, so the digits follow wherever the counter is placed.
-        self.num.add_updater(lambda m: m.become(label(self.fmt(self.tracker.get_value()), size * 1.25, color))
-                             .next_to(self.name, UP, buff=0.08).align_to(self.name, LEFT))
+        # The name is the anchor: it moves with the group, so the digits follow wherever the counter is placed. The redraw
+        # keeps the digits' current opacity, so a counter can be faded in and out like anything else.
+        def redraw(m):
+            op = m.get_fill_opacity()
+            m.become(label(self.fmt(self.tracker.get_value()), size * 1.25, color)).next_to(self.name, UP, buff=0.08).align_to(self.name, LEFT)
+            m.set_opacity(op)
+        self.num.add_updater(redraw)
         self.unit.add_updater(lambda m: m.next_to(self.num, RIGHT, buff=0.1, aligned_edge=DOWN))
 
     def _layout(self):

@@ -33,9 +33,11 @@ Consequences:
 - **No cuts between scenes.** Scenes are separate videos, so a scene's first frame must be the previous scene's last
   frame: build that picture with `self.add(...)` (the stage plus whatever the previous scene left) and `title_still()`,
   then make the first change with `retitle()` in the same play as the first animation. The audience sees one picture
-  whose title changes as it starts to move, never a black frame with a new header. `bin/seams.py <talk>` measures
-  every seam; anything above "title only" is a cut. There are no title slides: the deck opens on the first picture,
-  and the speaker introduces the talk over it.
+  whose title changes as it starts to move, never a black frame with a new header. The hand-over can also be the
+  last step of the old scene (the reference deck does this: the picture folds into the next one and the title changes,
+  then the click into the new scene shows the identical frame); either way both sides of the seam come from one
+  builder function in `objects.py`. `bin/seams.py <talk>` measures every seam; anything above "title only" is a cut.
+  There are no title slides: the deck opens on the first picture, and the speaker introduces the talk over it.
 
 ## 3. One idea per click
 

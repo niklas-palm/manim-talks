@@ -39,8 +39,9 @@ Manim Community Edition 0.21, Python 3.12, macOS, ffmpeg 7, no LaTeX. Each entry
   is a no-op; the members stay. Fade or remove the remaining members themselves.
 - **`become()` on `Text` with a different string produces garbage** mid-animation because the glyph counts differ.
   Fade out and in, or `Transform` between labels.
-- **A live `Counter` survives `FadeOut`.** Its digit updater redraws the number at full opacity every frame, so the
-  digits stay when the group fades. Call `counter.stop()` first, or `tracker.set_value()` for a still frame.
+- **A live `Counter` and fades.** Its digit updater redraws the number every frame; it now keeps the digits' current
+  opacity, so `FadeIn` and `FadeOut` work on a counter. For a still frame set `tracker.set_value()`; `counter.stop()`
+  freezes the digits entirely.
 - **Updaters need a stable anchor.** A counter's digits anchored to their own initial position stayed behind when
   the group moved. Anchor to a sibling that moves with the group and recompute in the updater.
 - **Build geometry after the move it depends on.** Lines created from a column's position before the animation
