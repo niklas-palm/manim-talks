@@ -110,3 +110,31 @@ Agents:
 - Uneven letter spacing and vanished spaces in small labels, seen in every deck, came from Pango rounding glyph
   positions to pixels at the requested size. Laying out at 48 and scaling down fixed it everywhere at once; the lesson
   is that text must always go through the library, never `Text()` directly, so a fix like this lands in one place.
+
+## From the quality passes and the agents rebuild (2026-09-14, afternoon)
+
+First principles that the passes confirmed, written to outlast the decks they came from:
+- The audience re-orients every time the picture changes. One fixed stage per deck, built by one function in
+  `objects.py` and added by every scene, is what makes six scene files one illustration; the alternative, a fresh
+  layout per scene, cost every deck a second pass.
+- Reserve the space the picture will grow into. An empty list inside its box, an empty rack, an empty column: the
+  audience reads the emptiness as "something goes here", and later steps have somewhere to go without moving what is
+  already placed.
+- Open on a still and let the speaker name what is there. Every deck had at least one scene that started moving before
+  the audience knew what it was looking at. Splitting the first click costs one note and buys the whole scene.
+- Alignment is not decoration. Frames that sat a little off a grid, with labels floating and unequal gaps, read as
+  sloppy before anything moved; the same frames on the grid read as professional with no other change. The grid
+  overlay (`GUIDES=1`) made the difference visible in one render.
+- Text must go through one place. Uneven letter spacing in every deck had one cause (Pango's pixel rounding at small
+  sizes) and one fix (lay out at 48 and scale), which landed everywhere at once only because every label came from
+  `label()`. Any text built directly would have kept the defect.
+- Code on screen is code: highlighted, indented, large, on its own panel, and walked line by line against the picture.
+  Plain monospaced text read as a paragraph and was skipped.
+- When a thing changes role, morph it; do not replace it. The camera API box becoming the tag on the first tool card is
+  the whole point of "from an API to a tool"; a new card appearing beside an old box would have said nothing.
+- Standing relations are dashed and horizontal; flows are arrows. A diagonal dashed link across the flow arrows made
+  one frame unreadable.
+- The group-and-member trap bites experienced hands too: it recurred in the rebuilt deck despite being documented. It is
+  now a checker rule, which is where a lesson that keeps recurring belongs.
+- Review by looking, at half size, before the 1080p render, and again after. Every pass found something the previous one
+  had called done.
