@@ -1,5 +1,6 @@
-"""A worked example scene that uses most of the library, to copy from and then delete. Storyboard first, as a
-comment like this one:
+"""A worked example scene that uses most of the library, to copy from and then delete. It is the first scene of the
+deck, so it opens on the first picture: there is no title slide, the speaker introduces the talk over this frame.
+Storyboard first, as a comment like this one:
 
   Final frame: a client (left), a server box with five slots (centre), a store (right); a gauge for the server's
   load at the far right; a counter of requests served at the bottom right; a quiet caption.
@@ -18,7 +19,7 @@ ZOOM = 0.45
 class Example(TalkSlide):
     def construct(self):
         frame = self.camera.frame
-        t = title(self, "A request through the system", "1  the problem")
+        t = title(self, "A request through the system", "1  the problem")   # the deck's first frame: the only title that is written in
         # --- fixed furniture at fixed coordinates
         client = node("client", CLIENT, w=1.8).move_to([-4.6, 0.4, 0])
         server = machine("server").move_to([0.0, 0.4, 0])

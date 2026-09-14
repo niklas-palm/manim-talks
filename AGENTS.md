@@ -55,9 +55,10 @@ at 1080p60, test the presenter and audience windows in a browser, and commit. De
 
 - **The picture is the argument.** If a claim cannot be drawn as something happening, it does not go on screen;
   it goes in the note or it goes away. Never a bullet list. Never a paragraph on screen.
-- **One continuous illustration per move.** Nothing already on screen is replaced; it grows, moves, opens up
-  under a camera zoom, or fades because its job is done. The audience must be able to say what changed after every
-  click.
+- **One continuous illustration per move, and no cuts between moves.** Nothing already on screen is replaced; it
+  grows, moves, opens up under a camera zoom, or fades because its job is done. A scene's first frame is the previous
+  scene's last frame (`self.add` the picture, `title_still`), and its first play is `retitle()` with the first change.
+  There are no title slides. `bin/seams.py` proves it.
 - **One idea per click.** If you need two sentences to say what a step showed, it is two steps.
 - **Open still, start slow, speed up.** A scene's first click shows the starting picture and nothing moves; the
   mechanism begins on the next click. The first time something happens, it is slow enough to follow; repetitions
@@ -85,6 +86,7 @@ bin/render.sh <talk> ql [Scene ...]     # preview render (480p), then build the 
 bin/shots.py <talk> ql                  # the frame every step holds on, tiled per scene: media/shots/<Scene>.png
 bin/review.sh <talk> ql                 # a frame every two seconds per scene, for motion and collisions mid-step
 bin/check.py <talk> ql                  # structural checks: files, set_thread, notes per step, text sizes, sentences on screen
+bin/seams.py <talk> ql                  # every scene boundary: last frame beside first frame, with a difference score
 bin/serve.sh <talk>                     # one local server for the repository; opens the talk's presenter window
 bin/export_pptx.py <talk> qh            # optional: one PowerPoint slide per step, clip autoplaying, note in the notes
 ```

@@ -63,7 +63,9 @@ file order within a file. The scene name (CamelCase) is shown in the presenter a
 |---|---|
 | `label(s, size=30, color=TEXT, width=0, thread=False)` | text in the talk font. `width` wraps to that many scene units. `thread=True` colours the talk's nouns. Never below size 12. |
 | `small(s, color)` | text for a zoomed view (render at 20, scale 0.3). Use inside a 0.4 camera zoom. |
-| `title(scene, s, move)` | the scene title at the top with the move name in small type above it. Returns `VGroup(title, kicker)`. |
+| `title(scene, s, move)` | the scene title at the top with the move name in small type above it, written in. Only for the very first frame of a deck. Returns `VGroup(title, kicker)`. |
+| `title_still(scene, s, move)` | the same title added without animation, for a scene whose first frame repeats the previous scene's last frame |
+| `retitle(scene, old, s, move, extra=[...])` | the title changes in place while the first change to the picture plays; the way every scene after the first announces its move |
 | `caption(scene, s)` / `swap_caption(scene, old, s)` | one quiet line pinned to the frame bottom. Set before the step's animation; swap only at a step boundary. Prefer labels next to objects. |
 | `pin(scene, m, buff)` | keep any mobject at the frame bottom through camera zooms. |
 

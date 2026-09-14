@@ -4,7 +4,7 @@ One paragraph: what the talk teaches, to whom, in how many minutes, and the spin
 
 | Move | Scenes | Minutes |
 |---|---|---|
-| 1. ... | `Opening`, `Example` | 5 |
+| 1. ... | `Example`, `Next` | 5 |
 
 ```bash
 bin/render.sh <slug> ql      # preview; qh for the talk itself

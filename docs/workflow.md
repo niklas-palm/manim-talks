@@ -53,6 +53,8 @@ margin where gauges and counters live.
 - Start from `talks/_template/scenes/s01_example.py` for the shape of a scene and the idioms.
 - Put the talk's colours and shared drawings in `scenes/objects.py`; import `from lib.palette import *` and
   `from objects import *` in every scene file.
+- Start every scene after the first by rebuilding the previous scene's last frame with `self.add(...)` and
+  `title_still()`; its first play is `retitle()` together with the first change. Run `bin/seams.py` to prove it.
 - Set a caption or labels first, then animate, then `self.next_slide(note)`. Write the note now, not later.
 - Build animations in the order they play; never build two `.animate` chains on the same object before playing the
   first (see `docs/manim.md`).
@@ -64,6 +66,7 @@ margin where gauges and counters live.
 ```bash
 bin/render.sh <talk> ql <Scene>         # preview; a scene renders in seconds to a couple of minutes
 bin/shots.py <talk> ql                  # then open talks/<talk>/media/shots/<Scene>.png
+bin/seams.py <talk> ql                  # last frame of each scene beside the first of the next: must be identical or title only
 ```
 
 Look at the end frame of every step: collisions, clipped text, wrong colours, a label the animation left behind, a

@@ -30,6 +30,12 @@ Consequences:
 - When a picture repeats (layer two after layer one; the second request after the first), replay it at speed inside
   the same click, without a new click. Repetition is learned by seeing it, not by being told.
 - Clear a zoomed view before pulling back, then zoom out on a clean object. The two in one motion looks broken.
+- **No cuts between scenes.** Scenes are separate videos, so a scene's first frame must be the previous scene's last
+  frame: build that picture with `self.add(...)` (the stage plus whatever the previous scene left) and `title_still()`,
+  then make the first change with `retitle()` in the same play as the first animation. The audience sees one picture
+  whose title changes as it starts to move, never a black frame with a new header. `bin/seams.py <talk>` measures
+  every seam; anything above "title only" is a cut. There are no title slides: the deck opens on the first picture,
+  and the speaker introduces the talk over it.
 
 ## 3. One idea per click
 

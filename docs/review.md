@@ -10,6 +10,8 @@ experiences a deck: what they see first, then how it moves, then the words, then
 - [ ] Each move is one continuous illustration. Nothing already on screen is replaced by a different picture; it
       grows, moves, opens under a zoom, or fades because its job is done. A new scene file starts from the previous
       scene's final picture (the stage), so the audience never has to re-orient.
+- [ ] `bin/seams.py <talk> qh` reports every seam as "identical" or "title only": no scene opens on a fresh picture,
+      no title slide, no black frame with a header. The first change of a scene is a `retitle()` with the first animation.
 - [ ] The final frame of each move contains everything the move drew, where the storyboard planned it.
 - [ ] Every scene opens on a still: title, kicker, furniture, the objects the scene begins with; nothing moves until the
       next click. The note for that click names what is on screen.

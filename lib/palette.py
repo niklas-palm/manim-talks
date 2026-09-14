@@ -4,7 +4,7 @@ Manim Community Edition. Import it in every scene file with `from lib.palette im
 What lives here
   colours       a small palette; a talk assigns each colour one meaning and keeps it for the whole deck
   TalkSlide     a Scene whose steps are clicks; each step carries a speaker note (next_slide / finish)
-  text          label, title, small, caption, swap_caption, pin, thread colouring of a talk's nouns
+  text          label, title, title_still, retitle, small, caption, swap_caption, pin, thread colouring of a talk's nouns
   objects       tokens, box, node, arrow, dashed, column, grid, dot_grid, Counter, Gauge, Bars, travel
   vectors       vector, shades, restore, dot_product, sweep: the picture of a matrix multiplication
   lists         Log and Pointer (a row of cells with offsets and a reader), Stack and block (a list that grows)
@@ -150,6 +150,28 @@ def title(scene, s: str, move: str = "") -> VGroup:
     if move:
         g.add(label(move, 15, MUTED).next_to(t, UP, buff=0.1))
     scene.play(Write(t), FadeIn(g[1:]), run_time=0.7)
+    return g
+
+
+def title_still(scene, s: str, move: str = "") -> VGroup:
+    """The same title as title(), added without animation: for a scene's first frame, which must be the previous
+    scene's last frame. Build the previous picture with self.add(...) too, then change it with animations."""
+    t = label(s, 38, thread=True).to_edge(UP, buff=0.5)
+    g = VGroup(t)
+    if move:
+        g.add(label(move, 15, MUTED).next_to(t, UP, buff=0.1))
+    scene.add(g)
+    return g
+
+
+def retitle(scene, old: VGroup, s: str, move: str = "", extra=(), run_time: float = 0.7) -> VGroup:
+    """Change the title in place: the old one fades out as the new one fades in, in the same play as the first change
+    to the picture (`extra` animations), so a new move announces itself without a cut. Returns the new title group."""
+    t = label(s, 38, thread=True).to_edge(UP, buff=0.5)
+    g = VGroup(t)
+    if move:
+        g.add(label(move, 15, MUTED).next_to(t, UP, buff=0.1))
+    scene.play(FadeOut(old, run_time=run_time * 0.6), FadeIn(g, run_time=run_time), *extra)
     return g
 
 
