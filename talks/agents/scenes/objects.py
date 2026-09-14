@@ -14,17 +14,20 @@ USER, MODEL, TOOL, RESULT, PROBLEM = BLUE, VIOLET, YELLOW, TEAL, RED
 set_thread({"user": USER, "model": MODEL, "tool": TOOL, "tools": TOOL, "result": RESULT, "results": RESULT})
 
 KIND = {"user": USER, "assistant": MODEL, "tool_use": TOOL, "tool_result": RESULT, "system": MUTED, "summary": MODEL}
-BW, BH, GAP = 2.7, 0.34, 0.06          # a message block: width, height, gap in the list
+BW, BH, GAP = 3.4, 0.35, 0.05          # a message block: width, height, gap in the list
 CODE_FONT = "Menlo"
 
 
-def block(kind: str, text: str, s: float = 1.0) -> VGroup:
+def block(kind: str, text: str, s: float = 1.0, bare: bool = False) -> VGroup:
     """One message in the list: a rounded block in the colour of its kind, a solid bar at its left edge, one line of
     text. block[0] frame, block[1] bar, block[2] text. `s` scales the whole block (the code scene draws a small list)."""
     c = KIND[kind]
     r = RoundedRectangle(corner_radius=0.06, width=BW, height=BH, fill_color=c, fill_opacity=0.16, stroke_color=c, stroke_width=1.4)
     bar = Rectangle(width=0.09, height=BH, fill_color=c, fill_opacity=0.95, stroke_width=0).move_to(r.get_left(), aligned_edge=LEFT)
-    t = label(text, 12, TEXT)
+    if bare:                               # a small reminder picture: colour says the kind, no text
+        return VGroup(r, bar).scale(s)
+    role = text.split(" · ")[0] if " · " in text else ""
+    t = label(text, 14, TEXT, **({"t2c": {f"[0:{len(role)}]": c}} if role else {}))   # the role in the block's colour
     if t.width > BW - 0.3:
         t.scale_to_fit_width(BW - 0.3)
     t.move_to(r).align_to(r.get_left() + RIGHT * 0.2, LEFT)
@@ -62,23 +65,23 @@ def app_box(w: float = 5.6, h: float = 4.7, s: float = 1.0) -> VGroup:
 
 
 def model_box(s: float = 1.0) -> VGroup:
-    return box(2.4, 1.5, "model", MODEL, size=20, fill=0.10).scale(s)
+    return box(2.4, 1.7, "model", MODEL, size=22, fill=0.10).scale(s)
 
 
 def tool_card(name: str, desc: str, schema: str, s: float = 1.0) -> VGroup:
     """A tool definition as the model sees it: name, description, input schema. card[0] frame, [1] name, [2] desc, [3] schema."""
-    r = RoundedRectangle(corner_radius=0.06, width=2.0, height=0.66, fill_color=TOOL, fill_opacity=0.10, stroke_color=TOOL, stroke_width=1.4)
-    n = label(name, 13, TOOL).move_to(r.get_top() + DOWN * 0.13).align_to(r.get_left() + RIGHT * 0.1, LEFT)
-    d = label(desc, 12, TEXT).next_to(n, DOWN, buff=0.03).align_to(n, LEFT)
+    r = RoundedRectangle(corner_radius=0.06, width=2.2, height=0.8, fill_color=TOOL, fill_opacity=0.10, stroke_color=TOOL, stroke_width=1.4)
+    n = label(name, 15, TOOL).move_to(r.get_top() + DOWN * 0.15).align_to(r.get_left() + RIGHT * 0.1, LEFT)
+    d = label(desc, 13, TEXT).next_to(n, DOWN, buff=0.03).align_to(n, LEFT)
     sc = label(schema, 12, MUTED).next_to(d, DOWN, buff=0.02).align_to(n, LEFT)
     for t in (d, sc):
-        if t.width > 1.85:
-            t.scale_to_fit_width(1.85)
+        if t.width > 2.0:
+            t.scale_to_fit_width(2.0)
     return VGroup(r, n, d, sc).scale(s)
 
 
 def device(name: str, s: float = 1.0) -> VGroup:
-    return node(name, MUTED, w=1.9, h=0.5, size=14).scale(s)
+    return node(name, MUTED, w=1.8, h=0.55, size=15).scale(s)
 
 
 def call_model(scene, msgs: Messages, model: VGroup, run_time: float = 0.7, extra=None):

@@ -44,6 +44,17 @@ Manim Community Edition 0.21, Python 3.12, macOS, ffmpeg 7, no LaTeX. Each entry
 - **Build geometry after the move it depends on.** Lines created from a column's position before the animation
   that moved it pointed at the old place. Same for arrows and dot start points. Anchor to the group's centre, not
   its first member.
+- **`group.animate.set_opacity(x)` on a group with a stroke-only member fills that member** (a rail turned white). Dim
+  the filled cells and the labels separately, or set fill and stroke opacity explicitly.
+- **A member change and a group move in one play loses the member.** Setting a block's stroke while moving the stack
+  that contains it left the frame in place and moved the text: the group-versus-member trap again. Do the member
+  change in its own play first.
+- **End every step on a settled picture.** The presenter holds on the step's last frame; a 0.3 s move as the last
+  animation leaves the object mid-flight. Add `self.wait(0.3)` or make the last animation the settling one. When a
+  step both fades a group out and another in, use two plays; one combined play leaves a ghost in the end frame.
+- **Arcs bow toward the side given by the sign of `angle`.** Thirty arcs between points on one line all went through
+  the squares they connected until the sign was flipped; a "loop back" `CurvedArrow` with a positive angle bows up
+  through the title, a negative one bows down. Check the shot.
 - **`set_opacity` fills hollow shapes.** It sets fill and stroke opacity together, so a stroke-only cell becomes a
   filled one. Hide scrolling things under a background-coloured mask with a higher `z_index` instead.
 - **`rate_func=linear` on the play** makes a conveyor move at constant speed; the default smooth easing makes it
@@ -74,7 +85,12 @@ Manim Community Edition 0.21, Python 3.12, macOS, ffmpeg 7, no LaTeX. Each entry
   substitutes `MUTED`.
 - **Captions under a moving camera** leave the frame unless pinned: `pin()` keeps them at the frame's bottom and
   scales them with the frame.
-- **Multi-line `Text`** with `\n` works and is left-aligned; use it for two-line counter names and legends.
+- **Multi-line `Text`** with `\n` works and is left-aligned; use it for two-line counter names and legends. The
+  `label(width=)` wrap does not apply to strings with an explicit `\n`.
+- **A labelled row at the top collides with the title band** (y about 3.3). Keep labelled objects at y <= 2.0 so labels
+  above them clear the title.
+- **Menlo at size 18 is about 0.13 units per character**; 39 characters is five units. Measure the longest line before
+  placing code and hook labels near the right edge.
 - **`Counter(decimals=1)`** when a value like 1.8 must not round to 2. Show "1.60" rather than switch decimals
   mid-deck.
 
@@ -82,6 +98,9 @@ Manim Community Edition 0.21, Python 3.12, macOS, ffmpeg 7, no LaTeX. Each entry
 
 - **Preview at `ql` (480p15)** while building: seconds to a couple of minutes per scene. **`qh` (1080p60)** for the
   talk: a rich scene takes five to ten minutes; a full deck the better part of an hour.
+- **Shots are taken 0.05 s before each step's end**, which is the frame the presenter holds. A label swap or a move as
+  the very last animation of a step used to show as a ghost at the earlier 0.15 s; if the sheet still shows one, the
+  step itself ends mid-animation and needs a settling wait.
 - **Sections are indexed from `_0000`.** `Scene_0000_autocreated.mp4` is the first step; the JSON index lists
   durations in order. `bin/shots.py` uses it to grab each step's end frame.
 - **Seek with ffmpeg** to inspect a moment: `ffmpeg -y -ss <t> -i <clip> -frames:v 1 out.png`. Clamp `t` below the

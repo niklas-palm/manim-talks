@@ -12,6 +12,11 @@ token at a time, and every hosting decision is about which of those two you are 
 to eight facts the spine rests on, each with its source. Note every simplification you will make and check it is a
 simplification and not an error.
 
+Where the documentation lives: many project sites are assembled in the browser and a fetch sees an empty shell
+(kafka.apache.org, some SDK docs). The sources are then the markdown in the project's repository (`docs/` folders,
+found with `gh api repos/<org>/<repo>/contents/<path>`), generated reference pages, or the paper's HTML rendering
+(ar5iv for arXiv). Cite the URL you actually read, with the date.
+
 ## 2. Write `script.md`
 
 ```
@@ -35,7 +40,9 @@ For each scene, sketch (in a comment block at the top of the scene file) the fin
 ever be on screen, its position band, its colour. Then list the clicks backwards from it: what appears, moves, or
 opens at each click, one idea each. Decide the fixed furniture (title, gauges, counters, racks) and give it fixed
 coordinates. Decide which words will be labels and where they sit. Decide where the camera zooms, if at all, and
-what opens inside the zoom. Only then write code.
+what opens inside the zoom. Only then write code. Design for the half-size review sheet from the start: sizes that look right in a full-frame
+render (12 pt labels, 0.1-unit cells) are unreadable there and on a projector; blocks 0.35 units tall with 14 pt text,
+cells 0.16 to 0.42, labels 15 to 18 are the sizes that survived review (docs/principles.md rule 11).
 
 Layout bands (scene units; the frame is 14.22 by 8, origin at centre): title at the top edge with the move kicker
 above it; content between y 2.6 and -2.3; a caption, if any, below -2.6. Left of x -5.5 and right of x 5.5 is the
@@ -70,6 +77,11 @@ ffmpeg -y -ss 3.2 -i talks/<talk>/media/videos/<file>/480p15/sections/<Scene>_00
 Keep tool output short; renders are chatty. Pipe to a log and `grep -c Traceback`.
 
 ## 6. Audit the pictures
+
+Run `bin/check.py <talk> ql` first: it flags missing files, an `objects.py` without `set_thread`, scenes whose note
+count differs from their step count, labels under size 12, and sentences of more than 14 words on screen. Fix those,
+then do the part only eyes can do.
+
 
 Walk every scene and ask: is anything on screen wrong, as opposed to simplified? Are all simplifications named in a
 label or a note? Does every number carry unit and clock? Does every step add one idea? Can a viewer with no sound

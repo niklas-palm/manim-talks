@@ -13,7 +13,7 @@ class DecodeCeiling(TalkSlide):
         t = title(self, "GPU latency and throughput", "1  two jobs, two costs")
         # --- the card, named
         gpu = GPU("one GPU", w=4.6, weights_gb=32).scale(0.85).shift(LEFT * 3.5 + UP * 0.2)
-        card = label("RTX PRO 6000 Blackwell Server Edition, 96 GB GDDR7: the GPU in a g7e instance", 14, MUTED, width=3.9).next_to(gpu, DOWN, buff=0.15)
+        card = label("RTX PRO 6000 Blackwell Server Edition (g7e): 96 GB GDDR7", 14, MUTED, width=3.9).next_to(gpu, DOWN, buff=0.15)
         bw = Counter("memory bandwidth", 1.6, "TB/s", OUTPUT, decimals=2).move_to([4.3, 1.35, 0], aligned_edge=LEFT)
         # --- the model, named
         mk = label("model", 13, MUTED).move_to([XR, 2.35, 0], aligned_edge=LEFT)
@@ -29,7 +29,7 @@ class DecodeCeiling(TalkSlide):
         lat = Counter("between two of its tokens", 20, "ms", TEXT, size=22, decimals=1).move_to([4.15, -1.15, 0], aligned_edge=LEFT)
         self.play(Create(bar), FadeIn(num), FadeIn(den), run_time=0.6)
         self.play(FadeIn(eq), FadeIn(res), FadeIn(lat), run_time=0.8)
-        self.next_slide("""Two words for the rest of the talk. Latency is how fast one request gets its tokens; throughput is how many tokens
+        self.next_slide("""RTX PRO 6000 Blackwell Server Edition, 96 GB GDDR7: the GPU in a g7e instance. Two words for the rest of the talk. Latency is how fast one request gets its tokens; throughput is how many tokens
         the whole GPU produces per second for everyone. Start with latency, because it has a ceiling anyone can compute
         before renting anything, from two numbers. The card: this is the RTX PRO 6000 Blackwell Server Edition, the GPU inside
         a g7e instance, 96 GB of GDDR7, and its spec sheet says it moves 1.6 terabytes per second; the 1.8 often quoted is the
@@ -50,10 +50,10 @@ class DecodeCeiling(TalkSlide):
         meas = Counter("measured, one request alone", 175, "tokens/s", HOT).move_to([XR, -1.45, 0], aligned_edge=LEFT)
         mlat = label("5.7 ms between tokens; a third of the ceiling", 15, MUTED).next_to(meas, DOWN, buff=0.1).align_to(meas, LEFT)
         d1 = label("latency: the time between one request's tokens. Here 5.7 ms.", 18, MUTED).move_to([-6.4, -2.45, 0], aligned_edge=LEFT)
-        d2 = label("throughput: tokens per second from the whole GPU. Here 175: with one request, the two are the same number.", 18, MUTED).move_to([-6.4, -2.85, 0], aligned_edge=LEFT)
+        d2 = label("throughput: tokens per second from the whole GPU. Here 175.", 18, MUTED).move_to([-6.4, -2.85, 0], aligned_edge=LEFT)
         self.play(FadeIn(meas), FadeIn(mlat), gpu.bandwidth.set(0.39), run_time=1.0)
         self.play(FadeIn(d1), FadeIn(d2), run_time=0.6)
-        self.next_slide("""Measured alone, the same request decodes at about 175 tokens per second, 5.7 milliseconds between tokens, a third
+        self.next_slide("""throughput: tokens per second from the whole GPU. Here 175: with one request, the two are the same number. Measured alone, the same request decodes at about 175 tokens per second, 5.7 milliseconds between tokens, a third
         of its ceiling. The gap is overhead per step: a few hundred kernel launches, the scheduler, the expert router, none of
         which is bandwidth. Watch the gauge: we measured the memory controller busy 39 percent of the time with one request
         in flight; the rest of the time the bus is idle. Now the two words, written down. Latency: 5.7 milliseconds between

@@ -29,6 +29,8 @@ deck is not done. Look at `media/shots/<Scene>.png` and `media/review/<Scene>.pn
 - [ ] No text clipped at the frame edge, no label over another label or over a shape it does not name.
 - [ ] Fixed furniture (title, kicker, gauges, counters) sits in the same place across the scene's steps.
 - [ ] Smallest cells at least 0.07 units at a 0.4 zoom; grids read as cells at 1080p.
+- [ ] The main object fills at least half the content band; unzoomed cells 0.14 to 0.25 units; no scene is a small
+      drawing in an empty frame. Viewed at half size, everything is still legible.
 
 ## Motion
 

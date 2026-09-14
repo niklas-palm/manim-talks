@@ -4,7 +4,7 @@ Spine: a transformer is a stack of identical layers in which every token gathers
 in one parallel step, then is transformed on its own; stack that many times and the last position predicts the next word.
 Audience: engineers who use language models and have never seen the computation inside one. Afterwards they can name
 every stage from text to next token and say what attention, heads, the mask and the residual each do.
-Length: about 16 minutes, ~28 clicks, 7 scene files across 5 moves plus the opening.
+Length: about 16 minutes, 32 clicks, 7 scene files across 5 moves plus the opening.
 
 ## 1. The parallel idea (3 min)
 - **Sequential.** Recurrent networks read one token at a time (sequential steps = length) -> the bottleneck -> the transformer reads every token at once (steps = 1) -> the cost is connections growing with the square of the length, work a GPU does in parallel. Leads to: first, words must become numbers.
@@ -35,8 +35,8 @@ Length: about 16 minutes, ~28 clicks, 7 scene files across 5 moves plus the open
   256 bytes + 50,000 merges + end-of-text): https://huggingface.co/docs/transformers/tokenizer_summary
 
 ## Simplifications (all named on screen or in the note)
-- Vectors drawn as 8 cells; the paper's d_model is 512. Feed-forward drawn 8->24; the paper is 512->2048.
-- 3 heads drawn; the paper uses 8. 6 layers in the stack picture; modern LLMs use 30-100.
+- Vectors drawn as 8 cells; the paper's d_model is 512. Query/key/value drawn as 3 cells; the paper's d_k = d_v = 64. Feed-forward drawn 8->16; the paper is 512->2048.
+- 3 heads drawn; the paper uses 8. 5 layers in the stack picture (each a miniature of the layer just shown); the paper has 6, modern LLMs 30-100.
 - Attention scores and weights are illustrative numbers, not computed from the drawn cells; the mechanism (dot product,
   softmax, weighted sum) is exact. Positional encoding drawn as a second vector added; the paper's values are sinusoids.
 - LayerNorm and the exact residual placement (pre- vs post-norm) are mentioned in the note, not drawn.

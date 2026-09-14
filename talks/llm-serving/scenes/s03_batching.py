@@ -39,13 +39,13 @@ class Batching(TalkSlide):
                 added.append(Square(0.3, fill_color=OUTPUT, fill_opacity=0.9, stroke_width=0).move_to([X0 + k * W1, ROWS[r], 0]))
                 cols[k].add(added[-1])
         self.play(FadeIn(rl[1:]), LaggedStart(*[FadeIn(m, shift=DOWN * 0.1) for m in added], lag_ratio=0.02), per_step.to(4), run_time=1.6)
-        cap = swap_caption(self, cap, "Four requests: the same read of the weights serves all four; four tokens per step")
-        self.next_slide("""Now three more requests arrive, and the engine puts their tokens into the same steps. Look at what did not
+        cap = swap_caption(self, cap, "Four requests: one read of the weights, four tokens per step")
+        self.next_slide("""Four requests: the same read of the weights serves all four; four tokens per step. Now three more requests arrive, and the engine puts their tokens into the same steps. Look at what did not
         change: the violet blocks. The weights come in once per step, exactly as before, and that one read now does a
         column of arithmetic for each of the four requests. Tokens per step went from one to four; reads per step stayed at
         one. That is the entire reason an engine batches: the expensive thing, moving the weights, is paid once per step no
         matter how many requests share the step.""")
-        cap = swap_caption(self, cap, "The step gets a little longer: each request adds a column of arithmetic and its cache read")
+        cap = swap_caption(self, cap, "The step grows a little: arithmetic and a cache read per request")
         wider = []
         for k, c in enumerate(cols):   # one Transform per column: animating the group and its block separately would fight over the block
             tgt = c.copy()
@@ -53,7 +53,7 @@ class Batching(TalkSlide):
             tgt.move_to([X0 + k * W4 + (W4 - W1) / 2, c.get_y(), 0])
             wider.append(Transform(c, tgt))
         self.play(*wider, FadeIn(steplen), run_time=1.0)
-        self.next_slide("""The step does get a little longer, and here is the trade in one picture. Each extra request adds one column of
+        self.next_slide("""The step gets a little longer: each request adds a column of arithmetic and its cache read. The step does get a little longer, and here is the trade in one picture. Each extra request adds one column of
         arithmetic and one read of its own KV cache to the step; the weights read is unchanged. So the time between one
         request's tokens, its latency, creeps up, while the tokens the GPU produces per second, the throughput, climbs almost
         in proportion to the batch. That holds until the added arithmetic or the added cache reads grow to the size of the
@@ -71,8 +71,8 @@ class Batching(TalkSlide):
         ql = label("waiting", 13, HOT).move_to([-5.15, yq, 0], aligned_edge=RIGHT)
         axis2 = Arrow([-5.0, 2.15, 0], [3.6, 2.15, 0], color=DIM, stroke_width=2, buff=0, tip_length=0.15)
         al2 = label("time: one decode step after another, the newest at the right", 13, DIM).next_to(axis2, UP, buff=0.04).align_to(axis2, LEFT)
-        legend = label("a column is one step, its width the step's time; a colour is one request, outlined at its prefill\na hollow cell is a slot the weights read did nothing for\n8 slots drawn; the engine's limit is max_num_seqs, 256 in our engine",
-                       12, DIM).move_to([-5.0, -2.4, 0], aligned_edge=LEFT)
+        legend = VGroup(label("column: one step, width = its time; colour: one request, outlined at prefill", 12, DIM),
+                        label("hollow: an idle slot; 8 slots drawn, the engine's limit is max_num_seqs (256)", 12, DIM)).arrange(DOWN, aligned_edge=LEFT, buff=0.05).move_to([-5.0, -2.4, 0], aligned_edge=LEFT)
         mask = Rectangle(width=2.3, height=4.3, fill_color=config.background_color, fill_opacity=1.0, stroke_width=0).move_to([X_END - 1.15, 0.05, 0]).set_z_index(1)
         for m in (sl, wr, ql):
             m.set_z_index(2)
@@ -89,7 +89,7 @@ class Batching(TalkSlide):
             return 174 - (174 - 86) * (n - 1) / 7
 
         slots, waiting, columns, nreq = [None] * SLOTS, [], [], 0
-        cap = swap_caption(self, cap, "Requests never arrive together. Light load: two or three share each read, the GPU mostly waiting")
+        cap = swap_caption(self, cap, "Requests never arrive together: at light load the GPU mostly waits")
         self.play(FadeIn(sl), FadeIn(wr), FadeIn(ql), FadeIn(axis2), FadeIn(al2), FadeIn(legend), FadeIn(busg), FadeIn(compg), FadeIn(nreq_c), FadeIn(ms_c), FadeIn(tps_c), run_time=0.6)
         self.add(mask)
 
@@ -138,7 +138,7 @@ class Batching(TalkSlide):
 
         for t in range(14):
             one_step(t)
-        self.next_slide("""The timeline assumed four requests that arrived together. They never do: requests come and go on their own
+        self.next_slide("""Requests never arrive together. Light load: two or three share each read, the GPU mostly waiting. The timeline assumed four requests that arrived together. They never do: requests come and go on their own
         clocks, so the engine re-forms the batch at every step from whoever is in flight. Watch it run. Eight slots drawn, the
         most requests the engine will put into one step; the real setting is max_num_seqs, 256 in our engine. Time scrolls left; every
         step enters at the right as a column, a violet block for the weights read and one cell per slot. A request is a colour:
@@ -146,10 +146,10 @@ class Batching(TalkSlide):
         it is done. At light load two or three requests share a step and the rest of the column is hollow: the weights were
         read, and nothing came out for those rows. The bus gauge sits where the single request left it, the compute gauge is
         near the floor, and the tokens per second counter says what that costs. This GPU is mostly waiting.""")
-        cap = swap_caption(self, cap, "Heavy load: every slot full, a queue forms, the step a little longer, four times the tokens per second")
+        cap = swap_caption(self, cap, "Heavy load: every slot full, a queue, four times the tokens per second")
         for t in range(14, 41):
             one_step(t)
-        self.next_slide("""Then arrivals come faster than requests finish. Slots fill. A request that finishes frees its slot, and the next
+        self.next_slide("""Heavy load: every slot full, a queue forms, the step a little longer, four times the tokens per second. Then arrivals come faster than requests finish. Slots fill. A request that finishes frees its slot, and the next
         one waiting takes it at the very next step; nobody waits for a batch to drain. That is continuous batching: the batch
         re-formed every step. When all eight slots are taken, arrivals wait in the queue, and that queue is the dashboard's
         saturation signal. Look at what the load did to the machine. The columns are wider: the step is longer, because eight
@@ -159,7 +159,7 @@ class Batching(TalkSlide):
         hollow cells return, the counters fall. The measured curve next is this picture with numbers.""")
         self.play(FadeOut(VGroup(sl, wr, ql, axis2, al2, legend, busg, compg, nreq_c, ms_c, tps_c, mask, *columns, *[sq for _, _, sq in waiting])), run_time=0.8)
         # --- part two: the same GPU, measured
-        cap = swap_caption(self, cap, "Now measured, on this GPU: each request's speed and the total, as the batch grows")
+        cap = swap_caption(self, cap, "Measured on this GPU as the batch grows")
         gpu = GPU("one GPU", w=4.8, weights_gb=29).scale(0.9).shift(LEFT * 3.3 + DOWN * 0.3)
         self.play(FadeIn(gpu), gpu.bandwidth.set(0.39), gpu.set_cache(3))
         inflight = Counter("requests in flight", 1, "", TEXT, size=26).move_to([0.9, 1.9, 0], aligned_edge=LEFT)
@@ -167,7 +167,7 @@ class Batching(TalkSlide):
         total = Counter("tokens/s, whole GPU", 174, "", CACHE, size=26).move_to([5.0, 1.9, 0], aligned_edge=LEFT)
         clk = label("latency and throughput, both measured while decoding", 12, MUTED).move_to([2.8, 1.3, 0], aligned_edge=LEFT)
         self.play(FadeIn(inflight), FadeIn(each), FadeIn(total), FadeIn(clk))
-        self.next_slide("""Now the same thing measured. The GPU from before with one request decoding: the bus busy about forty percent of
+        self.next_slide("""Now measured, on this GPU: each request's speed and the total, as the batch grows. Now the same thing measured. The GPU from before with one request decoding: the bus busy about forty percent of
         the time, the compute grid nearly idle, and three counters: requests in flight, tokens per second each one gets, and
         tokens per second from the whole GPU. Both are measured while decoding, so with one request they are the same
         number: this is the latency and the throughput from the last scene, side by side. Both count tokens produced; the bus

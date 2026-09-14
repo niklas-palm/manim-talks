@@ -7,7 +7,7 @@ from objects import *
 class Quantisation(TalkSlide):
     def construct(self):
         t = title(self, "Knob one: quantisation, fewer bytes per weight", "3  three knobs: weights, experts, cache")
-        strip = label("this talk's model: a 30B mixture of experts, 3B active per token, on the 96 GB card", 16, MUTED).next_to(t, DOWN, buff=0.12)
+        strip = label("this talk's model: 30B mixture of experts, 3B active, 96 GB card", 16, MUTED).next_to(t, DOWN, buff=0.12)
         self.play(FadeIn(strip), run_time=0.4)
         gpu = GPU("one GPU, 96 GB", w=5.0, weights_gb=57).scale(0.92).shift(LEFT * 3.1 + DOWN * 0.3)
         self.play(FadeIn(gpu), gpu.set_cache(30), gpu.bandwidth.set(0.95))
@@ -18,7 +18,7 @@ class Quantisation(TalkSlide):
         rate = Counter("prompt tokens prefilled per second, measured", 7900, "", PROMPT).shift(RIGHT * 2.0 + DOWN * 1.45)
         rl = label("one GPU, inside an eight-second latency budget", 15, MUTED).next_to(rate, DOWN, buff=0.1).align_to(rate, LEFT)
         self.play(FadeIn(bytes_), FadeIn(bl), FadeIn(fit), FadeIn(fl), FadeIn(rate), FadeIn(rl))
-        self.next_slide("""The 30B model as it ships, in 16-bit: 30 billion weights at two bytes each is 57 GB, and every decode step
+        self.next_slide("""this talk's model: a 30B mixture of experts, 3B active per token, on the 96 GB card. The 30B model as it ships, in 16-bit: 30 billion weights at two bytes each is 57 GB, and every decode step
         reads what a token needs from them. On the 96 GB card that leaves about 30 GB for the cache. Read the middle number
         carefully: 330,000 tokens of context is the whole cache, shared by every request in flight; at 96 kilobytes per token
         that is about forty conversations of 8,000 tokens, or one request at the model's full 262,000-token context. The
@@ -66,7 +66,7 @@ class MixtureOfExperts(TalkSlide):
         for _ in range(6):
             layers.add(VGroup(*[Rectangle(width=0.30, height=0.26, fill_color=WEIGHTS, fill_opacity=0.35, stroke_width=0) for _ in range(8)]).arrange(RIGHT, buff=0.05))
         layers.arrange(DOWN, buff=0.1).shift(RIGHT * 2.6 + UP * 0.1)
-        ml = label("mixture of experts, 30B parameters: each layer holds 128 experts, a router picks 8, so 3B are read (drawn as 8 experts with 2 chosen)", 15, TEXT, width=5.6).next_to(layers, DOWN, buff=0.6)
+        ml = label("mixture of experts, 30B: 128 experts per layer, 8 chosen (drawn 8, 2 chosen)", 15, TEXT, width=5.6).next_to(layers, DOWN, buff=0.6)
         bytes_m = Counter("bytes read per token", 3, "GB", CACHE).next_to(layers, UP, buff=0.55).align_to(layers, LEFT)
         used = Counter("experts read, this layer", 2, "of 8", CACHE, size=22).next_to(layers, RIGHT, buff=0.5).shift(UP * 0.3)
         self.play(FadeIn(layers), FadeIn(ml), FadeIn(bytes_m), FadeIn(used))
@@ -81,18 +81,18 @@ class MixtureOfExperts(TalkSlide):
                 self.play(*[row[j].animate.set_fill(WEIGHTS, 0.35) for j in picks], run_time=0.07)
             self.play(tok.animate.next_to(layers, DOWN, buff=0.08), run_time=0.15)
             self.play(FadeOut(tok), run_time=0.1)
-        self.next_slide("""A mixture of experts splits each layer's big feed-forward matrices into several smaller ones, the experts,
+        self.next_slide("""mixture of experts, 30B parameters: each layer holds 128 experts, a router picks 8, so 3B are read (drawn as 8 experts with 2 chosen). A mixture of experts splits each layer's big feed-forward matrices into several smaller ones, the experts,
         and a router sends each token to a few of them; drawn here as eight experts with two chosen, where the real 30B model has 128
         per layer and routes eight. The token still passes down through every layer, but in each layer only
         two of eight experts light up. The 30B model has 3B active parameters: a token touches 3 GB of weights, not 30. Since
         decode is bound by bytes read, that is a tenfold cut in the thing that costs. A 30B mixture of experts decodes like a
         3B model and answers like a 30B one.""")
-        key = label("same layers, same depth; a tenth of the bytes per token, so ten times the decode ceiling", 17, MUTED).to_edge(DOWN, buff=0.55)
+        key = label("a tenth of the bytes per token: ten times the decode ceiling", 17, MUTED).to_edge(DOWN, buff=0.55)
         self.play(FadeIn(key), run_time=0.5)
-        self.next_slide("""So the two knobs so far both attack bytes per token: quantisation shrinks every weight, a mixture of experts
+        self.next_slide("""same layers, same depth; a tenth of the bytes per token, so ten times the decode ceiling. So the two knobs so far both attack bytes per token: quantisation shrinks every weight, a mixture of experts
         reads fewer of them. Same depth, same stack of layers, a tenth of the bytes, ten times the decode ceiling from the last
         scene. That is why this talk's model is one. Now the catch.""")
-        key2 = label("the catch: a batch of eight tokens picks seven of eight experts; under load most of the model is read anyway", 17, MUTED).move_to(key)
+        key2 = label("the catch: eight tokens pick seven of eight experts", 17, MUTED).move_to(key)
         self.play(FadeOut(key), FadeIn(key2), run_time=0.5)
         toks = VGroup(*[Square(0.3, fill_color=OUTPUT, fill_opacity=0.9, stroke_width=0) for _ in range(8)]).arrange(RIGHT, buff=0.05).next_to(layers, UP, buff=0.08)
         self.play(FadeIn(toks, shift=DOWN * 0.2), run_time=0.3)
@@ -101,7 +101,7 @@ class MixtureOfExperts(TalkSlide):
             self.play(*[row[j].animate.set_fill(OUTPUT, 1.0) for j in picks], toks.animate.move_to(row.get_center()), used.to(7), run_time=0.22)
         self.play(bytes_m.to(11), toks.animate.next_to(layers, DOWN, buff=0.08), run_time=0.6)
         self.play(FadeOut(toks), run_time=0.2)
-        self.finish("""The catch is the batch. Remember, the engine decodes many requests in one step. Eight tokens each pick their own two experts, and together they pick most of them: seven of eight per layer here, and the counter shows it. The step now reads eleven of the thirty gigabytes in the drawing, not three. On the real model, with 128 experts and eight
+        self.finish("""the catch: a batch of eight tokens picks seven of eight experts; under load most of the model is read anyway. The catch is the batch. Remember, the engine decodes many requests in one step. Eight tokens each pick their own two experts, and together they pick most of them: seven of eight per layer here, and the counter shows it. The step now reads eleven of the thirty gigabytes in the drawing, not three. On the real model, with 128 experts and eight
         chosen per token, a batch of 128 touches nearly all of them, and we measured it on the memory bus: at one request the
         memory controller is busy 39 percent of the time and the step reads about the active 3 GB; at 128 in flight it is busy
         77 percent of the time and the step reads essentially all 29 GB. The mixture-of-experts advantage is large at low
@@ -126,18 +126,18 @@ class PrefixCache(TalkSlide):
         self.play(FadeIn(turn2), FadeIn(l2))
         self.next_slide("""Turn two arrives carrying turn one inside it: the chat client resends the whole conversation plus the new
         question. Without help, prefill reads all thirteen tokens again. Nine of them the engine has already seen.""")
-        pl = label("prefix caching: blocks whose tokens match are reused; only the new tokens are prefilled", 16, CACHE).next_to(blocks, RIGHT, buff=0.6)
+        pl = label("prefix caching: matching blocks reused, only new tokens prefilled", 16, CACHE).next_to(blocks, RIGHT, buff=0.6)
         match = SurroundingRectangle(VGroup(turn2[0], turn2[1]), color=CACHE, buff=0.06)
         arrows = VGroup(*[Line(match.get_bottom() + LEFT * 0.9 + RIGHT * 0.9 * i, b.get_top(), color=CACHE, stroke_width=1.5) for i, b in enumerate(blocks)])
         self.play(Create(match), Create(arrows), FadeIn(pl))
         self.play(prefill.to(4), Indicate(turn2[2], color=PROMPT))
-        self.next_slide("""Prefix caching hashes the incoming tokens block by block and matches them against blocks already in the
+        self.next_slide("""prefix caching: blocks whose tokens match are reused; only the new tokens are prefilled. Prefix caching hashes the incoming tokens block by block and matches them against blocks already in the
         cache. Nine tokens match, so prefill computes four. On a long conversation, a shared system prompt or a document that
         many users ask about, this removes most of the prefill work. It is on by default and costs about one percent when
         nothing matches. Measured with every prompt cached: plus 46 percent on short prompts, 2.7 times on 4,000-token ones.""")
         # routing
         self.play(FadeOut(match), FadeOut(arrows), FadeOut(pl), FadeOut(turn1), FadeOut(l1), FadeOut(turn2), FadeOut(l2), FadeOut(blocks), FadeOut(bl), FadeOut(prefill))
-        q = label("at scale: many engines, each with its own cache. Which engine gets the next turn?", 17, TEXT).move_to([0, 2.4, 0])
+        q = label("many engines, each with its own cache: which one gets the next turn?", 17, TEXT).move_to([0, 2.4, 0])
         self.play(FadeIn(q), run_time=0.5)
         engines = VGroup(*[box(1.05, 1.25, f"{i+1}", WEIGHTS, size=18) for i in range(8)]).arrange(RIGHT, buff=0.18).shift(DOWN * 0.9)
         caches = VGroup(*[Rectangle(width=0.7, height=0.18, stroke_color=DIM, stroke_width=1.5, fill_opacity=0).move_to(e[0].get_bottom() + UP * 0.3) for e in engines])
@@ -146,7 +146,7 @@ class PrefixCache(TalkSlide):
         self.play(FadeIn(engines), FadeIn(caches), FadeIn(lb), FadeIn(hits))
         home = 2
         caches[home].set_fill(CACHE, 0.9)
-        self.next_slide("""Now the fleet. Eight engines, each with its own cache: the blocks of a conversation live in the engine that
+        self.next_slide("""at scale: many engines, each with its own cache. Which engine gets the next turn?. Now the fleet. Eight engines, each with its own cache: the blocks of a conversation live in the engine that
         served its first turn, engine three here. The load balancer's job is to spread requests evenly. Those two facts collide.""")
         import random
         random.seed(11)
@@ -175,11 +175,11 @@ class PrefixCache(TalkSlide):
         what it is sent.""")
         # tiers: a bigger, slower home for evicted blocks, per engine and then shared
         self.play(FadeOut(st), FadeOut(q), run_time=0.3)
-        q2 = label("the cache is small: blocks are evicted long before a conversation ends. Give them a bigger home", 17, TEXT).move_to([0, 2.4, 0])
+        q2 = label("blocks are evicted before a conversation ends: give them a bigger home", 17, TEXT).move_to([0, 2.4, 0])
         host = VGroup(*[Rectangle(width=0.9, height=0.2, stroke_color=DIM, stroke_width=1.5, fill_opacity=0).move_to(e[0].get_bottom() + DOWN * 0.25) for e in engines])
         store = Rectangle(width=engines.width, height=0.3, stroke_color=DIM, stroke_width=1.5, fill_opacity=0).move_to([engines.get_x(), -2.2, 0])
         tiers = VGroup(*[label(s_, 13, DIM).move_to([-5.15, y_, 0], aligned_edge=RIGHT) for s_, y_ in (("GPU cache\nper engine", caches[0].get_y()), ("host RAM\nper engine", host[0].get_y()), ("shared store\nover the network", store.get_y()))])
-        ex = label("a shared store (LMCache, Mooncake, Dynamo KVBM): a long document many users ask about, an agent's context between tool calls", 13, MUTED).next_to(store, DOWN, buff=0.08).align_to(store, LEFT)
+        ex = label("shared store (LMCache, Mooncake, Dynamo KVBM): shared documents, agent context between tools", 13, MUTED).next_to(store, DOWN, buff=0.08).align_to(store, LEFT)
         self.play(FadeIn(q2), FadeIn(host), FadeIn(store), FadeIn(tiers), FadeIn(ex), run_time=0.6)
         random.seed(12)
         spills = {}
@@ -199,7 +199,7 @@ class PrefixCache(TalkSlide):
         self.play(dot.animate.move_to(engines[far][0].get_top()), run_time=0.3)
         self.play(copies[0].animate.move_to(caches[far]), Flash(engines[far][0], color=CACHE, flash_radius=0.6, num_lines=8), FadeOut(dot), run_time=0.5)
         self.play(caches[far].animate.set_fill(CACHE, 0.9), FadeOut(copies[0]), run_time=0.3)
-        self.finish("""The other way out attacks a different limit: the cache is small and blocks are evicted long before a
+        self.finish("""a shared store (LMCache, Mooncake, Dynamo KVBM): a long document many users ask about, an agent's context between tool calls. The other way out attacks a different limit: the cache is small and blocks are evicted long before a
         conversation is over, so even the home engine forgets. Three engines fill up here and spill blocks; a turn that comes
         home gets its block back from host RAM, and a turn that lands on a far engine can still find a copy in a store every
         engine can read. What lives in such a store: a long document many users ask about, a system prompt shared by a

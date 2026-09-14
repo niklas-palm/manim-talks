@@ -13,12 +13,12 @@ def engine(name: str, color: str = WEIGHTS) -> VGroup:
 class Fleet(TalkSlide):
     def construct(self):
         t = title(self, "From one engine to a fleet", "6  the fleet")
-        cap = caption(self, "A fleet starts from one engine's measured rate, at your latency budget and prompt shape")
+        cap = caption(self, "A fleet starts from one engine's measured rate at your latency budget")
         gpu = GPU("one engine", w=4.4, weights_gb=29).scale(0.8).shift(LEFT * 3.4 + UP * 0.2)
         self.play(FadeIn(gpu), gpu.set_cache(40), gpu.bandwidth.set(0.92), gpu.compute.set(0.7), *gpu.light_cores(0.7))
         rps = Counter("requests/s one engine sustains inside the latency budget", 16, "", OUTPUT).shift(RIGHT * 2.6 + UP * 1.2)
         self.play(FadeIn(rps))
-        self.next_slide("""Everything before this was one engine, and a fleet is built from one number about it: how many requests per
+        self.next_slide("""A fleet starts from one engine's measured rate, at your latency budget and prompt shape. Everything before this was one engine, and a fleet is built from one number about it: how many requests per
         second one engine sustains inside your latency budget, at your prompt shape. That number is the operating point on the
         batching curve from move two, and nothing about it can be looked up; it moves with the model, the prompt length and the
         budget. In the companion measurements it is about 16 requests per second, 16,000 input tokens per second, for 1,000-token prompts inside an 8-second p95. Take
@@ -44,7 +44,7 @@ class Fleet(TalkSlide):
         operational reasons too. A failure or a spot reclaim takes one engine out of eight, not the whole service. And capacity
         comes in engine-sized steps, so the fleet can follow demand more closely. What sits in front of the balancer, TLS, keys,
         rate limits, is ordinary web infrastructure and not this talk's subject.""")
-        cap = swap_caption(self, cap, "Adding an engine means loading the model: minutes. Size for the peak, autoscale for the trend")
+        cap = swap_caption(self, cap, "Adding an engine takes minutes: size for the peak, autoscale the trend")
         clock = VGroup(label("decide", 15, DIM), label("get a machine", 15, DIM), label("load the weights", 15, DIM), label("serving", 15, OUTPUT)).arrange(RIGHT, buff=0.55).shift(UP * 2.3)
         bar = Line(clock.get_left() + DOWN * 0.28, clock.get_right() + DOWN * 0.28, color=DIM)
         prog = Line(bar.get_start(), bar.get_start(), color=OUTPUT, stroke_width=6)
@@ -53,7 +53,7 @@ class Fleet(TalkSlide):
         self.play(prog.animate.put_start_and_end_on(bar.get_start(), bar.get_end()), run_time=2.5)
         new = engine("9", OUTPUT).next_to(fleet, RIGHT, buff=0.18)
         self.play(FadeIn(new), Create(Line(lb[0].get_bottom(), new[0].get_top(), color=DIM, stroke_width=1.5)))
-        self.next_slide("""Autoscaling is slower than people expect, for a reason that is not about any one stack. A new engine has to
+        self.next_slide("""Adding an engine means loading the model: minutes. Size for the peak, autoscale for the trend. Autoscaling is slower than people expect, for a reason that is not about any one stack. A new engine has to
         notice the load, get a machine with a GPU, pull an image, and load tens of gigabytes of weights before it answers its
         first request; every stage is minutes, not seconds. In the companion stack the whole chain measured eleven minutes from
         alarm to serving, and scale-in is slower still. So the fixed fleet is sized for the peak from the arithmetic above, and

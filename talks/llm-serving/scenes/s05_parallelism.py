@@ -29,12 +29,12 @@ class Parallelism(TalkSlide):
         ml = label("a 235B model: 236 GB of fp8 weights", 18, TEXT).next_to(model, RIGHT, buff=0.35)
         g = gpu_row(4, 2.0, 2.2, buff=0.55).shift(UP * 0.25)   # room between the GPUs for the exchange arrows to be seen
         gl = label("four 80 GB GPUs", 16, DIM).next_to(g, DOWN, buff=0.12)
-        cap = caption(self, "236 GB of weights and no GPU that holds them: divide the model, and pay at the seams")
+        cap = caption(self, "No GPU holds 236 GB: divide the model, pay at the seams")
         self.play(FadeIn(model), FadeIn(ml), FadeIn(g), FadeIn(gl))
-        self.next_slide("""Some models do not fit one card. A 235B mixture of experts in fp8 is 236 GB of weights; the largest single GPU
+        self.next_slide("""236 GB of weights and no GPU that holds them: divide the model, and pay at the seams. Some models do not fit one card. A 235B mixture of experts in fp8 is 236 GB of weights; the largest single GPU
         we can rent holds 96. So the model has to be divided over several GPUs, and how it is divided shows up as time.""")
         # TP: slice every matrix; each GPU multiplies its slice, then all of them add their partial results
-        cap = swap_caption(self, cap, "Tensor parallelism: the whole vector to every GPU, a quarter of every matrix each, then exchange")
+        cap = swap_caption(self, cap, "Tensor parallelism: whole vector everywhere, a quarter of every matrix each")
         self.play(FadeOut(gl))
         x = column(8, PROMPT, 0.13).move_to([3.9, 2.15, 0])
         xl = label("one token's vector", 14, PROMPT).next_to(x, RIGHT, buff=0.15)
@@ -53,7 +53,7 @@ class Parallelism(TalkSlide):
         pl = label("each GPU now holds a quarter of the answer: partial sums for every output", 14, OUTPUT).next_to(g, DOWN, buff=0.15)
         self.play(FadeIn(pl), run_time=0.4)
         sync = VGroup(*[DoubleArrow(g[i].get_right(), g[i + 1].get_left(), buff=0.04, color=HOT, stroke_width=4, tip_length=0.16) for i in range(3)])
-        sl2 = label("all-reduce: every GPU sends its partial sums to the other three and adds theirs; all four now hold the full output", 14, HOT).move_to(pl)
+        sl2 = label("all-reduce: partial sums exchanged; every GPU now holds the full output", 14, HOT).move_to(pl)
         self.play(FadeIn(sync), FadeOut(pl), FadeIn(sl2), run_time=0.4)
         travellers = VGroup(*[parts[j].copy().set_opacity(0.6) for j in range(4) for _ in range(3)])
         dests = [parts[k] for j in range(4) for k in range(4) if k != j]
@@ -65,7 +65,7 @@ class Parallelism(TalkSlide):
         step4, w4 = timeline([("c", 1.0), ("s", 0.6)], 1.0, tl_y)
         l4 = label("TP = 4: a quarter of the arithmetic, then the exchange", 15, DIM).next_to(step4, RIGHT, buff=0.2)
         self.play(FadeIn(step1), FadeIn(l1), FadeIn(step4), FadeIn(l4))
-        self.next_slide("""Tensor parallelism is what engines do inside a machine: instead of splitting the stack of layers, split every
+        self.next_slide("""Tensor parallelism: the whole vector to every GPU, a quarter of every matrix each, then exchange. Tensor parallelism is what engines do inside a machine: instead of splitting the stack of layers, split every
         matrix. Each GPU holds a quarter of every weight matrix in every layer, so all four GPUs work on every token at once.
         The same whole vector arrives on every GPU; each multiplies it by its own quarter of the matrix, a quarter of the
         arithmetic in parallel, and what each GPU holds afterwards is a quarter of the answer: partial sums for every output
@@ -100,12 +100,12 @@ class Parallelism(TalkSlide):
             self.play(tok.animate.move_to(experts[dest][random.randrange(6)].get_center()), run_time=0.4)
             self.play(FadeOut(tok), run_time=0.12)
         meas = VGroup(label("when it is used", 15, DIM),
-                      label("the model is too big for tensor slicing alone: hundreds of experts spread whole across many GPUs", 16, TEXT),
+                      label("too big for slicing alone: hundreds of experts spread across many GPUs", 16, TEXT),
                       label("and the batch is large enough that every GPU's experts have tokens to serve", 16, TEXT),
-                      label("measured here, 235B on 8 GPUs: per request 108 tokens/s without, 86 with; under load 7 to 20% fewer requests/s", 16, MUTED),
+                      label("235B on 8 GPUs: 108 to 86 tokens/s each, 7 to 20% fewer requests/s", 16, MUTED),
                       ).arrange(DOWN, aligned_edge=LEFT, buff=0.08).shift(DOWN * 1.6 + LEFT * 0.4)
         self.play(FadeIn(meas))
-        self.next_slide("""Expert parallelism is the other way to place a mixture of experts: instead of slicing every matrix across the
+        self.next_slide("""measured here, 235B on 8 GPUs: per request 108 tokens/s without, 86 with; under load 7 to 20% fewer requests/s. the model is too big for tensor slicing alone: hundreds of experts spread whole across many GPUs. Expert parallelism is the other way to place a mixture of experts: instead of slicing every matrix across the
         GPUs, whole experts are placed on GPUs, and each token travels to the GPUs that hold the experts its router picked.
         That replaces the all-reduce with an all-to-all of tokens. When is that the right layout? When the model is so large
         that slicing alone cannot place it, hundreds of experts across dozens of GPUs, the frontier models of six hundred

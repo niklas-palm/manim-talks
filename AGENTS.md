@@ -78,6 +78,7 @@ python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt   # once; 
 bin/render.sh <talk> ql [Scene ...]     # preview render (480p), then build the pages; qm 720p, qh 1080p60 for the talk itself
 bin/shots.py <talk> ql                  # the frame every step holds on, tiled per scene: media/shots/<Scene>.png
 bin/review.sh <talk> ql                 # a frame every two seconds per scene, for motion and collisions mid-step
+bin/check.py <talk> ql                  # structural checks: files, set_thread, notes per step, text sizes, sentences on screen
 bin/serve.sh <talk>                     # serve over localhost with byte ranges and open the presenter window
 bin/export_pptx.py <talk> qh            # optional: one PowerPoint slide per step, clip autoplaying, note in the notes
 ```

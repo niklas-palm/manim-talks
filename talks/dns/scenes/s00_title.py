@@ -13,10 +13,9 @@ class Opening(TalkSlide):
         self.play(Write(t), run_time=1.0)
         self.play(FadeIn(s, shift=UP * 0.15))
         self.play(FadeOut(s), t.animate.to_edge(UP, buff=0.4).scale(0.65))
-        spine = VGroup(label("Every answer is the address, or a pointer to who to ask next,", 32, ZONE),
-                       label("and every level remembers what it heard for exactly as long as it was told to.", 32, REMEMBERED),
-                       label("The whole system, its speed and its failures, follow from those two rules.", 24, TEXT)).arrange(DOWN, buff=0.3).shift(UP * 0.5)
-        spine[0][0:24].set_color(TEXT); spine[0][24:35].set_color(ADDRESS)
+        spine = VGroup(label("Every answer is the address, or a pointer to who to ask next,", 32, TEXT, thread=True),
+                       label("and every level remembers what it heard for exactly as long as it was told to.", 32, TEXT, thread=True),
+                       label("The whole system, its speed and its failures, follow from those two rules.", 24, MUTED)).arrange(DOWN, buff=0.3).shift(UP * 0.5)
         for line in spine:
             self.play(FadeIn(line, shift=UP * 0.15))
         col = VGroup(*[label(f"{i + 1}   {x}", 21, MUTED) for i, x in enumerate(MOVES)]).arrange(DOWN, aligned_edge=LEFT, buff=0.14).next_to(spine, DOWN, buff=0.5)

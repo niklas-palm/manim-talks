@@ -215,7 +215,7 @@ class Mechanics(TalkSlide):
         other side, on one picture that only grows. Everything later in the talk is a consequence of what happens on this
         picture, so it is worth twenty minutes.""")
         toks = VGroup(*[VGroup(Square(0.5, fill_color=PROMPT, fill_opacity=0.9, stroke_width=0), label(w, 13, "#0f1116")) for w in WORDS]).arrange(RIGHT, buff=0.1).move_to([-6.4, 2.25, 0], aligned_edge=LEFT)
-        ids = VGroup(*[label(i, 11, DIM).next_to(k, DOWN, buff=0.05) for i, k in zip(IDS, toks)])
+        ids = VGroup(*[label(i, 13, DIM).next_to(k, DOWN, buff=0.05) for i, k in zip(IDS, toks)])
         self.play(ReplacementTransform(sentence.copy(), toks), run_time=0.8)   # a copy is morphed, so toks itself is not padded with empty submobjects
         self.play(FadeIn(ids))
         cap = caption(self, "Tokenisation: text becomes integers from a fixed vocabulary")
@@ -226,7 +226,7 @@ class Mechanics(TalkSlide):
         table = VGroup(*[Square(0.13, fill_color=WEIGHTS, fill_opacity=0.5, stroke_width=0) for _ in range(14 * 8)]).arrange_in_grid(rows=14, cols=8, buff=0.02).move_to([3.4, 1.4, 0])
         tl = label("embedding table: one row per vocabulary entry, a few thousand numbers each", 13, WEIGHTS).next_to(table, UP, buff=0.12)
         self.play(FadeIn(table), FadeIn(tl))
-        cap = swap_caption(self, cap, "Embedding: each integer selects a row of a table; the token is now a vector of numbers")
+        cap = swap_caption(self, cap, "Embedding: each integer selects a row; the token becomes a vector")
         vectors = VGroup()
         for i, row_i in enumerate(ROWS):
             row = VGroup(*[table[row_i * 8 + c] for c in range(8)])
@@ -235,7 +235,7 @@ class Mechanics(TalkSlide):
             self.play(Create(line), *[c.animate.set_fill(PROMPT, 0.9) for c in row], run_time=0.25)
             self.play(ReplacementTransform(row.copy(), v), FadeOut(line), FadeOut(ids[i]), *[c.animate.set_fill(WEIGHTS, 0.5) for c in row], run_time=0.4)
             vectors.add(v)
-        self.next_slide("""Then the lookup. The model holds a table with one row per vocabulary entry, a few thousand numbers in each row,
+        self.next_slide("""Embedding: each integer selects a row of a table; the token is now a vector of numbers. Then the lookup. The model holds a table with one row per vocabulary entry, a few thousand numbers in each row,
         learned like every other weight. Each integer selects its row, and that row is the token from now on: a vector, a
         column of numbers, drawn as eight shaded cells. Five tokens, five vectors, and the two 'the's are different rows. This
         is the only step where the integer matters; everything after this is arithmetic on these columns.""")
@@ -261,53 +261,53 @@ class Mechanics(TalkSlide):
         # --- the five vectors line up as a block; zoom into layer 1 with them; the layer opens up
         y0 = layers[0].get_y()
         block = vectors
-        cap = caption(self, "Inside one layer: the five vectors arrive together as a block, and the layer opens up", 22)
+        cap = caption(self, "Inside one layer: the five vectors arrive as a block", 22)
         ctx = VGroup(t, sentence, toks, rl, gauges, reads, produced, more, ll)   # captions never go in: a faded-out caption would come back with the group
         others = VGroup(*layers[2:], *rack[2:])
         self.play(frame.animate.scale(ZP).move_to([-1.5, y0 - 0.15, 0]), FadeOut(ctx), FadeOut(others), FadeOut(layers[1]), FadeOut(rack[1]), rack[0].animate.shift(LEFT * 1.0),
                   layers[0][0].animate.stretch_to_fit_height(1.3).stretch_to_fit_width(4.2).shift(RIGHT * 0.3),
                   block.animate.scale(0.07 / 0.065).arrange(RIGHT, buff=0.02).move_to([-4.05, y0, 0]), run_time=1.6)
-        self.next_slide("""This is prefill, and we go inside it. The five vectors line up as a block, side by side, and go into layer one
+        self.next_slide("""Inside one layer: the five vectors arrive together as a block, and the layer opens up. This is prefill, and we go inside it. The five vectors line up as a block, side by side, and go into layer one
         together. Zoom in and let the layer open up. The block arrives at the left. Everything the layer does, it does to this
         block: the same arithmetic on each of the five columns. Watch what that means for the weights.""")
         W, wl, q, k, v, att, ff, eq, outv = layer_parts(y0, 5)
         ql = VGroup(*[small(s_, col).next_to(c, RIGHT, buff=0.05) for s_, c, col in zip("qkv", (q, k, v), (TEXT, CACHE, CACHE))])
         self.play(FadeIn(W), FadeIn(wl), FadeIn(q), FadeIn(k), FadeIn(v), run_time=0.6)
-        cap = swap_caption(self, cap, "One row of the matrix, read once, multiplies all five vectors: five output numbers for one read", 22)
+        cap = swap_caption(self, cap, "One row, read once, multiplies all five vectors", 22)
         dot_product_block(self, list(block), PROMPT, W[0], 0, q, TEXT)
-        self.next_slide("""Three weight matrices sit in the layer, and here is the arithmetic, once, slowly. One output number is one row of
+        self.next_slide("""One row of the matrix, read once, multiplies all five vectors: five output numbers for one read. Three weight matrices sit in the layer, and here is the arithmetic, once, slowly. One output number is one row of
         the matrix against one vector: each number in the row multiplies the number beside it in the vector, the eight
         products are summed, and the sum is one cell of the output. Now the point of the block. The row came in from memory
         once, and it stays lit while all five vectors take their turn against it: five multiplications, five output numbers,
         one read. In a real model the row and the vector are four thousand long, not eight, and the block is every token of
         the prompt. Everything a layer does is this operation, repeated.""")
-        cap = swap_caption(self, cap, "Every row in turn: three matrices read once each give a query, a key and a value for all five tokens", 22)
+        cap = swap_caption(self, cap, "Every row in turn: three matrices, read once, give five queries, keys, values", 22)
         sweep_block(self, list(block), PROMPT, [(W[0], q, TEXT), (W[1], k, CACHE), (W[2], v, CACHE)], rt=0.22)
         self.play(FadeIn(ql), run_time=0.3)
-        self.next_slide("""Now every row, at speed, for all three matrices. Each row lights once and fills one cell in each of the five
+        self.next_slide("""Every row in turn: three matrices read once each give a query, a key and a value for all five tokens. Now every row, at speed, for all three matrices. Each row lights once and fills one cell in each of the five
         output columns. Filling the outputs touched every cell of all three matrices: to use a weight it has to come in from
         memory, so producing these outputs meant reading the matrices in full, once, for five columns of work. The outputs
         have names. The query is what a token is looking for in the tokens before it. The key is how it will answer other
         tokens' queries. The value is what it hands over when its key matches. Learned numbers, nothing more; the names
         describe the roles they end up playing.""")
-        cap = swap_caption(self, cap, "The keys and values are stored: this layer's row, one column per token. That is the KV cache.", 22)
+        cap = swap_caption(self, cap, "Keys and values stored: this layer's row, one column per token", 22)
         cells1 = store_kv(self, k, v, [rack[0][i] for i in range(5)])
-        self.next_slide("""The keys and the values are stored in the cache, in this layer's row, one column per token, and they stay for the
+        self.next_slide("""The keys and values are stored: this layer's row, one column per token. That is the KV cache. The keys and the values are stored in the cache, in this layer's row, one column per token, and they stay for the
         life of the request. That is the whole content of the KV cache: for every token, in every layer, its key and its
         value. Later tokens need them, and recomputing them would mean re-running every earlier token through every layer.
         Storing them is what makes the cache; reading them is what will make the cache expensive.""")
         al = small("attention", PROMPT).next_to(att, UP, buff=0.06)
-        cap = swap_caption(self, cap, "Attention: each query is scored against the keys up to its own; the weighted values form five new vectors", 22)
+        cap = swap_caption(self, cap, "Attention: each query scored against the keys before it; weighted values summed", 22)
         att = attend_block(self, q, cells1, att, PROMPT)
         self.play(FadeIn(al), run_time=0.3)
-        self.next_slide("""Now the queries do their work. Each token's query is compared with the keys of the tokens up to and including
+        self.next_slide("""Attention: each query is scored against the keys up to its own; the weighted values form five new vectors. Now the queries do their work. Each token's query is compared with the keys of the tokens up to and including
         itself, one score per pair, and the values are added up weighted by those scores. The result is a new vector for
         each token that carries what it needed from its context. Two things to hold on to. This is the only place tokens
         influence each other. And every query reads the cache row: every key, every value, for every token before it. Five
         cells here; sixty thousand at a long context.""")
         fl = small("feed-forward", WEIGHTS).next_to(ff, UP, buff=0.06)
         self.play(FadeIn(ff), FadeIn(fl), FadeIn(eq), FadeIn(outv), run_time=0.5)
-        cap = swap_caption(self, cap, "Feed-forward, most of the weights, read once for five columns of work. Then layer two, the same, at speed", 22)
+        cap = swap_caption(self, cap, "Feed-forward, most of the weights, read once for five columns", 22)
         sweep_block(self, list(att), PROMPT, [(ff, outv, PROMPT)], rt=0.14)
         # --- the output block drops into layer two, which does the same thing at speed: no new click, the picture repeating once
         y1 = layers[1].get_y()
@@ -322,7 +322,7 @@ class Mechanics(TalkSlide):
         nxt2 = out2.copy()
         self.play(nxt2.animate.move_to([XOUT, y1 - 1.1, 0]).set_opacity(0.0), run_time=0.8)
         self.remove(nxt2)
-        self.next_slide("""Then the big multiplication. The feed-forward part holds most of the layer's weights, in a real model tens of
+        self.next_slide("""Feed-forward, most of the weights, read once for five columns of work. Then layer two, the same, at speed. Then the big multiplication. The feed-forward part holds most of the layer's weights, in a real model tens of
         millions of numbers per layer, and it is the same arithmetic: one row per output number, read once, used for all
         five columns, and the highlight has touched every cell by the time the output block is full. That is prefill's
         shape: the weights come in once, and every byte that arrives does five columns of arithmetic, so the arithmetic
@@ -337,7 +337,7 @@ class Mechanics(TalkSlide):
                   FadeIn(block), FadeIn(ctx), run_time=1.6)
         # --- prefill continues: the block goes down the rest of the stack at the speed it really happens
         filled = [list(cells1), list(cells2), [], []]
-        cap = caption(self, "Prefill, the rest of the stack: each layer reads its weights once, for five columns of work")
+        cap = caption(self, "Prefill continues: every layer reads its weights once, five columns of work")
         ratio = label("each layer: weights read once, used for 5 columns", 12, DIM, width=2.4).move_to([-5.55, -2.3, 0])
         self.play(comp.set(0.95), bus.set(0.45), FadeIn(ratio), run_time=0.5)
         for r in range(2, L):
@@ -346,7 +346,7 @@ class Mechanics(TalkSlide):
             filled[r] += list(cells)
             self.play(layers[r][0].animate.set_fill(WEIGHTS, 0.12), FadeIn(cells), run_time=0.25)
         self.play(reads.to(1), run_time=0.5)
-        self.next_slide("""Back out. Two layers done, two rows of the cache filled, and the block continues down the rest of the stack at
+        self.next_slide("""Prefill, the rest of the stack: each layer reads its weights once, for five columns of work. Back out. Two layers done, two rows of the cache filled, and the block continues down the rest of the stack at
         the speed it really happens: in each layer the matrices come in from memory once and are used five times, one column
         of arithmetic per token, so the compute gauge is the busy one and the bus is not; the small label under the gauges
         keeps that ratio. Each layer writes five keys and values into its cache row. The counter says what it cost: one read
@@ -359,9 +359,9 @@ class Mechanics(TalkSlide):
         rnd = random.Random(7)
         def dist():
             hs = [rnd.uniform(0.04, 0.22) for _ in range(9)]; hs[rnd.randrange(9)] = 0.62; return hs
-        cap = swap_caption(self, cap, "The last position's output becomes a probability over the vocabulary; one token is sampled")
+        cap = swap_caption(self, cap, "The last vector becomes a probability over the vocabulary; one token sampled")
         logits = bars(dist())
-        lgl = label("probability of each next token; the tallest is sampled", 11, DIM).next_to(logits, DOWN, buff=0.06)
+        lgl = label("probability of each next token; the tallest is sampled", 13, DIM).next_to(logits, DOWN, buff=0.06)
         self.play(block.animate.move_to(logits.get_center() + UP * 0.6).set_opacity(0.0), FadeIn(logits), FadeIn(lgl), run_time=0.6)
         self.remove(block)
         top = max(logits, key=lambda b: b.height)
@@ -370,13 +370,13 @@ class Mechanics(TalkSlide):
         words = VGroup(label(" " + ANSWER[0], 34, OUTPUT).next_to(sentence, RIGHT, buff=0.12))
         self.play(newtok.animate.move_to([-6.4 + 0.25 + 0.6 * len(toks), 2.25, 0]), FadeIn(words[-1]), run_time=0.8)
         toks.add(newtok)
-        self.next_slide("""At the bottom, the last position's vector is multiplied by one more matrix, one row per vocabulary entry, which
+        self.next_slide("""The last position's output becomes a probability over the vocabulary; one token is sampled. At the bottom, the last position's vector is multiplied by one more matrix, one row per vocabulary entry, which
         gives a score for every token the model knows. Normalise, and it is a probability distribution; draw from it, and
         the answer has its first token, 'mat'. It joins the sentence. Prefill has done two things: filled the cache with the
         prompt, and produced one token.""")
         # --- decode loop
         cread = Counter("cache cells read, this token", 0, "", CACHE, size=22).move_to([1.0, -2.7, 0], aligned_edge=LEFT)
-        cap = swap_caption(self, cap, "Decode: the sampled token goes back in alone, the same lookup, one vector")
+        cap = swap_caption(self, cap, "Decode: the sampled token goes back in alone")
         self.play(FadeIn(cread), run_time=0.4)
         for k_, w in enumerate(ANSWER[1:], start=1):
             fast = k_ > 1
@@ -390,14 +390,14 @@ class Mechanics(TalkSlide):
                 ratio2 = label("each layer: weights read once, used for 1 column", 12, DIM, width=2.4).move_to(ratio)
                 self.play(FadeOut(ratio), FadeIn(ratio2), comp.set(0.12), bus.set(0.97), run_time=0.5)
                 ratio = ratio2
-                self.next_slide("""Decode. The sampled token goes back in, alone: the same lookup, its row of the table, one vector above layer
+                self.next_slide("""Decode: the sampled token goes back in alone, the same lookup, one vector. Decode. The sampled token goes back in, alone: the same lookup, its row of the table, one vector above layer
                 one. Watch the gauges swap: the bus is pegged and the compute grid nearly idle. To see why, go back inside the
                 layer with this one column.""")
                 wide = VGroup(t, sentence, toks, words, rl, gauges, ratio, reads, produced, cread, more, ll, logits, lgl, *sum(filled[2:], []))   # row two's cells stay out: they travel with rack[1], and a FadeIn would drag them back to where the fade started
                 row0 = VGroup(rack[0], *filled[0])
                 self.play(frame.animate.scale(ZOOM).move_to([-1.8, y0 - 0.15, 0]), FadeOut(wide), FadeOut(cap), FadeOut(others), FadeOut(layers[1]), FadeOut(rack[1]), *[FadeOut(c) for c in filled[1]], row0.animate.shift(LEFT * 1.8),
                           layers[0][0].animate.stretch_to_fit_height(1.3), col_.animate.scale(0.08 / 0.065).move_to([-4.2, y0, 0]), run_time=1.6)
-                cap = caption(self, "Decode inside the layer: the same stages, for one column. Weights read in full; cache read in full", 22)
+                cap = caption(self, "Decode inside the layer: the same stages for one column", 22)
                 wlab = small("weights: read in full again; the same bytes for one column as for five", WEIGHTS).move_to([-2.6, y0 + 0.8, 0])
                 clab = small("cache: every key and value read,\none more column each token", CACHE).next_to(rack[0], UP, buff=0.08).align_to(rack[0][1], LEFT)
                 W, wl, q, k, v, att, ff, eq, outv = single_parts(y0)
@@ -407,7 +407,7 @@ class Mechanics(TalkSlide):
                 self.play(FadeIn(ql), run_time=0.3)
                 cell1 = store_kv(self, VGroup(k), VGroup(v), [rack[0][5]])[0]
                 filled[0].append(cell1); row0.add(cell1)   # the new cell rides back with its row at the zoom-out
-                self.next_slide("""Inside, decode is prefill for one token; nothing is skipped. The same three matrices, read in full, give this
+                self.next_slide("""Decode inside the layer: the same stages, for one column. Weights read in full; cache read in full. Inside, decode is prefill for one token; nothing is skipped. The same three matrices, read in full, give this
                 token its query, key and value, one column of arithmetic per row instead of five. Its key and value go into the
                 cache as the sixth column of this layer's row. The label over the matrices is the point: exactly the bytes prefill
                 read, for a fifth of the work.""")
@@ -435,7 +435,7 @@ class Mechanics(TalkSlide):
                 col_.scale(0.065 / 0.08).move_to([layers[0].get_x(), y1 + 0.12, 0])
                 self.play(frame.animate.scale(1 / ZOOM).move_to(ORIGIN), FadeIn(others), row0.animate.shift(RIGHT * 1.8), row1.animate.shift(RIGHT * 1.8),
                           layers[1][0].animate.stretch_to_fit_height(0.5).shift(UP * 0.12), FadeIn(col_), FadeIn(wide), run_time=1.6)
-                cap = caption(self, "Decode: one token per step; each step reads the whole model plus every cached key and value")
+                cap = caption(self, "Decode: one token per step, the whole model read every step")
                 first_layer = 2
             for r in range(first_layer, L):
                 self.play(col_.animate.move_to(layers[r][0].get_center()), layers[r][0].animate.set_fill(OUTPUT, 0.55), run_time=0.12 if fast else 0.25)
@@ -454,7 +454,7 @@ class Mechanics(TalkSlide):
             self.play(newtok.animate.move_to([-6.4 + 0.25 + 0.6 * len(toks), 2.25, 0]), FadeIn(words[-1]), run_time=0.25 if fast else 0.4)
             toks.add(newtok)
             if k_ == 1:
-                self.next_slide("""Then the query does its work over the whole row, six keys now, and the feed-forward sweeps in full for this one
+                self.next_slide("""Decode: one token per step; each step reads the whole model plus every cached key and value. Then the query does its work over the whole row, six keys now, and the feed-forward sweeps in full for this one
                 column. The output drops into layer two, which does the same at speed: project, store, attend, feed-forward.
                 Back out, and the column goes on down the stack: in every layer the matrices are read in full again for one
                 column of work, the query fans out over the cache row, the white lines, every stored key and value lights up as
@@ -464,8 +464,8 @@ class Mechanics(TalkSlide):
                 byte arrives. With five columns per read the arithmetic units had work while the next weights came in; with one
                 column they finish at once and wait for the bus. Same bytes, a fifth of the work per byte: that is why decode
                 is bound by memory bandwidth, and why the bus gauge is the one that is pegged.""")
-        cap = swap_caption(self, cap, "Prefill: one read for the whole prompt. Decode: one read plus the cache, per token.")
-        self.finish("""The loop runs on without a click, and watch the cache counter: each token adds a column, so every later token
+        cap = swap_caption(self, cap, "Prefill: one read per prompt. Decode: one read per token")
+        self.finish("""Prefill: one read for the whole prompt. Decode: one read plus the cache, per token. The loop runs on without a click, and watch the cache counter: each token adds a column, so every later token
         reads one more cell per layer; the read grows with the length of the conversation. The weight read is the same every
         step; the cache read is not. On one request it is small next to the weights. With many requests in flight the weights
         are read once for all of them, while each request's cache is read on its own, and at long contexts it is the cache

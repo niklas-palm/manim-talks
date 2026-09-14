@@ -14,6 +14,7 @@ Compose Manim directly for everything else; the patterns section shows how the r
 | `TEXT` | #E8E8E8 | body text and titles |
 | `CAPTION` | #B9BFCC | the footnote at the bottom of a step |
 | `BG` | #0f1116 | background, for masks that hide things |
+| `HI` | #F4F6FA | the momentary highlight of a cell being read or a line being run; neutral so it never reads as a meaning |
 
 In `objects.py` give the accents names that carry the talk's meaning and register the nouns:
 
@@ -65,10 +66,10 @@ fade the old label out and a new one in, or `Transform` to a new label of the sa
 | helper | what it draws | notes |
 |---|---|---|
 | `tokens(n, color, side, gap)` | a row of squares | tokens, messages, requests, records |
-| `box(w, h, name, color)` | rounded box with a name inside its top edge | a machine, an engine, a service; `box[0]` is the rectangle |
+| `box(w, h, name, color, name_align)` | rounded box with a name inside its top edge | a machine, an engine, a service; `box[0]` is the rectangle; `name_align="left"` frees the top-right corner for markers |
 | `node(name, color, w, h, sub)` | a named component with an optional subtitle | system diagrams; `node[0]` rectangle, `node[1]` name |
 | `arrow(a, b, text, color)` | an arrow between two objects' edges with a small label | build it after both ends are in place |
-| `travel(scene, a, b, color, flash=...)` | a dot travels from a to b and vanishes, optionally flashing b | the unit of motion in every system picture |
+| `travel(scene, a, b, color, flash=..., carry=...)` | a dot travels from a to b and vanishes, optionally flashing b; `carry=cell` sends a shrunken copy of an object instead | the unit of motion in every system picture |
 | `column(n, color, cell, op)` | a vector: a thin column of cells | shades vary per cell to look like numbers (see the reference deck's `vector()`) |
 | `grid(rows, cols, color, cell, op)` | a matrix or a memory | indexed `grid[row * cols + col]` |
 | `dot_grid(n, cols, color, radius)` | n dots in rows | a population whose members change one by one |
@@ -79,6 +80,33 @@ fade the old label out and a new one in, or `Transform` to a new label of the sa
 
 Anything a talk needs three times that is not here goes in the talk's `objects.py` (the reference deck's `GPU`
 drawing lives there). If a second talk needs it, move it here and document it in this file.
+
+## Vectors and matrices
+
+| helper | what it does |
+|---|---|
+| `vector(seed, color, n, cell)` | a vector of shaded cells; same seed, same look. Use cell 0.16 to 0.2 unzoomed, 0.07 to 0.08 inside a 0.4 zoom |
+| `shades(v)` / `restore(v, ops, color)` | remember a vector's shades before a highlight, animations to put them back |
+| `dot_product(scene, vec, vcolor, mat, i, out, color)` | one output number, slowly: pairs light up, products fly, the cell fills |
+| `sweep(scene, vec, vcolor, [(mat, out, color)], rt)` | every row at speed; several matrices swept together |
+
+Pass `cols` when the matrix is not eight wide and `mat_color` when the matrix is not violet. The light-up colour is
+`HI`, a neutral near-white, in every deck: a highlight in an accent colour would read as that accent's meaning.
+
+## Lists that grow
+
+Three decks independently drew state as a list that only grows; these are the shared shapes.
+
+| helper | what it does |
+|---|---|
+| `Log(x0, y, capacity, base, name, cell, gap)` | an append-only row of cells with offsets beneath on a rail: a partition, a queue, a buffer, a write-ahead log. `append(scene, colour, source)` flies an item in; `put(colour)` places one silently; `cells[i]`, `offs[i]`, `slot(i)`, `below(i)` |
+| `Pointer(name, color)` | a reader's position under a Log; `place(log, i)`, `to(log, i)` returns the Transform. Replay is the pointer moving back |
+| `block(text, color, w, h, size, bare)` | one item of a Stack: a coloured block with a bar and one line of text; `"role · text"` colours the role |
+| `Stack(x, top, h, gap)` | a list of blocks growing downward; `append(scene, block, frm)` flies a block in from what produced it; the whole list is one VGroup so a copy can travel as one thing |
+| `code_lines(lines, size, color)` | code as left-aligned monospaced lines (`CODE_FONT`, Menlo) for a walk-through that highlights one line while the picture does the step |
+
+Budget 0.45 units under a Log's offsets for a pointer and its tag, and 1.4 units between stacked logs that each carry
+one. Code at size 18 is about 0.13 units per character: shorten identifiers before shrinking the font.
 
 ## Patterns from the reference deck
 
@@ -119,6 +147,18 @@ Legends in plain words ("answer changed from wrong to right"), never in jargon.
 
 **Masks over opacity.** To hide things that scroll away, slide them under a `BG`-coloured rectangle with a higher
 `z_index` rather than animating opacity: `set_opacity` also fills hollow shapes.
+
+**The list that grows.** Conversations, logs, queues and event streams are all a list that only grows: draw every item
+as a block or cell that flies from where it was produced into its slot, coloured by kind, and the mechanism (a loop, a
+replay, a rebalance) becomes visible as movement of items and pointers. "Every call sends the whole list" is one
+animation: a copy of the list shrinks into the box that consumes it. See `talks/agents` and `talks/kafka`.
+
+**Show the sum, not the label.** A weighted sum is copies of the summands flying into the result, each scaled by its
+weight, the result filling cumulatively. A residual is the update's cells landing one by one on the vector. A stack of
+identical layers is the same picture repeated smaller, not text in boxes. See `talks/transformers`.
+
+**Code against the picture.** When a mechanism is also ten lines of code, give the code half the frame at size 18 and
+run a highlight bar down it while the picture on the other half does each step; hook points are dots at the lines.
 
 **Named simplification labels.** When a drawing shows fewer parts than the real thing, the label says both numbers:
 "drawn as 8 experts with 2 chosen (the model has 128, with 8)".

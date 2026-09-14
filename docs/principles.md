@@ -91,19 +91,27 @@ the layer box stretches and the three matrices, the attention read and the feed-
 text in a zoom is rendered large and scaled down (`small()`). Everything drawn in the zoom goes into one group that
 fades on the way out, and the box shrinks back so the wide view is untouched.
 
-## 11. The speaker's note is the explanation
+## 11. Fill the frame
+
+The content band is about 14 by 5 scene units and the audience sits far from it. The main object of a scene should
+span at least half the band; cells in an unzoomed grid or vector are 0.14 to 0.25 units, never 0.08; labels are
+size 15 or larger. A small drawing surrounded by empty canvas reads as a diagram in a paper, not as a picture that
+teaches. If the mechanism needs small parts, zoom the camera into the part (rule 10) rather than drawing it small.
+Check the shots at half size: if you have to lean in, the audience cannot see it.
+
+## 12. The speaker's note is the explanation
 
 Each step's note is one paragraph the speaker can read aloud: what the audience is looking at, what just changed,
 why it matters, and the one fact or number that anchors it. Notes carry the nuance, the caveats, the measured
 figures and the sources. Write them as you write the step; notes written afterwards drift from the picture.
 
-## 12. Teach, do not report
+## 13. Teach, do not report
 
 The audience is engineers who want to understand a system, not an account of your experiments. Every example,
 measurement and product name is there because it makes a mechanism concrete. Say what is generally true; then say
 what you measured that confirms it; then stop.
 
-## 13. Review with your eyes
+## 14. Review with your eyes
 
 Render at preview quality, look at the end frame of every step (`bin/shots.py`), then at the contact sheet of
 frames through the animation (`bin/review.sh`). Every collision, clipped label, colour mistake and mistimed reveal

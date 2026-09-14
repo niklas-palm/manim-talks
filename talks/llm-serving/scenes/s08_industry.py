@@ -69,7 +69,7 @@ class Close(TalkSlide):
         for l in col:
             self.play(FadeIn(l, shift=UP * 0.12), run_time=0.5)
         self.next_slide("""Five things to take home, each of them a measurement rather than an opinion.""")
-        foot = label("Every number in this talk is in the repository, with the conditions it was measured under.", 20, DIM).to_edge(DOWN, buff=0.6)
+        foot = label("Every number in this talk is in the repository, with its conditions", 20, DIM).to_edge(DOWN, buff=0.6)
         self.play(FadeIn(foot))
-        self.finish("""The repository has the stack, the measurements as data, and the tuning document that explains each one.
+        self.finish("""Every number in this talk is in the repository, with the conditions it was measured under. The repository has the stack, the measurements as data, and the tuning document that explains each one.
         Nothing here needs to be believed; all of it can be re-run.""")

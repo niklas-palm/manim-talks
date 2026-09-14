@@ -47,11 +47,11 @@ script.md            the spine, the moves, the sources
 ## Style rules
 
 Colours carry meaning across the whole talk and are never reused for something else: prompt blue, output
-yellow, weights violet, cache teal, hot red. Captions and titles colour those four nouns wherever they appear,
+yellow, weights violet, cache teal, hot red. Titles and labels colour those four nouns wherever they appear,
 so the legend is learned once. Every scene opens by naming a problem, shows why it exists on the picture
 already on screen, then shows the way out; measurements support the argument and never lead it. One new idea
 per step. Diagrams grow; nothing already on screen moves unless the movement is the point. Numbers appear
 next to the thing they measure, and every number is one the companion repository measured. A line above each
-title names the move, so the audience always knows where on the map they are. One caption per step, set before the
-step's animation and never changed during it: the audience listens to the speaker and glances at the picture; the
-explanation is in the notes.
+title names the move, so the audience always knows where on the map they are. Words on screen are labels: a
+few words next to the thing they name, never a sentence. Where a step still carries a footnote caption it is at
+most a dozen words, set before the animation and left alone; the explanation is in the speaker notes.

@@ -16,7 +16,7 @@ class Delegation(TalkSlide):
     def construct(self):
         t = title(self, "Delegation: the name is a path", "2  delegation: the name is a path")
         # --- the name, split into labels right to left
-        name = label("www.example.com.", 40, NAME).move_to([0, 1.6, 0])
+        name = label("www.example.com.", 48, NAME).move_to([0, 1.4, 0])
         self.play(Write(name), run_time=0.8)
         parts = [("www", 0, 3), ("example", 4, 11), ("com", 12, 15), (".", 15, 16)]
         boxes = VGroup()
@@ -25,7 +25,7 @@ class Delegation(TalkSlide):
             br = SurroundingRectangle(sub, color=ZONE, buff=0.06, stroke_width=1.5)
             boxes.add(br)
             self.play(Create(br), run_time=0.3)
-        dot_note = label("the last dot is the root: the name is read from the right", 15, MUTED).next_to(name, DOWN, buff=0.35)
+        dot_note = label("read from the right: the last dot is the root", 18, MUTED).next_to(name, DOWN, buff=0.4)
         self.play(FadeIn(dot_note), run_time=0.4)
         self.next_slide("""Split the list along the name itself. A name is read from the right: the final dot, usually invisible, is the
         root of the whole tree; then com, one of 1,393 top-level domains; then example, a name registered under com;
@@ -33,12 +33,7 @@ class Delegation(TalkSlide):
         to the thing you want. RFC 1034 wrote the tree this way in 1987, and it has not changed.""")
         # --- each level is a zone with an owner, holding pointers to the level below
         self.play(FadeOut(boxes), FadeOut(dot_note), name.animate.scale(0.6).to_edge(UP, buff=1.15), run_time=0.7)
-        root = zone_box(".  the root zone", "13 server names, 12 operators, 2,045 anycast instances", Y_ROOT)
-        tld = zone_box("com.", "one of 1,393 top-level domains; run by a registry", Y_TLD)
-        auth = zone_box("example.com.", "the owner's own zone, on the owner's chosen servers", Y_AUTH)
-        r_root = record("com.", "NS", "a.gtld-servers.net.", "2 days", ZONE).move_to([X_TREE, Y_ROOT - 0.27, 0])
-        r_tld = record("example.com.", "NS", "hera.ns.cloudflare.com.", "2 days", ZONE).move_to([X_TREE, Y_TLD - 0.27, 0])
-        r_auth = record("www.example.com.", "A", "104.20.23.154", "5 min", ADDRESS).move_to([X_TREE, Y_AUTH - 0.27, 0])
+        (root, tld, auth), (r_root, r_tld, r_auth) = tree()
         self.play(FadeIn(root), run_time=0.4)
         self.play(FadeIn(r_root), run_time=0.4)
         self.play(FadeIn(tld), FadeIn(r_tld), run_time=0.5)
@@ -55,11 +50,11 @@ class Delegation(TalkSlide):
         zones below it and nothing else about them: that is delegation, and it is why nobody has to hold the whole list.
         The number at the right of each record is its time to live; hold that thought for move three.""")
         # --- the two actors
-        client = client_box(0.3)
+        client = client_box(0.4)
         res = resolver_box(-0.1)
         self.play(FadeIn(client), FadeIn(res), run_time=0.6)
         a1 = arrow(client, res, "", MUTED)
-        al = label("asks one question, waits for one answer", 12, MUTED).next_to(client, DOWN, buff=0.12)
+        al = label("one question, one answer", 15, MUTED).next_to(client, DOWN, buff=0.12)
         self.play(Create(a1[0]), FadeIn(al), run_time=0.5)
         self.next_slide("""Two actors do the asking. Your laptop's stub resolver, a library inside the operating system, asks exactly one
         question and waits for one answer: it sets the recursion-desired bit and lets someone else do the work. That
@@ -71,7 +66,7 @@ class Delegation(TalkSlide):
         self.play(r_root[0].animate.set_fill(ZONE, 0.35), run_time=0.3)
         answer(self, root, res, ZONE, "not mine: ask com's servers")
         self.play(r_root[0].animate.set_fill(ZONE, 0.10), run_time=0.2)
-        c1 = cache_row(r_root, 0.7)
+        c1 = cache_row(r_root, 0.85)
         self.play(FadeIn(c1), run_time=0.4)
         self.next_slide("""Hop one. The resolver knows the root servers' addresses by configuration; that is the one list everyone does
         hold, and it is thirteen lines long. It asks a root server the full question. The root is not authoritative for
@@ -93,7 +88,7 @@ class Delegation(TalkSlide):
         self.play(r_auth[0].animate.set_fill(ADDRESS, 0.35), run_time=0.3)
         answer(self, auth, res, ADDRESS, "104.20.23.154")
         self.play(r_auth[0].animate.set_fill(ADDRESS, 0.10), run_time=0.2)
-        c3 = cache_row(r_auth, -0.1)
+        c3 = cache_row(r_auth, -0.25)
         self.play(FadeIn(c3), run_time=0.4)
         answer(self, res, client, ADDRESS, "104.20.23.154")
         self.play(Flash(client[0], color=ADDRESS, flash_radius=1.2, num_lines=8), run_time=0.4)

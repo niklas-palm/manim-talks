@@ -6,6 +6,8 @@ What lives here
   TalkSlide     a Scene whose steps are clicks; each step carries a speaker note (next_slide / finish)
   text          label, title, small, caption, swap_caption, pin, thread colouring of a talk's nouns
   objects       tokens, box, node, arrow, column, grid, dot_grid, Counter, Gauge, Bars, travel
+  vectors       vector, shades, restore, dot_product, sweep: the picture of a matrix multiplication
+  lists         Log and Pointer (a row of cells with offsets and a reader), Stack and block (a list that grows), code_lines
   layout        the frame constants and the bands titles, pictures and captions live in
 
 Rules the helpers encode (see docs/principles.md for the why):
@@ -36,7 +38,9 @@ MUTED = "#8B93A5"                  # small text: names, units, axis labels
 TEXT = "#E8E8E8"                   # body text, titles
 CAPTION = "#B9BFCC"                # the footnote at the bottom of a step
 BG = "#0f1116"                     # the background; also set in manim.cfg; needed for masks that hide things
+HI = "#F4F6FA"                     # the momentary highlight of a cell being read or a line being run: neutral, never a meaning
 FONT = "Helvetica"                 # Helvetica Neue through Pango had uneven word spacing at small sizes
+CODE_FONT = "Menlo"                # code: renders cleanly through Pango; about 0.13 units per character at size 18
 
 # ------------------------------------------------------------------------------------------------ layout
 # The frame is 14.22 by 8 scene units, centred on the origin. Fixed furniture goes in fixed bands so scenes look alike.
@@ -102,7 +106,7 @@ def label(s: str, size: float = 30, color: str = TEXT, width: float = 0.0, threa
     if color == DIM:
         color = MUTED
     if width:
-        chars = int(width * 185 / size)
+        chars = int(width * 175 / size)
         s = "\n".join(textwrap.fill(par, chars) for par in s.split("\n"))
     if thread:
         kw["t2c"] = thread_colours(s)
@@ -166,13 +170,17 @@ def tokens(n: int, color: str = BLUE, side: float = 0.36, gap: float = 0.08) -> 
     return VGroup(*[Square(side_length=side, fill_color=color, fill_opacity=0.9, stroke_width=0) for _ in range(n)]).arrange(RIGHT, buff=gap)
 
 
-def box(w: float, h: float, name: str = "", color: str = VIOLET, size: float = 22, fill: float = 0.10) -> VGroup:
+def box(w: float, h: float, name: str = "", color: str = VIOLET, size: float = 22, fill: float = 0.10, name_align: str = "center") -> VGroup:
     """A rounded box with an optional name inside its top edge: a machine, an engine, a service. box[0] is the
-    rectangle; add members with .add() so they move with it."""
+    rectangle; add members with .add() so they move with it. name_align="left" keeps the top-right corner free for
+    markers that ride along the top edge."""
     r = RoundedRectangle(corner_radius=0.15, width=w, height=h, stroke_color=color, stroke_width=2.5, fill_color=color, fill_opacity=fill)
     g = VGroup(r)
     if name:
-        g.add(label(name, size, color=color).next_to(r.get_top(), DOWN, buff=0.15))
+        t = label(name, size, color=color).next_to(r.get_top(), DOWN, buff=0.15)
+        if name_align == "left":
+            t.align_to(r.get_left() + RIGHT * 0.2, LEFT)
+        g.add(t)
     return g
 
 
@@ -203,10 +211,11 @@ def arrow(a: Mobject, b: Mobject, text: str = "", color: str = MUTED, buff: floa
     return g
 
 
-def travel(scene, path_from: Mobject, path_to: Mobject, color: str = BLUE, radius: float = 0.09, run_time: float = 0.5, flash: str = ""):
+def travel(scene, path_from: Mobject, path_to: Mobject, color: str = BLUE, radius: float = 0.09, run_time: float = 0.5, flash: str = "", carry: Mobject = None):
     """A dot travels from one object to another and vanishes; optionally the destination flashes. The unit of
-    motion in every system picture: a request, a packet, a message, a token on its way."""
-    d = Dot(color=color, radius=radius).move_to(path_from.get_center())
+    motion in every system picture: a request, a packet, a message, a token on its way. `carry` sends a shrunken copy
+    of that object instead of a dot (a record travelling to its reader keeps its colour)."""
+    d = carry.copy().scale(0.6) if carry is not None else Dot(color=color, radius=radius).move_to(path_from.get_center())
     scene.add(d)
     scene.play(d.animate.move_to(path_to.get_center()), run_time=run_time)
     anims = [FadeOut(d, run_time=0.15)]
@@ -300,3 +309,178 @@ def timeline(y: float, x0: float, segments, colors: dict, height: float = 0.3, s
         g.add(Rectangle(width=w - 0.03, height=height, fill_color=colors[kind], fill_opacity=0.85, stroke_width=0).move_to([x + w / 2, y, 0]))
         x += w
     return g
+
+# ------------------------------------------------------------------------------------------------ vectors and matrices
+# The vocabulary two decks share: a vector is a thin column of shaded cells (the shades stand for different numbers,
+# so two vectors look different), a matrix is a grid, and a multiplication is one row of the matrix lighting up against
+# the vector, the products collapsing into one output cell, then the sweep of the remaining rows. The sweep is the
+# point: one output vector, the whole matrix read.
+
+def vector(seed: int, color: str = BLUE, n: int = 8, cell: float = 0.16) -> VGroup:
+    """A vector whose cells carry different shades, so two vectors are told apart. Same seed, same vector."""
+    import random
+    rnd = random.Random(seed)
+    return VGroup(*[Square(cell, fill_color=color, fill_opacity=0.3 + 0.7 * rnd.random(), stroke_width=0) for _ in range(n)]).arrange(DOWN, buff=cell * 0.15)
+
+
+def shades(v: VGroup) -> list:
+    """The fill opacities of a vector's cells, to restore after a highlight."""
+    return [c.get_fill_opacity() for c in v]
+
+
+def restore(v: VGroup, ops: list, color: str) -> list:
+    """Animations that put a vector's shades back after a highlight."""
+    return [c.animate.set_fill(color, o) for c, o in zip(v, ops)]
+
+
+def dot_product(scene, vec, vcolor, mat, i: int, out, color: str, cols: int = 8, hi: str = HI, beat: float = 0.09):
+    """One output number, slowly: the vector's cells and the matrix row's cells light up in pairs, then the products
+    fly to the output cell and it fills. The audience should see this once; then use sweep()."""
+    ops = shades(vec)
+    row = [mat[i * cols + j] for j in range(cols)]
+    for j in range(cols):
+        scene.play(vec[j].animate.set_fill(hi, 1.0), row[j].animate.set_fill(hi, 1.0), run_time=beat)
+    prods = VGroup(*[Square(row[0].width * 0.7, fill_color=hi, fill_opacity=1.0, stroke_width=0).move_to(c) for c in row])
+    scene.add(prods)
+    scene.play(*[p.animate.move_to(out) for p in prods], run_time=0.5)
+    scene.play(FadeOut(prods), out.animate.set_fill(color, 0.95), *restore(vec, ops, vcolor), *[m.animate.set_fill(mat[0].get_fill_color(), 0.6) for m in row], run_time=0.3)
+
+
+def sweep(scene, vec, vcolor, jobs, cols: int = 8, rt: float = 0.14, hi: str = HI, mat_color: str = VIOLET):
+    """Multiply at speed: for each output cell its row of the matrix lights up with the vector and the cell fills.
+    jobs = [(matrix, out_vector, colour)]; every matrix in the list is swept at the same time, one row per beat.
+    The dim-again animations are built after the light-up play on purpose (see docs/manim.md, .animate targets)."""
+    ops = shades(vec)
+    for i in range(len(jobs[0][1])):
+        rows = [[mat[i * cols + j] for j in range(cols)] for mat, _, _ in jobs]
+        on = [c.animate.set_fill(hi, 1.0) for c in vec]
+        for row, (_, out, color) in zip(rows, jobs):
+            on += [m.animate.set_fill(hi, 1.0) for m in row] + [out[i].animate.set_fill(color, 0.95)]
+        scene.play(*on, run_time=rt)
+        off = [m.animate.set_fill(mat_color, 0.6) for row in rows for m in row]
+        scene.play(*off, *restore(vec, ops, vcolor), run_time=rt * 0.4)
+
+
+# ------------------------------------------------------------------------------------------------ lists that grow
+# Two shapes of the same idea, found independently by three decks: state drawn as a list that only grows. Horizontal
+# with offsets when position is the point (a log, a queue, a buffer, a timeline of discrete items); vertical blocks
+# when the items carry words (messages, records, events). A reader is a pointer under the row: replay is the pointer
+# moving back, and every "consumer" concept becomes a pointer movement.
+
+class Log(VGroup):
+    """An append-only row of cells with their offsets beneath, on a rail of `capacity` slots. append(scene, colour,
+    source) drops a cell into the next slot from `source`; put(colour) places one without animation for a picture that
+    starts filled. cells[i] is the item at offset base + i, offs[i] its label; the rail is log.rail."""
+
+    def __init__(self, x0: float, y: float, capacity: int = 12, base: int = 0, name: str = "", cell: float = 0.42, gap: float = 0.08, **kw):
+        super().__init__(**kw)
+        self.x0, self.y, self.capacity, self.base, self.side, self.pitch = x0, y, capacity, base, cell, cell + gap
+        self.rail = Rectangle(width=capacity * self.pitch + gap, height=cell + 0.16, stroke_color=DIM, stroke_width=1.2, fill_opacity=0)
+        self.rail.move_to([x0 + (capacity * self.pitch + gap) / 2, y, 0])
+        self.cells, self.offs = VGroup(), VGroup()
+        self.add(self.rail, self.cells, self.offs)
+        if name:
+            self.name = label(name, 15, MUTED).next_to(self.rail, UP, buff=0.08).align_to(self.rail, LEFT)
+            self.add(self.name)
+
+    def slot(self, i: int):
+        return [self.x0 + (self.pitch - self.side) + self.side / 2 + i * self.pitch, self.y, 0]
+
+    def _cell(self, i: int, color: str) -> Square:
+        return Square(self.side, fill_color=color, fill_opacity=0.9, stroke_width=0).move_to(self.slot(i))
+
+    def _off(self, i: int) -> Text:
+        return label(str(self.base + i), 14, MUTED).move_to([self.slot(i)[0], self.y - self.side / 2 - 0.22, 0])
+
+    def append(self, scene, color: str, source=None, rt: float = 0.35, extra=()):
+        """Animate an item arriving at the next slot (from `source`, a mobject or a point); returns the cell."""
+        i = len(self.cells)
+        cell, off = self._cell(i, color), self._off(i)
+        if source is not None:
+            cell.move_to(source.get_center() if hasattr(source, "get_center") else source)
+            scene.add(cell)
+            scene.play(cell.animate.move_to(self.slot(i)), *extra, run_time=rt)
+            scene.play(FadeIn(off), run_time=0.15)
+        else:
+            scene.play(FadeIn(cell, shift=DOWN * 0.15), FadeIn(off), *extra, run_time=rt)
+        self.cells.add(cell); self.offs.add(off)
+        return cell
+
+    def put(self, color: str) -> Square:
+        i = len(self.cells)
+        cell, off = self._cell(i, color), self._off(i)
+        self.cells.add(cell); self.offs.add(off)
+        return cell
+
+    def below(self, i: int, dy: float = 0.78):
+        """The point under offset i where a reader's pointer sits. Budget 0.45 units below the offsets for a pointer
+        and its tag, and 1.4 units between stacked logs that each carry one."""
+        return [self.slot(i)[0], self.y - dy, 0]
+
+
+class Pointer(VGroup):
+    """A reader's position: a small triangle under a Log pointing at the next item, with the reader's name beneath.
+    place(log, i) sets it; to(log, i) returns the Transform that moves it. The offset it holds is one integer."""
+
+    def __init__(self, name: str, color: str = TEAL, **kw):
+        super().__init__(**kw)
+        self.tri = Triangle(color=color, fill_color=color, fill_opacity=1.0, stroke_width=0).scale(0.13)
+        self.tag = label(name, 15, color).next_to(self.tri, DOWN, buff=0.05)
+        self.add(self.tri, self.tag)
+
+    def place(self, log: Log, i: int, dy: float = 0.78):
+        self.tri.move_to(log.below(i, dy)); self.tag.next_to(self.tri, DOWN, buff=0.05)
+        return self
+
+    def to(self, log: Log, i: int, dy: float = 0.78):
+        return Transform(self, self.copy().place(log, i, dy))
+
+
+def block(text: str, color: str, w: float = 3.4, h: float = 0.35, size: float = 14, bare: bool = False) -> VGroup:
+    """One item of a Stack: a rounded block in its colour with a solid bar at the left and one line of text.
+    block[0] frame, block[1] bar, block[2] text. bare=True draws colour only, for a small reminder picture. If the
+    text starts with "role · ", the role is coloured like the block."""
+    r = RoundedRectangle(corner_radius=0.06, width=w, height=h, fill_color=color, fill_opacity=0.16, stroke_color=color, stroke_width=1.4)
+    bar = Rectangle(width=0.09, height=h, fill_color=color, fill_opacity=0.95, stroke_width=0).move_to(r.get_left(), aligned_edge=LEFT)
+    if bare:
+        return VGroup(r, bar)
+    role = text.split(" · ")[0] if " · " in text else ""
+    t = label(text, size, TEXT, **({"t2c": {f"[0:{len(role)}]": color}} if role else {}))
+    if t.width > w - 0.3:
+        t.scale_to_fit_width(w - 0.3)
+    t.move_to(r).align_to(r.get_left() + RIGHT * 0.2, LEFT)
+    return VGroup(r, bar, t)
+
+
+class Stack(VGroup):
+    """A list that grows downward from `top` at `x`: messages in a conversation, events, records. append(scene,
+    block, frm) flies a block in from a source (the thing that produced it) into the next slot. The whole list is one
+    VGroup, so a copy of it can travel somewhere as one thing ("every call sends the whole list")."""
+
+    def __init__(self, x: float, top: float, h: float = 0.35, gap: float = 0.08, **kw):
+        super().__init__(**kw)
+        self.x, self.top, self.h, self.gap, self.blocks = x, top, h, gap, []
+
+    def slot(self, i: int):
+        return [self.x, self.top - (self.h / 2 + i * (self.h + self.gap)), 0]
+
+    def append(self, scene, b: VGroup, frm=None, run_time: float = 0.45):
+        target = self.slot(len(self.blocks))
+        if frm is not None:
+            b.move_to(frm.get_center())
+            scene.add(b)
+            scene.play(b.animate.move_to(target), run_time=run_time)
+        else:
+            b.move_to(target)
+            scene.play(FadeIn(b, shift=DOWN * 0.15), run_time=run_time)
+        self.blocks.append(b)
+        self.add(b)
+        return b
+
+
+def code_lines(lines, size: float = 18, color: str = TEXT) -> VGroup:
+    """Code as a VGroup of monospaced lines, left-aligned, for a walk-through that highlights one line at a time
+    while the picture does the step. About 0.13 units per character at size 18: shorten identifiers before shrinking
+    the font. Highlight a line with a BG-toned rectangle behind it or by recolouring the line to HI."""
+    g = VGroup(*[Text(l if l.strip() else " ", font=CODE_FONT, font_size=size, color=color) for l in lines])
+    return g.arrange(DOWN, aligned_edge=LEFT, buff=0.08)
