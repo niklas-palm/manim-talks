@@ -73,8 +73,11 @@ experiences a deck: what they see first, then how it moves, then the words, then
       `HI`; grey text is `MUTED`, never `DIM`.
 - [ ] The deck was reviewed in the style it will be presented in; `bin/check.py` names that style and reports the
       theme fit to present (text 7:1 against the ground, accents 3:1 and 22 apart, both fonts installed).
-- [ ] No scene names a hue (`BLUE`, `RED`, ...) or invents a corner, a stroke or a fill: meanings come from
-      `objects.py`, geometry from `rad()`, `sw()`, `FILL`, `SOLID`. `bin/check.py` flags the first.
+- [ ] No scene names a hue or writes a literal `"#RRGGBB"`, and none invents a corner, a stroke or a fill: meanings
+      come from `objects.py`, geometry from `rad()`, `sw()`, `FILL`, `SOLID`, more colours than the slots from
+      `identity(n)`. `bin/check.py` refuses all of it, checks `objects.py` too, and also flags two scenes with one
+      class name and a scene in a file that is not `s*.py`. Run it under `.venv/bin/python`, or the font check can
+      only say it could not ask.
 - [ ] In the bright style, nothing assumed a dark ground: no near-white fill used as a highlight, no faint strip turned
       into a dark bar by a flat `set_opacity`, no pale grey where something must still be seen, and the code panel still
       reads as a panel. read the `-bright` sibling's shot sheets, not one frame.

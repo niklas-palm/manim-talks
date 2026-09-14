@@ -21,8 +21,8 @@ changes its title as the first thing moves, so nothing ever cuts; 27 clicks in a
 server as a bar across the middle with its three gates, the one door everything passes through; above it kubectl and the
 row of control loops, each on a short dashed line down to the bar; below it etcd at the left holding the records, three
 nodes at the right, each kubelet on a short dashed line up to the bar, and between them two counters, pods desired and
-pods running. Every relation is vertical and nothing crosses anything. Blue is a record, yellow is what runs, violet is
-a loop, teal is a machine, red is a gap.
+pods running. Every relation is vertical and nothing crosses anything. One accent per meaning: a record, what runs, a
+loop, a machine, and a gap.
 
 ```bash
 bin/render.sh kubernetes ql      # preview; qh for the talk itself

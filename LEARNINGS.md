@@ -2,9 +2,9 @@
 
 The living log. Add an entry whenever something cost time or changed a rule, written as a first principle: what is
 generally true, why, and what to do instead, in words that outlive the deck it came from. No dates, no company names,
-no "in the agents deck"; if a lesson needs an example, the example is one clause of it. The older sections, written before that rule,
-carry dates and deck names; they are left as they were. The technical Manim entries are consolidated in
-`docs/manim.md`, the style rules in `docs/principles.md`; this file is where they arrive first.
+no "in the agents deck"; if a lesson needs an example, the example is one clause of it. The older sections, written
+before that rule, carry dates and deck names; they are left as they were. The technical Manim entries are consolidated
+in `docs/manim.md`, the style rules in `docs/principles.md`; this file is where they arrive first.
 
 ## From the reference deck (talks/llm-serving, September 2026)
 
@@ -332,3 +332,30 @@ First principles that the passes confirmed, written to outlast the decks they ca
   commands inside them into unrunnable halves, and the diff looked innocent.
 - The fix for a class of defect is a check, not a patch. Literal colours came back into scene files after a migration
   removed them, so the checker now refuses a scene that names a colour at all; that is what stops the third recurrence.
+
+## What the second round found that the first did not
+
+- A fix creates its own defects, so review the fixes. The round that reviewed the previous round's work found a helper
+  that wrote a file before validating it, a shared reader that trusted half of a render, and a colour helper whose
+  colours were not as distinguishable as its docstring claimed. None of that existed before the repair.
+- "Something was produced" is not "the thing was produced". A reader that accepted an index as proof of a render let a
+  page be written pointing at a video that was never finished; a tool must check the artefact it is about to reference,
+  not a sibling of it.
+- Validate before you replace. An import that overwrites its destination and then reports that the result is unusable
+  has destroyed the file a human edited by hand. Write to a temporary name, validate that, and move it into place.
+- Evenly spaced by construction is not evenly spaced to an eye. Colours picked at equal steps around a hue circle
+  collide in pairs, and one of them will land on the colour that already means "wrong". Pick each one as the candidate
+  whose nearest neighbour is furthest away, and count the vocabulary among its neighbours.
+- Ink on a coloured mark cannot be one fixed colour. Whichever of the ground and the body colour the eye can read
+  against that mark is the right one, and which that is changes with the style.
+- A guard that runs inside the loop is not a guard. Probe every input first, then destroy the old output, then write:
+  three tools cleared their previous work and failed on the second item.
+- A default that differs between the tool that produces and the tool that consumes is a trap. When one defaults to a
+  middle quality and the next to the highest, the ordinary sequence of the two fails. Infer it when there is exactly
+  one candidate, and ask when there is not.
+- Anything a command line interpolates must be quoted and validated, including the ones that look harmless. An
+  unquoted port let a second word redirect what a local server exposed.
+- A tool run by its shebang is not run by the project interpreter. If a check can only answer under one of them, it
+  must say which it is and that it could not answer, never pass by default.
+- Write down the threshold once. The same perceptual distance was a literal in the validator and a default argument in
+  the repair routine; either could drift from the other and the drift would be invisible.

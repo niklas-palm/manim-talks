@@ -23,13 +23,14 @@ What a scene may use:
 | `rad(k)` `sw(k)` | a corner radius and a stroke width derived from the theme's, so every drawing squares off or thickens together. `RADIUS`, `STROKE` and `THEME` are the raw values behind them; a scene uses the functions |
 | `FILL` `SOLID` | a container's fill opacity and a filled mark's; both are fainter in the bright style |
 | `MODE` | `"dark"` or `"light"`; a scene should not need to ask |
-| `identity(n)` | n colours that are told apart, for a thing whose colour means only "this one": twelve requests sharing a step. Identity, not vocabulary; never a substitute for a slot |
+| `identity(n)` | n colours that are told apart, for a thing whose colour means only "this one": twelve requests sharing a step. Chosen by perceptual distance from each other and from the accents. Identity, not vocabulary; never a substitute for a slot |
+| `ink_on(color)` | the legible ink for a label written on a solid mark of that colour: the ground or the body colour, whichever the eye can read there |
 
 Two rules follow, and `bin/check.py` enforces the first:
 
 - **A scene never names a hue.** `objects.py` maps the talk's nouns onto slots (`USER, MODEL = A1, A3`) and the scenes
-  use those names. `BLUE`, `YELLOW`, `VIOLET`, `TEAL`, `GREEN`, `ORANGE` and `RED` still exist as aliases for the slots
-  so older decks keep working, but a hue in a scene file is a hue that will not follow the theme.
+  use those names. There are no `BLUE`/`YELLOW`/... aliases any more, and `bin/check.py` refuses both a hue name and a
+  literal `"#RRGGBB"`: either one is a colour that will not follow the theme.
 - **A scene never invents a corner, a stroke or a fill.** Use `rad()`, `sw()`, `FILL`, `SOLID`, scaled if it must be
   smaller: `rad(0.4)`, `sw(0.56)`, `FILL * 1.6`. A literal `0.06` is what stops a style from reaching a drawing.
 

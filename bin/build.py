@@ -6,15 +6,15 @@ Playback is one continuous video per scene with pause points at the step boundar
 video's source between clips redraws the element and flickers, while pausing and resuming a single source is seamless.
 Scene changes swap between two stacked video elements, the next one already loaded, so they do not flicker either.
 Boundaries come from the per-step durations Manim writes into the section index. Usage: bin/build.py <talk> [ql|qm|qh]; writes <talk folder>/present.html and presenter.html."""
-import glob, json, os, re, sys
+import html, json, os, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib import theme as _theme
-from lib.talks import dir_of, quality, rendered_or_exit, scenes_of
+from lib.talks import dir_of, quality, read_json, rendered_or_exit, report_unrendered, title_of
 
 talk = sys.argv[1] if len(sys.argv) > 1 else sys.exit(__doc__)
-Q = quality(sys.argv[2] if len(sys.argv) > 2 else None, "qm")
 root = dir_of(talk)
+Q = quality(sys.argv[2] if len(sys.argv) > 2 else None, root)
 
 # The pages are dressed in the talk's own style, resolved the same way the render resolves it, so rebuilding the pages
 # without re-rendering cannot put dark chrome around a bright deck.
@@ -24,18 +24,14 @@ def _mix(k):                             # k of the way from the background towa
 CH = {"bg": TH["bg"], "page": _mix(0.05), "ink": TH["text"], "muted": TH["muted"], "faint": _mix(0.45),
       "line": _mix(0.18), "btn": _mix(0.11), "btnline": _mix(0.24), "accent": TH["accents"]["a1"], "font": TH["font"],
       "veil": "rgba(%d,%d,%d,.88)" % tuple(round(v * 255) for v in _theme.rgb(TH["bg"]))}
-title_line = next((l for l in open(f"{root}/script.md") if l.startswith("# ")), f"# {talk}") if os.path.exists(f"{root}/script.md") else f"# {talk}"
-TITLE = title_line[2:].strip()
+TITLE = html.escape(title_of(root, talk))   # it goes into <title> and into the start screen
 items = rendered_or_exit(root, Q, talk)   # never write a page from nothing: an unrendered quality used to leave a blank deck
-for stem, scene in scenes_of(root):
-    if not any(scene == s for _, s, _, _ in items):
-        print(f"not rendered: {scene}")
+report_unrendered(root, items)
 scenes = []
-for stem, scene, video, index in items:
-    notes_path = f"{root}/media/notes/{scene}.json"
-    notes = json.load(open(notes_path)) if os.path.exists(notes_path) else []
+for stem, scene, video, index, notes_path in items:
+    notes = read_json(notes_path) if os.path.exists(notes_path) else []
     ends, t = [], 0.0
-    for sec in json.load(open(index)):
+    for sec in read_json(index):
         t += float(sec["duration"]); ends.append(round(t, 3))
     scenes.append({"name": scene, "src": f"media/videos/{stem}/{Q}/{scene}.mp4", "ends": ends,   # relative to the talk folder, where the pages live
                    "notes": [notes[i] if i < len(notes) else "" for i in range(len(ends))]})

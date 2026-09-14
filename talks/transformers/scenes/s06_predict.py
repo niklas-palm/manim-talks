@@ -55,7 +55,7 @@ class Predict(TalkSlide):
         Take the highest and the output is predictable; sample with some randomness and it is more varied. That choice is
         the "temperature" setting people tune.""")
         top = dist[7]
-        picked = VGroup(Square(0.8, fill_color=ATTN, fill_opacity=SOLID, stroke_width=0), label("mat", 24, BG))
+        picked = VGroup(Square(0.8, fill_color=ATTN, fill_opacity=SOLID, stroke_width=0), label("mat", 24, ink_on(ATTN)))
         picked[1].move_to(picked[0])
         picked.next_to(top, UP, buff=0.2)
         self.play(FadeOut(dl), Indicate(top, color=ATTN, scale_factor=1.1), FadeIn(picked, shift=UP * 0.2), run_time=0.8)

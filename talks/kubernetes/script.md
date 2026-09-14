@@ -8,8 +8,8 @@ Length: about 15 minutes, 27 clicks, 5 scenes. No title slide: the deck opens on
 speaker introduces the talk over it. Every scene begins on the previous scene's last frame and changes its title as the
 first thing moves, so the audience keeps one picture from the first click to the last.
 
-Colours: blue = records, the state you asked for; yellow = what actually runs and the status it reports; violet = the
-control plane and its loops; teal = the machines (nodes, kubelet, kube-proxy, and etcd's members); red = failure or a gap.
+Accent slots: A1 = records, the state you asked for; A2 = what actually runs and the status it reports; A3 = the
+control plane and its loops; A4 = the machines (nodes, kubelet, kube-proxy, and etcd's members); ALERT = failure or a gap.
 
 ## 1. A record, not a process (3 min) — `ApplyRequest`, 5 clicks
 - The request is a description of state, not a command. It reaches the API server, the only door.
@@ -82,5 +82,5 @@ control plane and its loops; teal = the machines (nodes, kubelet, kube-proxy, an
   in the note only.
 - Cards show a kind and one status line; names (web-7d4f-a), labels and the pod-template-hash live in the note.
 - Pod IP addresses are not drawn; the EndpointSlice card counts them and the note gives the cluster IP.
-- A v2 pod is drawn as a yellow block with a white outline; the counter names the convention.
+- A v2 pod is drawn as a running-coloured block with a light outline; the counter names the convention.
 - A rollout is drawn with pod readiness as instantaneous; readiness probes are mentioned in the note only.

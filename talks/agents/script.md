@@ -11,8 +11,8 @@ Length: 16 minutes, 31 clicks, 6 scenes. Every scene opens on a still picture an
 One picture throughout, on the library grid: the user at the left margin; the application as a box holding the list of
 messages, which grows downward and is the only state; the model top right, which the list goes into and one reply
 comes out of; the tools in a column under the model, each card carrying the device it reaches; two counters at the
-bottom, model calls and tool calls. Colours: user blue, model violet, tools yellow, what came back from the world teal,
-red for a wall.
+bottom, model calls and tool calls. One accent slot per meaning: the user, the model, the tools, what came back from
+the world, and a wall.
 
 The red thread, in one paragraph: a plain application answers questions about a camera with one model call, and its
 code decides what to fetch. Look at that code as one process and name it: it is a tool, and then there can be several.

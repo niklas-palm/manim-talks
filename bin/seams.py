@@ -9,28 +9,20 @@ import os, subprocess, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib import theme as _theme
-from lib.talks import dir_of, quality, rendered_or_exit
+from lib.talks import dir_of, duration, quality, rendered_or_exit
 
 talk = sys.argv[1] if len(sys.argv) > 1 else sys.exit(__doc__)
-Q = quality(sys.argv[2] if len(sys.argv) > 2 else None)
 root = dir_of(talk)
-PAD = tuple(round(v * 255) for v in _theme.rgb(_theme.sheet_bg(_theme.load(_theme.active_name(root)))))
+Q = quality(sys.argv[2] if len(sys.argv) > 2 else None, root)
+PAD = _theme.sheet_rgb(root)
 out_dir = f"{root}/media/seams"   # its own folder: bin/shots.py clears media/shots before writing
 os.makedirs(out_dir, exist_ok=True)
 
-scenes = [(scene, video) for _, scene, video, _ in rendered_or_exit(root, Q, talk)]
+scenes = [(scene, video) for _, scene, video, _, _ in rendered_or_exit(root, Q, talk)]
 
 
 def frame(video: str, t: float, png: str):
     subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-ss", f"{t:.3f}", "-i", video, "-frames:v", "1", "-vf", "scale=960:-1", png], check=True)
-
-
-def duration(video: str) -> float:
-    r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", video],
-                       capture_output=True, text=True)
-    if r.returncode or not r.stdout.strip():
-        sys.exit(f"{video} is missing or unreadable: re-render this talk")
-    return float(r.stdout)
 
 
 pairs = []

@@ -7,10 +7,9 @@ four days with rendering and review, presenter test an hour. A ten-minute talk s
 
 Ask, once, before anything is drawn: dark or bright (AGENTS.md, "Choosing the look"). `dark` is the default and what
 most rooms want; `bright` is for a lit room, a screen share or a handout. If the answer is a company's own PowerPoint
-template, import it with
-`bin/themes.py from-pptx` and render with that theme; it lands in `themes/local`, which is never committed. Write the
-answer into `<talk>/.theme` (or the repository's `.theme` if it is the project's style) so the render, the two pages and
-the PowerPoint export agree, and note it in the talk's README. Then look at one frame in it
+template, import it with `bin/themes.py from-pptx` and render with that theme; it lands in `themes/local`, which is
+never committed. Write the answer into `<talk>/.theme` (or the repository's `.theme` if it is the project's style) so
+the render, the two pages and the PowerPoint export agree, and note it in the talk's README. Then look at one frame in it
 (`bin/themes.py preview <talk> <Scene>`) before building the rest: a palette that reads on a laptop can lose a colour
 on a projector, and finding that out at the end costs a re-review of every scene.
 

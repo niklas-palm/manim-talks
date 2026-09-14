@@ -6,6 +6,9 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 TALK=${1:?usage: bin/render.sh <talk> [ql|qm|qh] [Scene ...]}; Q=${2:-qm}; shift; shift || true
+# Validate before Manim sees it: manim itself accepts -qp and -qk, which would render for tens of minutes into a folder
+# no tool in this repository reads, and only bin/build.py at the end would say the quality was wrong.
+case $Q in ql|qm|qh) ;; *) echo "quality must be ql, qm or qh, not $Q"; exit 1;; esac
 # The talk folder and the style both come from the library, so every tool answers these two questions the same way.
 # The name is passed as an argument, never interpolated into the program: a talk name is user input.
 DIR=$(.venv/bin/python -c "import sys; sys.path.insert(0,'.'); from lib.talks import dir_of; print(dir_of(sys.argv[1]))" "$TALK")

@@ -8,10 +8,10 @@ Manim writes with --save_sections are the natural unit; the JSON index gives the
 is the timing tree PowerPoint itself writes for a video set to "Start: Automatically"; python-pptx has no API for it,
 so the XML is inserted after the movie is added.
 
-Usage: bin/export_pptx.py <talk> [ql|qm|qh] [out.pptx] [--click]   default quality qh, output <talk>/<talk>.pptx;
+Usage: bin/export_pptx.py <talk> [ql|qm|qh] [out.pptx] [--click]   output <talk folder>/<talk>.pptx;
 --click leaves the clips to start on click instead of automatically
 Requires python-pptx (pip install python-pptx) and ffmpeg (poster frames)."""
-import glob, json, os, re, subprocess, sys, tempfile
+import json, os, subprocess, sys, tempfile
 from lxml import etree
 from pptx import Presentation
 from pptx.dml.color import RGBColor
@@ -19,21 +19,22 @@ from pptx.util import Inches
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib import theme as _theme
-from lib.talks import dir_of, quality, rendered_or_exit, scenes_of
+from lib.talks import dir_of, quality, read_json, rendered_or_exit, report_unrendered, title_of
 
 CLICK = "--click" in sys.argv
 sys.argv = [a for a in sys.argv if a != "--click"]
 talk = sys.argv[1] if len(sys.argv) > 1 else sys.exit(__doc__)
-Q = quality(sys.argv[2] if len(sys.argv) > 2 else None)
 root = dir_of(talk)
+Q = quality(sys.argv[2] if len(sys.argv) > 2 else None, root)
 out = sys.argv[3] if len(sys.argv) > 3 else f"{root}/{talk}.pptx"
+if os.path.isdir(out) or not os.path.isdir(os.path.dirname(os.path.abspath(out))):
+    sys.exit(f"cannot write {out}: give a file path in a folder that exists")
 items = rendered_or_exit(root, Q, talk)
 # The slide behind the clip is the talk's own ground, resolved as the render resolves it: a bright deck exported on its
 # own must not be letterboxed in near-black.
 BG_HEX = _theme.load(_theme.active_name(root))["bg"].lstrip("#")
 
-title_line = next((l for l in open(f"{root}/script.md") if l.startswith("# ")), f"# {talk}") if os.path.exists(f"{root}/script.md") else f"# {talk}"
-TITLE = title_line[2:].strip()
+TITLE = title_of(root, talk)
 
 NS = "http://schemas.openxmlformats.org/presentationml/2006/main"
 AUTOPLAY = """<p:timing xmlns:p="%s"><p:tnLst><p:par><p:cTn id="1" dur="indefinite" restart="never" nodeType="tmRoot"><p:childTnLst>
@@ -58,15 +59,12 @@ def poster(clip: str, png: str):
 prs = Presentation()
 prs.slide_width, prs.slide_height = Inches(13.333), Inches(7.5)
 blank = prs.slide_layouts[6]
-for stem, scene in scenes_of(root):
-    if not any(scene == sc for _, sc, _, _ in items):
-        print(f"not rendered: {scene}")
+report_unrendered(root, items)
 n_steps = 0
 with tempfile.TemporaryDirectory() as tmp:            # the poster frames are throwaway; leaving them behind cost megabytes a run
-    for stem, scene, _video, index in items:
-        notes_path = f"{root}/media/notes/{scene}.json"
-        notes = json.load(open(notes_path)) if os.path.exists(notes_path) else []
-        for k, sec in enumerate(json.load(open(index))):
+    for stem, scene, _video, index, notes_path in items:
+        notes = read_json(notes_path) if os.path.exists(notes_path) else []
+        for k, sec in enumerate(read_json(index)):
             clip = f"{root}/media/videos/{stem}/{Q}/sections/{sec['video']}"
             png = f"{tmp}/{scene}-{k}.png"
             poster(clip, png)

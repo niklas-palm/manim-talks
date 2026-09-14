@@ -163,7 +163,7 @@ def mem(node_g: VGroup, used: float):
 
 
 def beat(scene, nodes, run_time=0.5):
-    """Every kubelet renews its lease at once: a teal dot from each kubelet straight up into the bar."""
+    """Every kubelet renews its lease at once: a NODE-coloured dot from each kubelet straight up into the bar."""
     dots = [Dot(color=NODE, radius=0.07).move_to(n[5].get_center()) for n in nodes]
     scene.add(*dots)
     scene.play(*[d.animate.move_to(door(d)) for d in dots], run_time=run_time)

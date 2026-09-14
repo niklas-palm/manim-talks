@@ -38,9 +38,9 @@ MODE = THEME["mode"]                          # "dark" or "light"; identity() ne
 A1, A2, A3, A4, A5, A6 = (THEME["accents"][k] for k in ("a1", "a2", "a3", "a4", "a5", "a6"))
 ALERT = THEME["accents"]["alert"]             # wrong, hot, refused, over a limit; never a second meaning
 ACCENT = [A1, A2, A3, A4, A5, A6]
-# The names the first decks were written with, kept as aliases for the slots. Each slot has a character every theme
-# keeps: a1 cool, a2 warm, a3 deep, a4 fresh, a5 growth, a6 spice, alert wrong. Prefer A1..A6 and ALERT in new talks.
-BLUE, YELLOW, VIOLET, TEAL, GREEN, ORANGE, RED = A1, A2, A3, A4, A5, A6, ALERT
+# Each slot has a character every theme keeps: a1 cool, a2 warm, a3 deep, a4 fresh, a5 growth, a6 spice, alert wrong.
+# There are no BLUE/YELLOW/... aliases: a scene that names a hue is refused by bin/check.py, so the library does not
+# offer one to reach for.
 
 DIM = THEME["dim"]                 # shapes that are not in focus (outlines, empty slots, faded members)
 MUTED = THEME["muted"]             # small text: names, units, axis labels
@@ -54,7 +54,7 @@ CODE_FONT = THEME["code_font"]
 CODE_STYLE = THEME["code_style"]   # a Pygments style whose plain identifiers stay neutral (monokai on dark, xcode on light)
 BASE_SIZE = 48                     # every text is laid out at this size and scaled down: Pango rounds glyph positions to whole
                                    # pixels at small sizes, so 14 to 20 pt text drawn directly loses its spaces and crowds letters
-config.background_color = ManimColor(BG)   # manim.cfg carries the house value; the theme wins
+config.background_color = ManimColor(BG)   # the theme is the only source: manim.cfg deliberately sets no background
 
 # The feel, not the palette: the bright style has thinner lines, smaller corners and fainter fills than the dark one,
 # because weight reads differently on a pale ground. The helpers take these as their defaults and scale their smaller
@@ -67,12 +67,33 @@ SOLID = THEME["solid"]             # a filled mark's opacity: a token, a cell, a
 
 def identity(n: int) -> list:
     """n colours that can be told apart, for a thing whose colour means only "this one, not that one": the requests
-    sharing a step, the jobs in a queue, the keys in a partition. The accent slots are the talk's vocabulary and run
-    out at six, and a deck that needs a dozen identities must not invent its own hex: this walks the hue circle at a
-    saturation and lightness the active ground can hold, and lifts each colour until it is visible against it."""
+    sharing a step, the jobs in a queue. The accent slots are the talk's vocabulary and run out at six, and a deck that
+    needs a dozen identities must not invent its own hex.
+
+    Chosen by perceptual distance, not by even hue: hues a wheel spaces evenly are not evenly far apart to an eye, and
+    the first version of this put two of twelve close enough to read as one colour and a third close enough to ALERT to
+    read as "wrong". Each pick is the candidate whose nearest neighbour, among the ones already picked AND the talk's
+    accents, is furthest away. Beyond about a dozen no palette keeps them all apart; ask for the fewest that carry the
+    point, and check the sheet."""
+    if n <= 0:
+        return []
     import colorsys
-    light, sat = (0.66, 0.62) if MODE == "dark" else (0.42, 0.68)
-    return [_theme.lift(_theme.hex_of(colorsys.hls_to_rgb((0.07 + i / n) % 1.0, light, sat)), BG, 3.0) for i in range(n)]
+    bands = (0.72, 0.58, 0.45) if MODE == "dark" else (0.52, 0.40, 0.30)
+    pool = [_theme.hex_of(colorsys.hls_to_rgb(i / 36, l, sat)) for l in bands for sat in (0.78, 0.55) for i in range(36)]
+    pool = [c for c in pool if _theme.contrast(c, BG) >= 3.0]
+    keep, avoid = [], list(THEME["accents"].values())
+    for _ in range(min(n, len(pool))):
+        far = max(pool, key=lambda c: min(_theme.distance(c, k) for k in keep + avoid))
+        keep.append(far); pool.remove(far)
+    return keep
+
+
+def ink_on(color: str, opacity: float = None) -> str:
+    """The legible ink for a label written on a solid mark of `color`: the ground or the body colour, whichever the eye
+    can read against that mark. The ground alone was right on a dark theme and marginal on a bright one, where an
+    accent at full strength is already mid-toned."""
+    face = _theme.blend(BG, color, SOLID if opacity is None else opacity)
+    return TEXT if _theme.contrast(TEXT, face) >= _theme.contrast(BG, face) else BG
 
 
 def rad(k: float = 1.0) -> float:

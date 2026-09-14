@@ -11,11 +11,11 @@ import glob, json, os, re, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib import theme as _theme
-from lib.talks import RES, dir_of, quality, qualities_present, scenes_of
+from lib.talks import RES, SCENE_RE, dir_of, quality, qualities_present, read_json, scenes_of
 
 talk = sys.argv[1] if len(sys.argv) > 1 else sys.exit(__doc__)
-Q = quality(sys.argv[2] if len(sys.argv) > 2 else None)
 root = dir_of(talk)
+Q = quality(sys.argv[2] if len(sys.argv) > 2 else None, root)
 flags = []
 
 # The look this talk presents in, and whether it is fit to present: contrast against the background, accents that can
@@ -47,6 +47,13 @@ for _stem, _scene in scenes_of(root):
         flags.append(f"{_scene} is defined in both {_seen[_scene]}.py and {_stem}.py: scene names must be unique")
     _seen[_scene] = _stem
 
+# A scene in a file the tools do not look at renders nowhere and is reported by nothing else.
+for _f in sorted(glob.glob(f"{root}/scenes/*.py")):
+    if os.path.basename(_f).startswith("s"):
+        continue
+    for _c in re.findall(SCENE_RE, open(_f).read(), re.M):
+        flags.append(f"{os.path.basename(_f)} defines the scene {_c}, but only scenes/s*.py is presented: rename the file")
+
 for f, what in [("script.md", "the spine, moves and sources"), ("README.md", "what the talk is"), ("scenes/objects.py", "the talk's colours and shared drawings")]:
     if not os.path.exists(f"{root}/{f}"):
         flags.append(f"missing {f} ({what})")
@@ -72,10 +79,10 @@ for f in sorted(glob.glob(f"{root}/scenes/s*.py")):
         body = src[c.end(): classes[i + 1].start() if i + 1 < len(classes) else len(src)]
         if not re.search(r"self\.finish\(", body):
             flags.append(f"{name}: {c.group(1)} has no finish(): the last step has no note")
-        idx = glob.glob(f"{root}/media/videos/{name[:-3]}/{Q}/sections/{c.group(1)}.json")
+        idx = f"{root}/media/videos/{name[:-3]}/{Q}/sections/{c.group(1)}.json"
         notes_file = f"{root}/media/notes/{c.group(1)}.json"
-        if idx and os.path.exists(notes_file):   # both written by the render, so loops and branches are counted right
-            steps, notes = len(json.load(open(idx[0]))), len(json.load(open(notes_file)))
+        if os.path.exists(idx) and os.path.exists(notes_file):   # both written by the render, so loops and branches are counted right
+            steps, notes = len(read_json(idx)), len(read_json(notes_file))
             if steps != notes:
                 flags.append(f"{name}: {c.group(1)} rendered {steps} steps but wrote {notes} notes")
         # a group and one of its members animated in the same play: the member's target is taken before the group moves

@@ -1,8 +1,7 @@
 # Serving open-weight LLMs: what the GPU is doing, and what that decides
 
-One line per step (each `next_slide()` in the scenes), with the section of the companion tuning notes (`docs/tuning.md`
-in the llm-serving-tuning repository, see this talk's README) in the
-companion repository that carries the measurement. Timings are targets for a 45-minute slot.
+One line per step (each `next_slide()` in the scenes), with the section of the companion repository's `docs/tuning.md`
+that carries the measurement (the repository is named in this talk's README). Timings are targets for a 45-minute slot.
 
 ## Opening (folded into move 1)
 - No title slide. The deck opens on the sentence, and the first note introduces the talk: who it is for, the spine

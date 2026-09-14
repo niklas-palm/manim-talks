@@ -1,13 +1,13 @@
 <!doctype html><meta charset="utf-8"><title>Presenter</title>
-<style>html,body{margin:0;height:100%;background:#15181f;color:#e8e8e8;font:18px/1.5 Helvetica,sans-serif}
-#top{display:flex;gap:24px;align-items:center;padding:14px 22px;border-bottom:1px solid #2a2e38;color:#9aa0ad}
-#top b{color:#e8e8e8;font-weight:500} #clock{margin-left:auto;font-variant-numeric:tabular-nums;font-size:22px}
+<style>html,body{margin:0;height:100%;background:#1A1C20;color:#E8E8E8;font:18px/1.5 Helvetica,sans-serif}
+#top{display:flex;gap:24px;align-items:center;padding:14px 22px;border-bottom:1px solid #36383C;color:#8B93A5}
+#top b{color:#E8E8E8;font-weight:500} #clock{margin-left:auto;font-variant-numeric:tabular-nums;font-size:22px}
 #main{display:grid;grid-template-columns:1.25fr 1fr;gap:22px;padding:22px}
-#nextstage{position:relative;aspect-ratio:16/9;background:#0f1116;border-radius:8px;overflow:hidden;width:62%;margin-bottom:16px} #nextstage video{position:absolute;inset:0;width:100%;height:100%} #nextlabel{font-size:12px;color:#9aa0ad;letter-spacing:.04em;margin-bottom:4px}
-#stage{position:relative;aspect-ratio:16/9;background:#0f1116;border-radius:8px;overflow:hidden} #stage video{position:absolute;inset:0;width:100%;height:100%}
-#note{font-size:21px;line-height:1.55;color:#f2f2f2} #note h3{margin:0 0 10px;font-weight:500;color:#58c4dd;font-size:16px;letter-spacing:.02em}
-#nextnote{margin-top:22px;color:#9aa0ad;font-size:15px;border-top:1px solid #2a2e38;padding-top:14px}
-#keys{padding:0 22px 16px;color:#5b6070;font-size:14px} button{background:#242833;color:#e8e8e8;border:1px solid #3a3f4b;border-radius:6px;padding:6px 14px;font:16px Helvetica;cursor:pointer}</style>
+#nextstage{position:relative;aspect-ratio:16/9;background:#0F1116;border-radius:8px;overflow:hidden;width:62%;margin-bottom:16px} #nextstage video{position:absolute;inset:0;width:100%;height:100%} #nextlabel{font-size:12px;color:#8B93A5;letter-spacing:.04em;margin-bottom:4px}
+#stage{position:relative;aspect-ratio:16/9;background:#0F1116;border-radius:8px;overflow:hidden} #stage video{position:absolute;inset:0;width:100%;height:100%}
+#note{font-size:21px;line-height:1.55;color:#E8E8E8} #note h3{margin:0 0 10px;font-weight:500;color:#58C4DD;font-size:16px;letter-spacing:.02em}
+#nextnote{margin-top:22px;color:#8B93A5;font-size:15px;border-top:1px solid #36383C;padding-top:14px}
+#keys{padding:0 22px 16px;color:#717275;font-size:14px} button{background:#27292D;color:#E8E8E8;border:1px solid #434548;border-radius:6px;padding:6px 14px;font:16px Helvetica;cursor:pointer}</style>
 <div id="top"><button onclick="open_audience()">open audience window</button><button onclick="send(-1)">back</button><button onclick="send(1)">next</button><span id="pos"></span><b id="scene"></b><span id="clock">00:00</span></div>
 <div id="main"><div id="stage"><video id="a" muted playsinline preload="auto"></video><video id="b" muted playsinline preload="auto"></video></div>
 <div><div id="nextlabel">NEXT: WHERE THE CLICK ENDS UP</div><div id="nextstage"><video id="n" muted playsinline preload="auto"></video></div><div id="note"><h3></h3><div id="txt"></div></div><div id="nextnote"></div></div></div>

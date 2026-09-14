@@ -24,7 +24,8 @@ code becomes picture. The other talks under `talks/` are shorter examples built 
 name becomes an address), `kubernetes` (desired state and the loops that chase it), `kafka` (a log you can replay),
 `transformers` (every token learns from every other), `agents` (a model, a list of messages, and a loop). Each has a
 `script.md` with its spine, moves and sources, and a `README.md`, and each has a `-bright` sibling that is the same
-deck in the other style (see "One deck, two styles" below), so `talks/` holds twelve folders for six talks.
+deck in the other style (see "One deck, two styles" below), so `talks/` holds twelve deck folders for six talks,
+beside `_template`.
 
 ## Two kinds of talk, and where they live
 
@@ -152,7 +153,10 @@ at 1080p60, test the presenter and audience windows in a browser, and commit. De
   Never reuse a colour for a second meaning. Name the slot, never the hue: `USER, MODEL, TOOL = A1, A3, A2`, not
   `= BLUE, VIOLET, YELLOW`. The theme decides what A1 looks like; every slot keeps its character in every theme
   (A1 cool, A2 warm, A3 deep, A4 fresh, A5 growth, A6 spice, ALERT wrong). The same goes for corners, strokes and
-  fills: `rad()`, `sw()`, `FILL`, `SOLID`, never a number of your own. `bin/check.py` flags a scene that names a hue.
+  fills: `rad()`, `sw()`, `FILL`, `SOLID`, never a number of your own. `bin/check.py` refuses a scene that names a hue
+  or writes a literal `"#RRGGBB"`. When a picture needs more colours than the six slots, because they identify things
+  rather than mean things (twelve requests sharing a step), `identity(n)` gives that many, told apart from each other
+  and from the accents, out of the active theme.
 - **Words on screen name things that are visible.** Labels sit next to the object they name and stay. A caption,
   if used at all, is one quiet line set before the animation and never changed while something moves. The
   explanation is in the note.
@@ -169,18 +173,17 @@ at 1080p60, test the presenter and audience windows in a browser, and commit. De
 
 ```bash
 python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt   # once; ffmpeg, cairo and pango via Homebrew
-# Run the Python tools with .venv/bin/python (the shell wrappers already do): under another interpreter the checks
-# that ask Pango which fonts are installed cannot answer, and say so instead of passing.
-bin/render.sh <talk> ql [Scene ...]     # preview render (480p), then the pages; qm 720p, qh 1080p60 for the talk
-bin/shots.py <talk> ql                  # the frame every step holds on, tiled per scene: media/shots/<Scene>.png
-bin/review.sh <talk> ql                 # a frame every two seconds per scene, for motion and collisions mid-step
-bin/check.py <talk> ql                  # structural checks: files, notes per step, text sizes, on-screen sentences,
-                                        # hues named in a scene, and whether the talk's style is fit to present
-bin/seams.py <talk> ql                  # every scene boundary: last frame beside first frame, with a difference score
-bin/serve.sh <talk>                     # one local server for the repository; opens the talk's presenter window
-bin/export_pptx.py <talk> qh            # optional: one slide per step, the clip autoplaying, the note in the notes
-bin/themes.py list|check|preview|from-pptx   # the styles a deck can be presented in; see "Choosing the look"
-THEME=<name> bin/render.sh <talk> ql    # render in another style without changing anything
+bin/render.sh <talk> ql [Scene ...]      # preview render (480p), then the pages; qm 720p, qh 1080p60 for the talk
+bin/review.sh <talk> ql                  # a frame every two seconds per scene, for motion and collisions mid-step
+bin/serve.sh <talk>                      # one local server for the repository; opens the talk's presenter window
+P=.venv/bin/python                       # the Python tools want the project's interpreter, as the wrappers above do
+$P bin/shots.py <talk> ql                # the frame every step holds on, tiled per scene: media/shots/<Scene>.png
+$P bin/check.py <talk> ql                # structural checks: files, notes per step, text sizes, on-screen sentences,
+                                         # colours a scene named itself, and whether the talk's style is fit to present
+$P bin/seams.py <talk> ql                # every scene boundary: last frame beside first frame, with a difference score
+$P bin/export_pptx.py <talk> qh          # optional: one slide per step, the clip autoplaying, the note in the notes
+$P bin/themes.py list|check|preview|from-pptx    # the styles a deck can be presented in; see "Choosing the look"
+THEME=<name> bin/render.sh <talk> ql     # render in another style without changing anything
 ```
 
 Never run two renders of the same talk at once: they share that talk's rasterised-text cache under its `media/`.
@@ -202,7 +205,6 @@ library, an `objects.py` to fill in, and a `script.md` skeleton.
 
 A deck is done when every item in `docs/review.md` holds, the deck was reviewed in the style it will be presented
 in (`bin/check.py` names it, and it must be the one the speaker asked for), the 1080p60 render exists, the presenter
-drives the
-audience window in a real browser, every step has a note, `script.md` cites the sources, `README.md` says what the
-talk is, and `LEARNINGS.md` has what you learned. Report what you built, what you could not verify, and what you
-left out and why.
+drives the audience window in a real browser, every step has a note, `script.md` cites the sources, `README.md`
+says what the talk is, and `LEARNINGS.md` has what you learned. Report what you built, what you could not verify,
+and what you left out and why.

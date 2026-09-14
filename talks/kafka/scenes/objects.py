@@ -56,12 +56,12 @@ def config(text: str, size: float = 15) -> VGroup:
 
 
 class Isr(VGroup):
-    """The in-sync set as a row of numbered markers with a name, attached to the leader's box: a marker is green when
-    that broker is in sync, red when it has fallen out, dim when it is gone. set(scene, in_sync, out) animates."""
+    """The in-sync set as a row of numbered markers with a name, attached to the leader's box: a marker takes SYNC
+    while that broker is in sync, FAIL when it has fallen out, DIM when it is gone. set(scene, in_sync, out) animates."""
 
     def __init__(self, n: int = 3, **kw):
         super().__init__(**kw)
-        self.marks = VGroup(*[VGroup(Square(0.3, fill_color=SYNC, fill_opacity=SOLID, stroke_width=0), label(str(i + 1), 14, BG)) for i in range(n)]).arrange(RIGHT, buff=0.06)
+        self.marks = VGroup(*[VGroup(Square(0.3, fill_color=SYNC, fill_opacity=SOLID, stroke_width=0), label(str(i + 1), 14, ink_on(SYNC))) for i in range(n)]).arrange(RIGHT, buff=0.06)
         self.name = label("in-sync", 15, SYNC).next_to(self.marks, DOWN, buff=0.05).align_to(self.marks, RIGHT)   # under the marks: the HWM label rides at the marks' height
         self.add(self.name, self.marks)
 

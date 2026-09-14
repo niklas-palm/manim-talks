@@ -1,7 +1,7 @@
 """Move 3: from record to process.
 
   Final frame: the stage with three control loops (Deployment, ReplicaSet, scheduler), etcd holding Deployment,
-  ReplicaSet and three Pod records bound to nodes and reported Running; three yellow pods on the nodes; 3 desired,
+  ReplicaSet and three Pod records bound to nodes and reported Running; three running-coloured pods on the nodes; 3 desired,
   3 running.
   Clicks: 1 the scheduler appears and picks a pod with no node  2 zoom into the nodes: filtering, node 3 has no room
   3 scoring, then binding: the record gets a node  4 zoom into node 1: the kubelet pulls, starts, reports Running

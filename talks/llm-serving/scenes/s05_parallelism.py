@@ -13,7 +13,7 @@ def layer_stack(n: int, width: float, color: str = WEIGHTS, op: float = 0.7, h: 
 
 
 def timeline(segments, unit: float, y: float, x0: float = -6.4):
-    """segments: list of (kind, length): kind 'c' compute (blue) or 's' sync (red). Returns the bars and total width."""
+    """segments: list of (kind, length): kind 'c' compute (PROMPT) or 's' sync (HOT). Returns the bars and total width."""
     bars = VGroup(); x = x0
     for kind, length in segments:
         w = unit * length

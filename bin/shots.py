@@ -4,35 +4,25 @@ and one tiled sheet per scene, <Scene>.png. The presenter holds on exactly these
 sits with while the speaker talks: the fastest review of captions, spacing and colour there is. Frames are taken 0.08 s
 before each step ends, so a fade that is the step's last animation is finished; end every step on a settled picture.
 Usage: bin/shots.py <talk> [ql|qm|qh]"""
-import glob, json, os, re, subprocess, sys
+import glob, os, subprocess, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib import theme as _theme
-from lib.talks import dir_of, quality, rendered_or_exit
+from lib.talks import dir_of, duration, quality, read_json, rendered_or_exit
 
 talk = sys.argv[1] if len(sys.argv) > 1 else sys.exit(__doc__)
-Q = quality(sys.argv[2] if len(sys.argv) > 2 else None)
 root = dir_of(talk)
+Q = quality(sys.argv[2] if len(sys.argv) > 2 else None, root)
 items = rendered_or_exit(root, Q, talk)     # before the delete below: an unrendered quality used to wipe the sheets and report success
-PAD = "0x" + _theme.sheet_bg(_theme.load(_theme.active_name(root)))[1:]   # the padding follows the deck's own style
-
-
-def duration(video: str) -> float:
-    r = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", video],
-                       capture_output=True, text=True)
-    if r.returncode or not r.stdout.strip():
-        sys.exit(f"{video} is missing or unreadable: re-render this talk")
-    return float(r.stdout)
-
-
+PAD = _theme.sheet_hex(root)               # the padding follows the deck's own style
+plan = [(scene, video, duration(video), read_json(idx)) for _stem, scene, video, idx, _n in items]   # every clip probed
 out_dir = f"{root}/media/shots"
 os.makedirs(out_dir, exist_ok=True)
 for old in glob.glob(f"{out_dir}/*.png"):   # a frame ffmpeg cannot produce must not leave last run's file in its place
     os.remove(old)
-for stem, scene, video, idx in items:
-    dur = duration(video)
+for scene, video, dur, index in plan:
     t, frames = 0.0, []
-    for k, sec in enumerate(json.load(open(idx))):
+    for k, sec in enumerate(index):
         t += float(sec["duration"])
         out = f"{out_dir}/{scene}-{k:02d}.png"
         subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-ss", f"{max(0, min(t - 0.08, dur - 0.08)):.3f}", "-i", video,

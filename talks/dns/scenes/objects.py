@@ -34,7 +34,7 @@ COL_TYPE, COL_VALUE = 0.38, 0.45   # record columns as fractions of the row widt
 
 def record(owner: str, rtype: str, value: str, ttl: str = "", color: str = ZONE, width: float = W_RECORD, size: float = 15) -> VGroup:
     """One resource record as a row: owner, TYPE, value, and the TTL at the right. The type is the colour of what the
-    record gives you: a pointer (NS, violet) or an address (A, yellow). rec[0] is the background strip; rec[1..3] the
+    record gives you: a pointer (NS, the ZONE colour) or an address (A, the ADDRESS colour). rec[0] is the background strip; rec[1..3] the
     owner, type and value; rec[4] the TTL text when given."""
     bg = Rectangle(width=width, height=ROW_H, fill_color=color, fill_opacity=FILL * 1.2, stroke_width=0)
     parts = VGroup(label(owner, size, TEXT), label(rtype, size, color), label(value, size, TEXT if rtype != "A" else ADDRESS))
@@ -77,7 +77,7 @@ def client_box(y: float = Y_RESOLVER, name: str = "your laptop", sub: str = "app
 
 
 def question(scene, a: Mobject, b: Mobject, text: str = "", run_time: float = 0.5):
-    """A question travels from the thing that asks to the thing that will answer: a blue dot with the name beside it.
+    """A question travels from the thing that asks to the thing that will answer: a NAME-coloured dot with the name beside it.
     Pass the exact objects (the client node, the resolver's name label, the record in a zone), never a container's
     edge: the dot starts at a's centre and ends at b's centre."""
     d = Dot(color=NAME, radius=0.12).move_to(a.get_center())
@@ -89,8 +89,8 @@ def question(scene, a: Mobject, b: Mobject, text: str = "", run_time: float = 0.
 
 
 def answer(scene, a: Mobject, b: Mobject, color: str, text: str = "", run_time: float = 0.5, becomes: Mobject = None):
-    """An answer travels back from the record that answers to the thing that receives it: violet for a pointer to who
-    to ask next, yellow for the address, red for 'no'. With `becomes`, the answer lands on the cache row it turns
+    """An answer travels back from the record that answers to the thing that receives it: ZONE for a pointer to who
+    to ask next, ADDRESS for the address, HOT for 'no'. With `becomes`, the answer lands on the cache row it turns
     into and that row appears as the dot arrives: one motion per exchange, never a dot to a box and a row elsewhere."""
     d = Dot(color=color, radius=0.12).move_to(a.get_center())
     lab = label(text, 14, color).next_to(d, DOWN, buff=0.06) if text else VGroup()
@@ -114,7 +114,7 @@ def cache_row(rec: VGroup, slot_y: float) -> VGroup:
 
 
 def fuse(row: VGroup, fraction: float = 1.0) -> Rectangle:
-    """The time a cached row may still be kept, as a teal bar under it; Transform it to a shorter one to show time
+    """The time a cached row may still be kept, as a REMEMBERED bar under it; Transform it to a shorter one to show time
     passing, to zero when it expires."""
     w = row[0].width * fraction
     return Rectangle(width=max(0.01, w), height=0.07, fill_color=REMEMBERED, fill_opacity=SOLID, stroke_width=0).move_to(row[0].get_bottom() + DOWN * 0.05, aligned_edge=LEFT).align_to(row[0], LEFT)

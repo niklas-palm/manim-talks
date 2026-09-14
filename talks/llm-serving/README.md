@@ -38,7 +38,7 @@ where the next click lands). How that works and why is in `docs/presenting.md`.
 ## Layout
 
 ```
-scenes/objects.py    the talk's five colours with fixed meaning (prompt blue, output yellow, weights violet, cache teal, hot red),
+scenes/objects.py    the talk's five accent slots with fixed meaning (prompt, output, weights, cache, hot),
                      the nouns they colour, and the GPU drawing (memory bar, compute grid, bus and compute gauges)
 scenes/s00 .. s08    one file per move; scenes are presented in file order
 script.md            the spine, the moves, the sources
@@ -56,8 +56,8 @@ comparison, the two phases shrink to the top for the close), and the title chang
 
 ## Style rules
 
-Colours carry meaning across the whole talk and are never reused for something else: prompt blue, output
-yellow, weights violet, cache teal, hot red. Titles and labels colour those four nouns wherever they appear,
+Accents carry meaning across the whole talk and are never reused for something else: prompt, output,
+weights, cache, hot. Titles and labels colour those four nouns wherever they appear,
 so the legend is learned once. Every scene opens by naming a problem, shows why it exists on the picture
 already on screen, then shows the way out; measurements support the argument and never lead it. One new idea
 per step. Diagrams grow; nothing already on screen moves unless the movement is the point. Numbers appear

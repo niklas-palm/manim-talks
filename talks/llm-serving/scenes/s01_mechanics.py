@@ -240,7 +240,7 @@ class Mechanics(TalkSlide):
         one GPU, what precision costs in answers, the fleet, and where the industry is. Start from actual text: a prompt someone typed. Five words. We follow them through the machine and out the
         other side, on one picture that only grows. Everything later in the talk is a consequence of what happens on this
         picture, so it is worth twenty minutes.""")
-        toks = VGroup(*[VGroup(Square(0.5, fill_color=PROMPT, fill_opacity=SOLID, stroke_width=0), label(w, 13, BG)) for w in WORDS]).arrange(RIGHT, buff=0.1).move_to([-6.4, 2.25, 0], aligned_edge=LEFT)
+        toks = VGroup(*[VGroup(Square(0.5, fill_color=PROMPT, fill_opacity=SOLID, stroke_width=0), label(w, 13, ink_on(PROMPT))) for w in WORDS]).arrange(RIGHT, buff=0.1).move_to([-6.4, 2.25, 0], aligned_edge=LEFT)
         ids = VGroup(*[label(i, 13, DIM).next_to(k, DOWN, buff=0.05) for i, k in zip(IDS, toks)])
         self.play(ReplacementTransform(sentence.copy(), toks), run_time=0.8)   # a copy is morphed, so toks itself is not padded with empty submobjects
         self.play(FadeIn(ids))
@@ -391,7 +391,7 @@ class Mechanics(TalkSlide):
         self.play(block.animate.move_to(logits.get_center() + UP * 0.6).set_opacity(0.0), FadeIn(logits), FadeIn(lgl), run_time=0.6)
         self.remove(block)
         top = max(logits, key=lambda b: b.height)
-        newtok = VGroup(Square(0.5, fill_color=OUTPUT, fill_opacity=SOLID, stroke_width=0), label(ANSWER[0], 13, BG)).next_to(top, UP, buff=0.12)
+        newtok = VGroup(Square(0.5, fill_color=OUTPUT, fill_opacity=SOLID, stroke_width=0), label(ANSWER[0], 13, ink_on(OUTPUT))).next_to(top, UP, buff=0.12)
         self.play(FadeIn(newtok, shift=UP * 0.2), produced.to(1), run_time=0.5)
         words = VGroup(label(" " + ANSWER[0], 34, OUTPUT).next_to(sentence, RIGHT, buff=0.12))
         self.play(newtok.animate.move_to([-6.4 + 0.25 + 0.6 * len(toks), 2.25, 0]), FadeIn(words[-1]), run_time=0.8)
@@ -473,7 +473,7 @@ class Mechanics(TalkSlide):
             self.remove(col_)
             self.play(Transform(logits, bars(dist())), run_time=0.3)
             top = max(logits, key=lambda b: b.height)
-            newtok = VGroup(Square(0.5, fill_color=OUTPUT, fill_opacity=SOLID, stroke_width=0), label(w, 13, BG)).next_to(top, UP, buff=0.12)
+            newtok = VGroup(Square(0.5, fill_color=OUTPUT, fill_opacity=SOLID, stroke_width=0), label(w, 13, ink_on(OUTPUT))).next_to(top, UP, buff=0.12)
             words.add(label((" " + w) if w not in ".," else w, 34, OUTPUT).next_to(words[-1], RIGHT, buff=0.12 if w not in ".," else 0.02))
             self.play(FadeIn(newtok, shift=UP * 0.2), reads.to(k_ + 1), produced.to(k_ + 1), run_time=0.3)
             self.play(newtok.animate.move_to([-6.4 + 0.25 + 0.6 * len(toks), 2.25, 0]), FadeIn(words[-1]), run_time=0.25 if fast else 0.4)

@@ -25,7 +25,6 @@ proportionally, so those three numbers reach every drawing.
 import json
 import os
 import re
-import sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 THEME_DIR = os.path.join(REPO, "themes")
@@ -38,6 +37,8 @@ ROLES = ["bg", "text", "muted", "dim", "caption", "hi", "panel"]
 # a5 growth, a6 spice, alert wrong.
 ACCENTS = ["a1", "a2", "a3", "a4", "a5", "a6", "alert"]
 NUMBERS = ["radius", "stroke", "fill", "solid"]   # the feel: a corner, a line weight, a container fill, a solid mark
+STRINGS = ["font", "code_font", "code_style", "mode", "description"]
+ACCENT_GAP = 22.0   # the Lab distance two accents must keep: closer than this and an audience reads them as one colour
 
 # ------------------------------------------------------------------------------------------------ colour maths
 # Enough of CIE to answer two questions: can the audience see this against the background (contrast ratio), and can
@@ -94,7 +95,7 @@ def blend(a: str, b: str, t: float) -> str:
     return hex_of(tuple(x + (y - x) * t for x, y in zip(rgb(a), rgb(b))))
 
 
-def lift(c: str, bg: str, ratio: float = 3.0, steps: int = 60) -> str:
+def lift(c: str, bg: str, ratio: float = 3.0) -> str:
     """Move a colour away from the background until it has at least `ratio` contrast against it, keeping its hue: what
     makes a real corporate palette usable on a stage. Returns the colour unchanged if it already passes, and the
     extreme it was heading for when the ratio cannot be reached at all (a mid grey ground caps every colour); the
@@ -106,8 +107,8 @@ def lift(c: str, bg: str, ratio: float = 3.0, steps: int = 60) -> str:
         return c
     target = "#000000" if contrast("#000000", bg) > contrast("#FFFFFF", bg) else "#FFFFFF"
     best = c
-    for i in range(1, steps + 1):
-        best = blend(c, target, i / steps)
+    for i in range(1, 61):
+        best = blend(c, target, i / 60)
         if contrast(best, bg) >= ratio:
             break
     return best
@@ -130,7 +131,7 @@ def names() -> list:
     return out
 
 
-def path_of(name: str) -> str:
+def _path_of(name: str) -> str:
     return os.path.join(THEME_DIR, f"{name}.json")
 
 
@@ -155,8 +156,9 @@ def active_name(root: str = None) -> str:
 
 def fonts_available():
     """The installed families, asked of Pango, or None when Pango cannot be asked (a tool run under an interpreter
-    without it). Only the checkers call this: a render uses what the theme declares, so that what is checked is what
-    will be drawn. None and the empty set are different answers, and a checker must not read the first as the second."""
+    without it). It backs missing_fonts, which is what the checkers call; a render never asks, so that what is checked
+    is what will be drawn. None and the empty set are different answers, and a caller must not read the first as the
+    second."""
     try:
         import manimpango
         return set(manimpango.list_fonts())
@@ -183,6 +185,16 @@ def sheet_bg(t: dict) -> str:
     return blend(t["bg"], t["text"], 0.10)
 
 
+def sheet_rgb(root: str = None) -> tuple:
+    """The sheet padding for a talk, as the 0..255 triple PIL wants."""
+    return tuple(round(v * 255) for v in rgb(sheet_bg(load(active_name(root)))))
+
+
+def sheet_hex(root: str = None) -> str:
+    """The sheet padding for a talk, as the 0xRRGGBB literal ffmpeg wants."""
+    return "0x" + sheet_bg(load(active_name(root)))[1:]
+
+
 def missing_fonts(t: dict):
     """The families this theme asks for that are not installed, or None when that cannot be determined here. Pango
     substitutes a missing family silently, which is how a deck ends up in a font nobody chose, so the checkers report
@@ -197,13 +209,17 @@ def load(name: str = None) -> dict:
     """The theme as a flat dict: the seven roles, the seven accents, the four numbers, the fonts, the code style,
     plus `name`, `mode` and `description`. Unknown keys are kept, missing ones inherited from the default."""
     name = name or active_name()
-    t = _read(path_of(DEFAULT))
+    if not re.fullmatch(r"(local/)?[A-Za-z0-9][A-Za-z0-9._-]*", name):
+        raise SystemExit(f"not a theme name: {name!r} (a name, or local/<name>: it is a file under themes/)")
+    t = _read(_path_of(DEFAULT))
     if name != DEFAULT:
-        p = path_of(name)
+        p = _path_of(name)
         if not os.path.exists(p):
             raise SystemExit(f"theme: no such theme '{name}'. Available: {', '.join(names())} "
                              f"(see AGENTS.md, 'Choosing the look')")
         over = _read(p)
+        if not isinstance(over.get("accents", {}), dict):
+            raise SystemExit(f"theme: {p}: 'accents' must be an object of slot names to colours")
         accents = dict(t["accents"]); accents.update(over.pop("accents", {}))
         t.update(over); t["accents"] = accents
     t["name"] = name
@@ -228,6 +244,9 @@ def validate(t: dict) -> list:
     for k in NUMBERS:
         if not isinstance(t[k], (int, float)) or isinstance(t[k], bool) or not 0 <= t[k] <= 12:
             bad.append(f"{k} is {t[k]!r}, not a number between 0 and 12")
+    for k in STRINGS:
+        if not isinstance(t[k], str) or not t[k].strip():
+            bad.append(f"{k} is {t[k]!r}, not a name")
     if bad:
         return bad                                     # the colour maths below would only raise on these
     bg = t["bg"]
@@ -240,14 +259,15 @@ def validate(t: dict) -> list:
         if r < need:
             bad.append(f"{role} {t[role]} has {r:.1f}:1 against the background, needs {need}:1")
     acc = t["accents"]
-    for k in ACCENTS:
+    keys = sorted(acc, key=lambda k: (k not in ACCENTS, k))   # every slot the theme defines, not only the seven expected
+    for k in keys:
         r = contrast(acc[k], bg)
         if r < 3.0:
             bad.append(f"accent {k} {acc[k]} has {r:.1f}:1 against the background, needs 3:1")
-    keys = ACCENTS
     for i, a in enumerate(keys):
         for b in keys[i + 1:]:
             d = distance(acc[a], acc[b])
-            if d < 22:
-                bad.append(f"accents {a} {acc[a]} and {b} {acc[b]} are {d:.0f} apart, needs 22: they read as one colour")
+            if d < ACCENT_GAP:
+                bad.append(f"accents {a} {acc[a]} and {b} {acc[b]} are {d:.0f} apart, needs {ACCENT_GAP:.0f}: "
+                           f"they read as one colour")
     return bad

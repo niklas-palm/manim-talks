@@ -4,10 +4,10 @@ Accent slots, each with one meaning for the whole deck (the theme decides the hu
   TOKEN  (A1, cool)   a token's vector, the thing that flows down the stack (the "residual stream")
   QUERY  (A2, warm)   what a token is looking for
   KEY    (A4, fresh)  how a token answers other tokens' queries
-  VALUE  (green)   what a token hands over when its key matches
-  WEIGHTS(violet)  the learned matrices (Wq, Wk, Wv, feed-forward, the vocabulary matrix)
-  ATTN   (orange)  attention weights and the update a layer computes; also the position vector added at the start
-  MASK   (red)     a blocked connection (the causal mask)
+  VALUE  (A5, growth) what a token hands over when its key matches
+  WEIGHTS(A3, deep)   the learned matrices (Wq, Wk, Wv, feed-forward, the vocabulary matrix)
+  ATTN   (A6, spice)  attention weights and the update a layer computes; also the position vector added at the start
+  MASK   (ALERT)      a blocked connection (the causal mask)
 
 Vocabulary of shapes: a token is a square; a vector is a column of shaded cells (8 drawn for 512); a matrix is a
 grid; a multiplication is one row of the matrix lighting up against the vector, its products collapsing into one
@@ -72,7 +72,7 @@ PIPE_Y = -1.25                            # the centre line of the layer and pre
 
 def big_tokens(side: float = 1.3, y: float = ROWS[1]) -> VGroup:
     """The six tokens as squares with their words inside (move 1 at 1.3, move 2 at 1.0)."""
-    toks = VGroup(*[VGroup(Square(side, fill_color=TOKEN, fill_opacity=SOLID * 0.94, stroke_width=0), label(w, 28 if side > 1.1 else 22, BG)) for w in WORDS])
+    toks = VGroup(*[VGroup(Square(side, fill_color=TOKEN, fill_opacity=SOLID * 0.94, stroke_width=0), label(w, 28 if side > 1.1 else 22, ink_on(TOKEN))) for w in WORDS])
     for g, x in zip(toks, XS):
         g.move_to([x, y, 0]); g[1].move_to(g[0])
     return toks

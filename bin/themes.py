@@ -19,6 +19,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import xml.etree.ElementTree as ET
 import zipfile
 
@@ -42,7 +43,10 @@ def cmd_list():
 def cmd_check(which):
     ok = True
     for n in which or _theme.names():
-        t = _theme.load(n)
+        try:                                        # one half-written theme must not hide the verdict on the others
+            t = _theme.load(n)
+        except SystemExit as e:
+            print(f"{n:22s} FAIL"); print("   -", e); ok = False; continue
         bad = _theme.validate(t)
         missing = _theme.missing_fonts(t)
         if missing is None:
@@ -58,7 +62,7 @@ def cmd_check(which):
 
 def cmd_preview(talk: str, scene: str):
     """One frame of a real deck in every theme, tiled. The frame is rendered with manim -s (the last frame only), so a
-    sheet of ten themes takes about a minute. Look at it before choosing; a palette that reads on a screen can lose a
+    sheet of both styles, and any imported one, takes well under a minute. Look at it before choosing; a palette that reads on a screen can lose a
     colour on a projector."""
     root = dir_of(talk)
     src = next((f for f in sorted(glob.glob(f"{root}/scenes/s*.py"))
@@ -66,45 +70,49 @@ def cmd_preview(talk: str, scene: str):
     if not src:
         sys.exit(f"no scene {scene} in {root}/scenes")
     from PIL import Image, ImageDraw, ImageFont
-    shots = []
-    for n in _theme.names():
-        out = f"/tmp/theme-preview/{n.replace('/', '-')}"
-        shutil.rmtree(out, ignore_errors=True)          # a frame left from another scene would be labelled with this theme
-        env = dict(os.environ, THEME=n, PYTHONPATH=f".:{root}/scenes")
-        r = subprocess.run([".venv/bin/manim", "-ql", "-s", "--media_dir", out, src, scene],
-                           env=env, capture_output=True, text=True)
-        if r.returncode:
-            sys.exit(f"rendering {scene} in {n} failed:\n{(r.stdout or '')[-2000:]}")
-        png = sorted(glob.glob(f"{out}/images/*/{scene}*.png"))
-        if png:
-            shots.append((n, png[-1]))
-            print(f"  {n}")
-    if not shots:
-        sys.exit("nothing rendered")
-    cols = 2
-    w, h = Image.open(shots[0][1]).size
-    tw, th = w // 2, h // 2
-    band = 26
-    rows = (len(shots) + cols - 1) // cols
-    pad = tuple(round(v * 255) for v in _theme.rgb(_theme.sheet_bg(_theme.load(_theme.active_name(root)))))
-    sheet = Image.new("RGB", (cols * tw, rows * (th + band)), pad)
+    work = tempfile.mkdtemp(prefix="theme-preview-")     # a fresh directory: a frame left from another run would be
+    shots = []                                           # labelled with this theme, and a fixed /tmp path is not ours
     try:
-        font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 15)
-    except Exception:
-        font = ImageFont.load_default()
-    d = ImageDraw.Draw(sheet)
-    for i, (n, p) in enumerate(shots):
-        x, y = (i % cols) * tw, (i // cols) * (th + band)
-        sheet.paste(Image.open(p).convert("RGB").resize((tw, th)), (x, y + band))
-        cap = f"{n}   {_theme.load(n)['description']}"
-        while font.getlength(cap) > tw - 16 and len(cap) > 12:      # one line per tile, cut to fit: no label crosses into its neighbour
-            cap = cap[:-2] + "\u2026"
-        d.text((x + 8, y + 5), cap, fill=(232, 232, 232), font=font)
-    os.makedirs(f"{REPO}/media/themes", exist_ok=True)
-    dst = f"{REPO}/media/themes/{talk}-{scene}.png"
-    sheet.save(dst)
-    print(f"-> {dst}")
+        for n in _theme.names():
+            out = f"{work}/{n.replace('/', '-')}"
+            env = dict(os.environ, THEME=n, PYTHONPATH=f".:{root}/scenes")
+            r = subprocess.run([".venv/bin/manim", "-ql", "-s", "--media_dir", out, src, scene],
+                               env=env, capture_output=True, text=True)
+            if r.returncode:
+                sys.exit(f"rendering {scene} in {n} failed:\n{(r.stdout or '')[-2000:]}")
+            png = sorted(glob.glob(f"{out}/images/*/{scene}*.png"))
+            if png:
+                shots.append((n, png[-1]))
+                print(f"  {n}")
+        if not shots:
+            sys.exit("nothing rendered")
+        cols = 2
+        w, h = Image.open(shots[0][1]).size
+        tw, th = w // 2, h // 2
+        band = 26
+        rows = (len(shots) + cols - 1) // cols
+        deck = _theme.load(_theme.active_name(root))
+        sheet = Image.new("RGB", (cols * tw, rows * (th + band)), _theme.sheet_rgb(root))
+        ink = tuple(round(v * 255) for v in _theme.rgb(deck["text"]))   # the labels sit on the padding, so they follow it
+        try:
+            font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 15)
+        except Exception:
+            font = ImageFont.load_default()
+        d = ImageDraw.Draw(sheet)
+        for i, (n, p) in enumerate(shots):
+            x, y = (i % cols) * tw, (i // cols) * (th + band)
+            sheet.paste(Image.open(p).convert("RGB").resize((tw, th)), (x, y + band))
+            cap = f"{n}   {_theme.load(n)['description']}"
+            while font.getlength(cap) > tw - 16 and len(cap) > 12:      # one line per tile, cut to fit: no label crosses into its neighbour
+                cap = cap[:-2] + "\u2026"
+            d.text((x + 8, y + 5), cap, fill=ink, font=font)
+        os.makedirs(f"{REPO}/media/themes", exist_ok=True)
+        dst = f"{REPO}/media/themes/{talk}-{scene}.png"
+        sheet.save(dst)
+        print(f"-> {dst}")
 
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
 
 # ------------------------------------------------------------------------------------------------ from a PowerPoint file
 
@@ -119,7 +127,7 @@ def _colour(el):
 
 def _scheme(zf) -> dict:
     """The colour and font scheme of the first theme part: dk1, lt1, dk2, lt2, accent1..6, and the two typefaces."""
-    name = next((n for n in zf.namelist() if re.match(r"ppt/theme/theme\d+\.xml$", n)), None)
+    name = next(iter(sorted(n for n in zf.namelist() if re.match(r"ppt/theme/theme\d+\.xml$", n))), None)   # theme1 is the deck's; zip order is not
     if not name:
         sys.exit("that file has no PowerPoint theme part: open it in PowerPoint and save it as .pptx")
     root = ET.fromstring(zf.read(name))
@@ -220,22 +228,34 @@ def cmd_from_pptx(path: str, name: str):
     }
     os.makedirs(f"{_theme.THEME_DIR}/local", exist_ok=True)
     dst = f"{_theme.THEME_DIR}/local/{name}.json"
-    with open(dst, "w") as f:
+    # Validate before replacing anything: the file at dst may be a hand-edited theme, and an import that turns out to be
+    # unusable must not be what is left of it. The temporary name is a real theme name so it can be loaded and merged.
+    tmp_name = f"importing{os.getpid()}"
+    tmp = f"{_theme.THEME_DIR}/local/{tmp_name}.json"
+    with open(tmp, "w") as f:
         json.dump(t, f, indent=2)
         f.write("\n")
-    loaded = _theme.load(f"local/{name}")
+    loaded = _theme.load(f"local/{tmp_name}")
     bad = _theme.validate(loaded)
+    if bad:
+        os.remove(tmp)
+        print(f"{os.path.basename(path)} does not make a theme that can be presented:")
+        for b in bad:
+            print("   -", b)
+        sys.exit(f"nothing written{'' if not os.path.exists(dst) else f'; {dst} is untouched'}. "
+                 f"Its accents are too close to each other or to its background; pick a different template, or write "
+                 f"themes/local/{name}.json by hand from themes/bright.json.")
+    os.replace(tmp, dst)
     print(f"-> {dst}   THEME=local/{name} bin/render.sh <talk> ql")
     if note:
         print(f"   note: {note}")
-    for fam in _theme.missing_fonts(loaded):
+    fams = _theme.missing_fonts(loaded)
+    if fams is None:
+        print(f"   note: fonts not checked: Pango is not available under {os.path.basename(sys.executable)}")
+    for fam in fams or []:
         print(f"   note: the font '{fam}' is not installed here; Pango will substitute one")
-    print(f"   {'fit to present' if not bad else 'NOT fit to present:'}")
-    for b in bad:
-        print("   -", b)
+    print("   fit to present")
     print("   themes/local is ignored by git: a company's palette does not belong in this repository.")
-    if bad:
-        sys.exit("   edit it by hand or delete it: a deck whose two meanings look alike teaches nothing.")
 
 
 # What each slot means, as the hue the house style uses for it: cool, warm, deep, fresh, growth, spice. An imported
@@ -270,36 +290,43 @@ def _assign(acc: list, bg: str, dark: bool) -> dict:
     return _spread(out, bg)
 
 
-def _spread(slots: dict, bg: str, need: float = 22.0) -> dict:
-    """Push accents apart until no two read as one colour, keeping each as close to the original as possible. Corporate
-    palettes are often three blues and two greys; without this, two meanings in a deck would look the same."""
+def _spread(slots: dict, bg: str) -> dict:
+    """Push accents apart until no two read as one colour, moving each as little as possible. Corporate palettes are
+    often three blues and two greys, and a grey has no hue to rotate: the candidates therefore carry a saturation floor,
+    or the search would offer another grey and call it a change. Every round improves the worst pair by the most any one
+    move can, rather than demanding one move that satisfies every pair at once, so it converges instead of giving up."""
+    need = _theme.ACCENT_GAP
     keys = list(slots)
-    for _ in range(4):
-        worst = None
-        for i, a in enumerate(keys):
-            for b in keys[i + 1:]:
-                d = _theme.distance(slots[a], slots[b])
-                if d < need and (worst is None or d < worst[0]):
-                    worst = (d, a, b)
-        if not worst:
+
+    def worst_pair():
+        return min(((_theme.distance(slots[a], slots[b]), a, b)
+                    for i, a in enumerate(keys) for b in keys[i + 1:]), key=lambda x: x[0])
+
+    for _ in range(24):
+        d, a, b = worst_pair()
+        if d >= need:
             break
-        _, a, b = worst
+        moved = False
         for slot in (b, a):                                   # move the later slot first; a1 keeps its hue if it can
+            others = [slots[k] for k in keys if k != slot]
             r, g, bl = _theme.rgb(slots[slot])
             h, l, s = colorsys.rgb_to_hls(r, g, bl)
-            for dh in (0.04, -0.04, 0.08, -0.08, 0.12, -0.12, 0.16, -0.16, 0.2, -0.2):
-                for dl in (0, 0.08, -0.08, 0.16, -0.16):
-                    c = _theme.hex_of(colorsys.hls_to_rgb((h + dh) % 1.0, min(0.95, max(0.05, l + dl)), min(1.0, s * 1.15)))
+            best, best_gap = None, min(_theme.distance(slots[slot], o) for o in others)
+            for dh in [x / 40 for x in range(-16, 17)]:
+                for dl in (0, 0.1, -0.1, 0.2, -0.2):
+                    c = _theme.hex_of(colorsys.hls_to_rgb((h + dh) % 1.0, min(0.92, max(0.08, l + dl)),
+                                                          min(1.0, max(0.45, s * 1.15))))
                     if _theme.contrast(c, bg) < 3.2:
                         continue
-                    if min(_theme.distance(c, slots[k]) for k in keys if k != slot) >= need:
-                        slots[slot] = c
-                        break
-                else:
-                    continue
+                    gap = min(_theme.distance(c, o) for o in others)
+                    if gap > best_gap + 0.5:
+                        best, best_gap = c, gap
+            if best:
+                slots[slot] = best
+                moved = True
                 break
-            if _theme.distance(slots[a], slots[b]) >= need:
-                break
+        if not moved:
+            break                                             # nothing on offer improves it; validate() will refuse it
     return slots
 
 
