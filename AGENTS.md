@@ -61,56 +61,53 @@ the two pages.
 ## Choosing the look, before you draw
 
 The look is a theme, not something a scene knows about: every colour, font, corner radius and stroke width comes from
-one theme file, so the same deck presents in any of the styles below without a scene changing
-(`lib/theme.py`, `themes/*.json`, the tokens are documented in `docs/library.md`).
+one theme file, so the same deck presents in either style without a scene changing (`lib/theme.py`, `themes/*.json`,
+the tokens are in `docs/library.md`).
 
-**Ask the person you are building for, once, before the first scene: dark or light, and which style.** Dark is the
-default and what most rooms want; light is for bright rooms, printed handouts and documents. If they have no
-preference use `studio-dark` and tell them that is what you did. Changing it later is one line, but the choice is
-theirs.
+There are two styles and one way in:
 
 | theme | mode | what it is |
 |---|---|---|
-| `studio-dark` | dark | The house style: near-black blue-grey, six saturated accents, Helvetica and Menlo. Technical, calm, made for a dark room. |
-| `studio-light` | light | The house style on paper: warm white, black ink, the same six hues darkened to hold on a projector in a bright room. |
-| `scandinavian-dark` | dark | Scandinavian at night: cool slate, thin lines, small corners, a dusty palette of blue, mustard and moss. |
-| `scandinavian-light` | light | Scandinavian: warm off-white, thin lines, small corners, dusty blue and mustard. Quiet, bright, lots of air. |
-| `japandi-dark` | dark | Japandi: warm charcoal, clay and matcha, humanist type, soft corners. Low contrast between objects, high between ink and ground. |
-| `japandi-light` | light | Japandi by day: linen ground, ink brown, clay and matcha; humanist type, soft corners. |
-| `brutalist-dark` | dark | Brutalist raw: pure black, square corners, heavy strokes, no fills, uppercase titles, primary colours at full strength. |
-| `brutalist-light` | light | Brutalist on newsprint: pure white, square corners, heavy strokes, no fills, uppercase titles, ink-strong colour. |
-| `terminal-dark` | dark | Terminal: monospace everywhere, near-black green ground, square corners, thin strokes, uppercase titles. |
-| `high-contrast-dark` | dark | High contrast, colour-vision safe: black ground, white ink, the Okabe and Ito palette, thicker strokes. For large rooms and bad projectors. |
+| `dark` | dark | Near-black blue-grey, six saturated accents, Helvetica and Menlo. The default, for a room with the lights down. |
+| `bright` | light | Warm off-white, thin lines, small corners, a dusty palette of blue, mustard and moss. For a lit room, a screen share or a printed handout. |
+| `local/<name>` | either | A company's own PowerPoint theme, imported (below). Never committed. |
+
+Two is on purpose. Earlier there were ten, and the honest finding was that a deck is judged on whether the picture
+teaches: a shelf of styles is a way of not deciding. `bright` is not `dark` with the colours swapped, though. It has
+thinner lines, smaller corners and fainter fills, because weight reads differently on a pale ground.
+
+**Ask the person you are building for, once, before the first scene: dark or bright?** Dark is the default and what
+most rooms want. If they have no preference use `dark` and tell them that is what you did.
 
 How the theme is chosen, first hit wins:
 
-- `THEME=japandi-dark bin/render.sh <talk> ql` — one render, for trying a style out
-- `talks/<talk>/.theme` — one line naming a style; that talk always presents in it. `talks/dns/.theme` holds
-  `studio-light`, so the repository carries a worked example of each mode: `agents` dark, `dns` light
+- `THEME=bright bin/render.sh <talk> ql` — one render, for trying the other style
+- `<talk>/.theme` — one line naming a style; that talk always presents in it. `talks/dns/.theme` holds `bright`, so
+  the repository carries a worked example of each mode side by side: `agents` dark, `dns` bright
 - `.theme` at the repository root — the project's style, which every talk without its own follows
-- nothing — `studio-dark`
+- nothing — `dark`
 
 ```bash
-bin/themes.py list                        every style with its mode and one line about it
+bin/themes.py list                        the styles, with the active one
 bin/themes.py check [name ...]            contrast, accent distance, installed fonts; run it after editing a theme
 bin/themes.py preview <talk> <Scene>      one frame of a real deck in every style, tiled -> media/themes/
 bin/themes.py from-pptx <file> <name>     a company's PowerPoint theme -> themes/local/<name>.json
+bin/gallery.sh [ql|qm|qh]                 every sample deck in both styles -> media/gallery/<style>/<talk>-<Scene>.png
 ```
 
 **A company's own theme.** `bin/themes.py from-pptx company.pptx acme` reads the file's colour scheme, its heading and
-body typefaces and its slide master's background; lifts each accent away from that background until it can be seen
-from the back row; pushes the accents apart until no two read as one colour; and writes `themes/local/acme.json`.
-Render with `THEME=local/acme`. Logos, picture backgrounds and slide layouts are not imported: a talk here is a
-picture that unfolds, not a slide inside a brand frame. **`themes/local/` is ignored by git and must stay that way**,
-and an imported theme is never committed: a company's palette belongs to them, not to this repository. Look at the
-result before presenting it, because an imported palette can land two similar hues on two meanings; swapping two
-accent slots in the file is the fix.
+body typefaces and its slide master's background; matches its six accents to what each accent slot means, so a deck
+keeps its vocabulary in someone else's colours; lifts each away from the background until it can be seen from the back
+row; pushes them apart until no two read as one; derives an alert red of the palette's own character; and writes
+`themes/local/acme.json`. Render with `THEME=local/acme`. Logos, picture backgrounds and slide layouts are not
+imported: a talk here is a picture that unfolds, not a slide inside a brand frame. **`themes/local/` is ignored by git
+and must stay that way**, and an imported theme is never committed: a company's palette belongs to them, not to this
+repository. Look at the result before presenting it.
 
-**Writing a new style.** Copy the closest theme file, change what differs, and run `bin/themes.py check`. It refuses a
+**Editing a style.** Change `themes/dark.json` or `themes/bright.json` and run `bin/themes.py check`. It refuses a
 theme whose body text is under 7:1 against its background, whose accents are under 3:1, or whose accents are within 22
-of each other in Lab, because a deck whose two meanings look alike teaches nothing. A style is not only its palette:
-`radius`, `stroke`, `fill` and `title_case` are what make one style read as brutalist and another as japandi. Then
-look at `bin/themes.py preview`.
+of each other in Lab, because a deck whose two meanings look alike teaches nothing. Then look: `bin/themes.py preview`
+for one frame in both, `bin/gallery.sh` for every sample deck in both.
 
 ## The workflow, in one paragraph
 

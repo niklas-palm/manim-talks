@@ -1,6 +1,6 @@
 {
   "mode": "dark",
-  "description": "The house style: near-black blue-grey, six saturated accents, Helvetica and Menlo. Technical, calm, made for a dark room.",
+  "description": "Dark: near-black blue-grey, six saturated accents, Helvetica and Menlo. The default, for a room with the lights down.",
   "font": "Helvetica",
   "font_fallbacks": [
     "Helvetica Neue",
@@ -34,6 +34,5 @@
   "radius": 0.15,
   "stroke": 2.5,
   "fill": 0.1,
-  "solid": 0.9,
-  "title_case": "none"
+  "solid": 0.9
 }

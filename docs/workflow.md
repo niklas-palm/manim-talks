@@ -5,8 +5,8 @@ four days with rendering and review, presenter test an hour. A ten-minute talk s
 
 ## 0. Agree the look
 
-Ask, once, before anything is drawn: dark or light, and which of the styles in AGENTS.md ("Choosing the look"). Dark
-(`studio-dark`) is the default and what most rooms want. If the answer is a company's own PowerPoint template, import
+Ask, once, before anything is drawn: dark or bright (AGENTS.md, "Choosing the look"). `dark` is the default and what
+most rooms want; `bright` is for a lit room, a screen share or a handout. If the answer is a company's own PowerPoint template, import
 it with `bin/themes.py from-pptx` and render with that theme; it lands in `themes/local`, which is never committed.
 Write the answer into `talks/<talk>/.theme` (or the repository's `.theme` if it is the project's style) so every later
 render, the two pages and the PowerPoint export agree, and note it in the talk's README. Then look at one frame in it

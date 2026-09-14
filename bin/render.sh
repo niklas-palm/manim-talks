@@ -12,7 +12,7 @@ export PYTHONPATH=.:$DIR/scenes
 # the pages bin/build.py writes and the PowerPoint export all use one theme.
 if [[ -z ${THEME:-} && -f $DIR/.theme ]]; then export THEME=$(tr -d '[:space:]' < "$DIR/.theme"); fi
 if [[ -z ${THEME:-} && -f .theme ]]; then export THEME=$(tr -d '[:space:]' < .theme); fi
-echo "theme: ${THEME:-studio-dark}"
+echo "theme: ${THEME:-dark}"
 SCENES=("$@"); [[ ${#SCENES[@]} -eq 0 ]] && SCENES=($(grep -ho "^class [A-Za-z0-9]*(TalkSlide)" $DIR/scenes/s*.py | sed 's/class //; s/(TalkSlide)//'))
 for s in "${SCENES[@]}"; do
   f=$(grep -l "^class $s(TalkSlide)" $DIR/scenes/s*.py)

@@ -75,8 +75,9 @@ experiences a deck: what they see first, then how it moves, then the words, then
       theme fit to present (text 7:1 against the ground, accents 3:1 and 22 apart, both fonts installed).
 - [ ] No scene names a hue (`BLUE`, `RED`, ...) or invents a corner, a stroke or a fill: meanings come from
       `objects.py`, geometry from `rad()`, `sw()`, `FILL`, `SOLID`. `bin/check.py` flags the first.
-- [ ] On a light theme, nothing assumed a dark ground: no near-white fill used as a highlight, no faint strip turned
-      into a dark bar by a flat `set_opacity`, and the code panel still reads as a panel.
+- [ ] In the bright style, nothing assumed a dark ground: no near-white fill used as a highlight, no faint strip turned
+      into a dark bar by a flat `set_opacity`, no pale grey where something must still be seen, and the code panel still
+      reads as a panel. `bin/gallery.sh` renders every sample in both styles; look at the sheets, not at one frame.
 - [ ] Nothing on screen is outright wrong. Every simplification is named in a label or note ("drawn as 8, the real
       thing has 128").
 - [ ] Measurements and examples support the mechanism; no scene is a report of an experiment.

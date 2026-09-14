@@ -293,3 +293,16 @@ First principles that the passes confirmed, written to outlast the decks they ca
   reading first.
 - Starting a real deck as a copy of a sample is right, not lazy: the copy diverges the moment it meets an audience, and
   the sample must not follow it. Say so in the copy's own README so the next reader knows which is which.
+
+## Breadth of style is not depth of teaching
+
+- A shelf of styles is a way of not deciding. A set of them looked like variety and read as one deck in different
+  colours, because what makes an illustration teach is the picture: what is drawn, what moves, what the audience can
+  follow. Two styles, one for a room with the lights down and one for a lit room, carry everything a talk needs.
+- Keep those two genuinely different where the difference is physical, not decorative: a pale ground shows weight
+  differently, so the bright one wants thinner lines, smaller corners and fainter fills rather than the dark palette
+  inverted.
+- When a knob exists only for variants that have been dropped, drop it with them. Anything left behind is read by the
+  next person as a feature to maintain.
+- Prove a style on every deck, not on one frame. Render the whole set in both and look at the sheets; the frames that
+  break under a new ground are never the ones a single preview happens to show.

@@ -8,7 +8,7 @@ Compose Manim directly for everything else; the patterns section shows how the r
 
 Nothing in the library carries a colour, a font, a corner radius or a stroke width of its own. They come from the
 active theme, loaded once at import (`lib/theme.py`; `THEME=<name>`, a talk's `.theme`, the repository's `.theme`, else
-`themes/studio-dark.json`). AGENTS.md, "Choosing the look", lists the styles that ship and how to pick or import one.
+`themes/dark.json`). AGENTS.md, "Choosing the look", names the two styles and how to import a company's own.
 What a scene may use:
 
 | token | what it is |
@@ -21,7 +21,7 @@ What a scene may use:
 | `HI` | the momentary highlight of a cell being read or a line being run. Neutral, never a meaning |
 | `PANEL` `CODE_STYLE` `CODE_FONT` `FONT` | what a code block sits on, its Pygments style, and the two families |
 | `rad(k)` `sw(k)` | a corner radius and a stroke width derived from the theme's, so every drawing squares off or thickens together |
-| `FILL` `SOLID` | a container's fill opacity (0 in brutalist: outlines only) and a filled mark's |
+| `FILL` `SOLID` | a container's fill opacity and a filled mark's; both are fainter in the bright style |
 | `MODE` | `"dark"` or `"light"`; a scene should not need to ask |
 | `cased(s)` | a title as the theme writes it; `title()` already applies it |
 
@@ -39,7 +39,7 @@ opacity rather than replacing it when several members must fade together (see `d
 
 ## Colours
 
-The seven accent slots and the five roles above, as the active theme sets them. The house style (`studio-dark`):
+The seven accent slots and the five roles above, as the active theme sets them. The default style (`dark`):
 
 | name | hex | use |
 |---|---|---|

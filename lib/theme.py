@@ -6,16 +6,21 @@ nothing else. See AGENTS.md for the styles that ship and how to choose one; docs
 
 Resolution order, first hit wins:
     THEME=<name>            environment variable, for one render
-    talks/<talk>/.theme     one line, that talk's style; bin/render.sh exports it
+    <talk>/.theme           one line, that talk's style; bin/render.sh exports it
     .theme                  one line at the repository root, the project's style
-    studio-dark             the dark house style, the fallback
+    dark                    the fallback
 
-A theme file is `themes/<name>.json`; keys it leaves out are taken from `themes/studio-dark.json`, so a variant can be
+There are two styles and a way in: `dark`, `bright`, and whatever `bin/themes.py from-pptx` makes of a PowerPoint
+template (under `themes/local`, never committed). Two is the point: a deck is judged on whether the picture teaches,
+and a gallery of styles is a way of not deciding.
+
+A theme file is `themes/<name>.json`; keys it leaves out are taken from `themes/dark.json`, so a variant can be
 five lines. Every value is either a hex colour, a number, a font family name or a Pygments style name.
 
-Why the numbers are in the theme and not in the scenes: a style is not only its palette. Square corners and thick
-strokes read as brutalist, soft corners and low contrast as japandi, thin lines and pale ink as Scandinavian. The
-helpers take their corner radius, stroke width and fill opacity from here and scale the rest proportionally.
+Why the numbers are in the theme and not in the scenes: a style is not only its palette. The bright style is not the
+dark one with the colours swapped; it has thinner lines, smaller corners and fainter fills, because a pale ground shows
+weight differently. The helpers take their corner radius, stroke width and fill opacity from here and scale the rest
+proportionally, so those three numbers reach every drawing.
 """
 import json
 import os
@@ -23,7 +28,7 @@ import sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 THEME_DIR = os.path.join(REPO, "themes")
-DEFAULT = "studio-dark"   # the dark house style: every other theme inherits the keys it does not set
+DEFAULT = "dark"   # the fallback; "bright" and any imported theme inherit the keys they do not set
 
 # Colour roles. A theme must give each one a value; a variant inherits the ones it omits.
 ROLES = ["bg", "text", "muted", "dim", "caption", "hi", "panel"]
@@ -31,7 +36,7 @@ ROLES = ["bg", "text", "muted", "dim", "caption", "hi", "panel"]
 # A theme keeps each slot's character so that decks read the same across themes: a1 cool, a2 warm, a3 deep, a4 fresh,
 # a5 growth, a6 spice, alert wrong.
 ACCENTS = ["a1", "a2", "a3", "a4", "a5", "a6", "alert"]
-NUMBERS = ["radius", "stroke", "fill", "solid"]
+NUMBERS = ["radius", "stroke", "fill", "solid"]   # the feel: a corner, a line weight, a container fill, a solid mark
 
 _warned = set()
 

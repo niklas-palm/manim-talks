@@ -29,7 +29,7 @@ from manim import *
 
 # ------------------------------------------------------------------------------------------------ the theme
 # Every colour, font, corner and stroke comes from the active theme (lib/theme.py: THEME=<name>, a talk's .theme file,
-# the repository's .theme, else themes/studio-dark.json). Scenes name meanings, never hues: a talk maps its nouns onto
+# the repository's .theme, else themes/dark.json). Scenes name meanings, never hues: a talk maps its nouns onto
 # the accent slots in its objects.py, so the same deck renders in any theme without touching a scene.
 from lib import theme as _theme
 
@@ -56,14 +56,13 @@ BASE_SIZE = 48                     # every text is laid out at this size and sca
                                    # pixels at small sizes, so 14 to 20 pt text drawn directly loses its spaces and crowds letters
 config.background_color = ManimColor(BG)   # manim.cfg carries the house value; the theme wins
 
-# The feel, not the palette. Square corners with heavy strokes read as brutalist, soft corners and thin strokes as
-# japandi; the helpers take these as their defaults and scale their smaller variants from them, so one theme file
-# changes every drawing in the repository.
+# The feel, not the palette: the bright style has thinner lines, smaller corners and fainter fills than the dark one,
+# because weight reads differently on a pale ground. The helpers take these as their defaults and scale their smaller
+# variants from them, so one theme file changes every drawing in the repository.
 RADIUS = THEME["radius"]           # a box's corner radius: rad(0.8) a node, rad(0.4) a block or a gauge
 STROKE = THEME["stroke"]           # a box's stroke width: sw(0.88) arrows and nodes, sw(0.64) dashed, sw(0.48) rails
-FILL = THEME["fill"]               # a container's fill opacity; 0 in brutalist, which draws outlines only
+FILL = THEME["fill"]               # a container's fill opacity, fainter in the bright style
 SOLID = THEME["solid"]             # a filled mark's opacity: a token, a cell, a bar, a pointer
-TITLE_CASE = THEME["title_case"]   # "upper" writes titles in capitals
 
 
 def rad(k: float = 1.0) -> float:
@@ -74,11 +73,6 @@ def rad(k: float = 1.0) -> float:
 def sw(k: float = 1.0) -> float:
     """A stroke width derived from the theme's, so every line thickens together."""
     return STROKE * k
-
-
-def cased(s: str) -> str:
-    """A title as the theme writes it."""
-    return s.upper() if TITLE_CASE == "upper" else s
 
 
 # ------------------------------------------------------------------------------------------------ layout
@@ -180,10 +174,10 @@ def small(s: str, color: str = TEXT) -> Text:
 def title(scene, s: str, move: str = "") -> VGroup:
     """The scene title at the top, with the move it belongs to in small type above it ("3  three knobs"), so the
     audience always knows where on the map they are. Returns VGroup(title[, kicker])."""
-    t = label(cased(s), 38, thread=True).to_edge(UP, buff=0.5)
+    t = label(s, 38, thread=True).to_edge(UP, buff=0.5)
     g = VGroup(t)
     if move:
-        g.add(label(cased(move), 15, MUTED).next_to(t, UP, buff=0.1))
+        g.add(label(move, 15, MUTED).next_to(t, UP, buff=0.1))
     scene.play(Write(t), FadeIn(g[1:]), run_time=0.7)
     return g
 
@@ -191,10 +185,10 @@ def title(scene, s: str, move: str = "") -> VGroup:
 def title_still(scene, s: str, move: str = "") -> VGroup:
     """The same title as title(), added without animation: for a scene's first frame, which must be the previous
     scene's last frame. Build the previous picture with self.add(...) too, then change it with animations."""
-    t = label(cased(s), 38, thread=True).to_edge(UP, buff=0.5)
+    t = label(s, 38, thread=True).to_edge(UP, buff=0.5)
     g = VGroup(t)
     if move:
-        g.add(label(cased(move), 15, MUTED).next_to(t, UP, buff=0.1))
+        g.add(label(move, 15, MUTED).next_to(t, UP, buff=0.1))
     scene.add(g)
     return g
 
@@ -202,10 +196,10 @@ def title_still(scene, s: str, move: str = "") -> VGroup:
 def retitle(scene, old: VGroup, s: str, move: str = "", extra=(), run_time: float = 0.7) -> VGroup:
     """Change the title in place: the old one fades out as the new one fades in, in the same play as the first change
     to the picture (`extra` animations), so a new move announces itself without a cut. Returns the new title group."""
-    t = label(cased(s), 38, thread=True).to_edge(UP, buff=0.5)
+    t = label(s, 38, thread=True).to_edge(UP, buff=0.5)
     g = VGroup(t)
     if move:
-        g.add(label(cased(move), 15, MUTED).next_to(t, UP, buff=0.1))
+        g.add(label(move, 15, MUTED).next_to(t, UP, buff=0.1))
     scene.play(FadeOut(old, run_time=run_time * 0.6), FadeIn(g, run_time=run_time), *extra)
     return g
 
