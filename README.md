@@ -17,7 +17,8 @@ lib/theme.py         the look: which colours, fonts, corners and strokes the lib
 lib/talks.py         where a talk lives: talks/<slug> for the samples, out/<slug> for real ones (git ignores out/)
 themes/dark.json     the two styles: dark (the default) and bright; a PowerPoint template can be imported as a third
 themes/bright.json
-bin/                 render.sh, build.py, shots.py, seams.py, review.sh, check.py, serve.sh, serve.py, export_pptx.py
+bin/                 render.sh, build.py, shots.py, seams.py, review.sh, check.py, serve.sh, serve.py, export_pptx.py,
+                     themes.py
 talks/_template/     copy this to start a talk: title scene, a worked example scene, objects.py, script.md
 talks/llm-serving/   the reference deck: 45 minutes on how open-weight LLMs are served, 82 steps, 13 scenes
 talks/<others>/      shorter example decks built with the same rules: dns, kubernetes, kafka, transformers, agents

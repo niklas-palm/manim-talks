@@ -82,8 +82,9 @@ most rooms want. If they have no preference use `dark` and tell them that is wha
 How the theme is chosen, first hit wins:
 
 - `THEME=bright bin/render.sh <talk> ql` — one render, for trying the other style
-- `<talk>/.theme` — one line naming a style; that talk always presents in it. `talks/dns/.theme` holds `bright`, so
-  the repository carries a worked example of each mode side by side: `agents` dark, `dns` bright
+- `<talk>/.theme` — one line naming a style; that talk always presents in it. Every sample has a `-bright` sibling
+  that holds nothing but this file, a README and a symlink to the same scenes (see below), so each subject exists as a
+  deck in each style
 - `.theme` at the repository root — the project's style, which every talk without its own follows
 - nothing — `dark`
 
@@ -92,7 +93,6 @@ bin/themes.py list                        the styles, with the active one
 bin/themes.py check [name ...]            contrast, accent distance, installed fonts; run it after editing a theme
 bin/themes.py preview <talk> <Scene>      one frame of a real deck in every style, tiled -> media/themes/
 bin/themes.py from-pptx <file> <name>     a company's PowerPoint theme -> themes/local/<name>.json
-bin/gallery.sh [ql|qm|qh]                 every sample deck in both styles -> media/gallery/<style>/<talk>-<Scene>.png
 ```
 
 **A company's own theme.** `bin/themes.py from-pptx company.pptx acme` reads the file's colour scheme, its heading and
@@ -104,10 +104,25 @@ imported: a talk here is a picture that unfolds, not a slide inside a brand fram
 and must stay that way**, and an imported theme is never committed: a company's palette belongs to them, not to this
 repository. Look at the result before presenting it.
 
+**One deck, two styles.** A style variant is its own talk folder with no scenes of its own:
+
+```
+talks/transformers-bright/
+    scenes -> ../transformers/scenes      a symlink: one source of truth for the drawing
+    script.md -> ../transformers/script.md
+    .theme                                one line: bright
+    README.md                             what it is, in three lines
+```
+
+Every tool takes its name like any other talk, and it keeps its own `media/`, its own two pages and its own PowerPoint
+export, so both styles can exist rendered at the same time. Never copy the scenes to make a variant: two copies of a
+drawing drift within a day. The samples are rendered dark; their `-bright` siblings are rendered at preview quality, and
+`bin/render.sh <talk>-bright qh` promotes one when it is going into a room.
+
 **Editing a style.** Change `themes/dark.json` or `themes/bright.json` and run `bin/themes.py check`. It refuses a
 theme whose body text is under 7:1 against its background, whose accents are under 3:1, or whose accents are within 22
-of each other in Lab, because a deck whose two meanings look alike teaches nothing. Then look: `bin/themes.py preview`
-for one frame in both, `bin/gallery.sh` for every sample deck in both.
+of each other in Lab, because a deck whose two meanings look alike teaches nothing. Then look at both styles of a real
+deck: `bin/themes.py preview <talk> <Scene>` for one frame, or render the `-bright` sibling and read its shot sheets.
 
 ## The workflow, in one paragraph
 
