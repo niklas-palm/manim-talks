@@ -44,6 +44,10 @@ class OneList(TalkSlide):
         cl = label("every one of them, on every machine", 16, MUTED).next_to(count, DOWN, buff=0.1).align_to(count, LEFT)
         self.play(FadeIn(count), run_time=0.3)
         self.play(FadeIn(more, lag_ratio=0.05), count.to(340_000_000), run_time=2.2)
+        for r in more:   # the list continues below the frame: fade it out towards the edge instead of cutting it
+            y = r.get_y()
+            if y < -2.2:
+                r.set_opacity(max(0.0, 1 - (-2.2 - y) / 1.0))
         self.play(FadeIn(cl), run_time=0.3)
         self.next_slide("""Now the internet grows. Hundreds of millions of names under .com alone; the list runs off the bottom of the frame
         and keeps going. Every machine needs the whole of it, because any machine may ask for any name. That is the first

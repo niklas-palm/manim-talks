@@ -15,7 +15,7 @@ docs/                principles, workflow, the library, Manim traps, the review 
 lib/palette.py       the illustration library: colours with meaning, TalkSlide, text, counters, gauges, grids ...
 bin/                 render.sh, build.py, shots.py, review.sh, check.py, serve.sh, serve.py, export_pptx.py
 talks/_template/     copy this to start a talk: title scene, a worked example scene, objects.py, script.md
-talks/llm-serving/   the reference deck: 45 minutes on how open-weight LLMs are served, 76 steps, 14 scenes
+talks/llm-serving/   the reference deck: 45 minutes on how open-weight LLMs are served, 82 steps, 14 scenes
 talks/<others>/      shorter example decks built with the same rules: dns, kubernetes, kafka, transformers, agents
 LEARNINGS.md         the living log of what cost time and what changed a rule
 ```

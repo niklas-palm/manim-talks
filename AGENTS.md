@@ -16,7 +16,7 @@ scene. They are short and every rule in them was paid for.
 6. `docs/presenting.md`   the two-window presenter, how it works, how to test it
 7. `LEARNINGS.md`         the living log; add to it whenever something cost you time or changed your mind
 
-Then study `talks/llm-serving`, the reference deck: 76 steps, 14 scenes, every pattern in the library in use.
+Then study `talks/llm-serving`, the reference deck: 82 steps, 14 scenes, every pattern in the library in use.
 Read a scene file next to its shots (`talks/llm-serving/media/shots/<Scene>.png` after rendering) to see how
 code becomes picture. The other talks under `talks/` are shorter examples built with the same rules: `dns` (a
 name becomes an address), `kubernetes` (desired state and the loops that chase it), `kafka` (a log you can replay),

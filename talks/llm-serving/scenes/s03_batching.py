@@ -11,14 +11,14 @@ class Batching(TalkSlide):
         t = title(self, "Batching: the knob between latency and throughput", "2  why the engine batches")
         # --- part one: the mechanism, as a timeline of decode steps
         N, X0, W1, W4 = 8, -4.7, 0.92, 1.0                   # steps drawn, first step's x, step width alone and with four
-        ROWS = [1.0, 0.55, 0.1, -0.35]
-        axis = Arrow([-5.3, 1.95, 0], [4.3, 1.95, 0], color=DIM, stroke_width=2, buff=0, tip_length=0.15)
+        ROWS = [1.05, 0.35, -0.35, -1.05]          # four requests spread over the band; the weights row above them
+        axis = Arrow([-5.3, 2.35, 0], [4.3, 2.35, 0], color=DIM, stroke_width=2, buff=0, tip_length=0.15)
         al = label("time, one decode step after another", 14, DIM).next_to(axis, UP, buff=0.05).align_to(axis, LEFT)
-        wl = label("weights read", 14, WEIGHTS).move_to([-5.5, 1.55, 0], aligned_edge=RIGHT)
-        rl = VGroup(*[label(f"request {i + 1}", 14, DIM).move_to([-5.5, y, 0], aligned_edge=RIGHT) for i, y in enumerate(ROWS)])
-        reads = Counter("weights read, per step", 1, "", WEIGHTS, size=24).move_to([-6.4, -1.3, 0], aligned_edge=LEFT)
-        per_step = Counter("tokens produced, per step", 1, "", OUTPUT, size=24).move_to([-3.2, -1.3, 0], aligned_edge=LEFT)
-        steplen = label("step time: the weights read, plus a little arithmetic per request", 14, DIM).move_to([0.0, -1.3, 0], aligned_edge=LEFT)
+        wl = label("weights read", 15, WEIGHTS).move_to([-5.5, 1.75, 0], aligned_edge=RIGHT)
+        rl = VGroup(*[label(f"request {i + 1}", 15, DIM).move_to([-5.5, y, 0], aligned_edge=RIGHT) for i, y in enumerate(ROWS)])
+        reads = Counter("weights read, per step", 1, "", WEIGHTS, size=24).move_to([-6.4, -2.3, 0], aligned_edge=LEFT)
+        per_step = Counter("tokens produced, per step", 1, "", OUTPUT, size=24).move_to([-3.2, -2.3, 0], aligned_edge=LEFT)
+        steplen = label("step time: the weights read, plus a little arithmetic per request", 14, DIM).move_to([0.0, -2.3, 0], aligned_edge=LEFT)
         self.play(Create(axis), FadeIn(al), FadeIn(wl), FadeIn(rl[0]), FadeIn(reads), FadeIn(per_step))
         cap = caption(self, "One request: every step reads all the weights and produces one token")
         self.next_slide("""The still picture: a time axis, one decode step after another from left to right; a row for the weights read
@@ -27,8 +27,8 @@ class Batching(TalkSlide):
         cols = []
         for k in range(N):
             x = X0 + k * W1
-            block = Rectangle(width=W1 - 0.1, height=0.32, fill_color=WEIGHTS, fill_opacity=0.75, stroke_width=0).move_to([x, 1.55, 0])
-            tok = Square(0.3, fill_color=OUTPUT, fill_opacity=0.9, stroke_width=0).move_to([x, ROWS[0], 0])
+            block = Rectangle(width=W1 - 0.1, height=0.4, fill_color=WEIGHTS, fill_opacity=0.75, stroke_width=0).move_to([x, 1.75, 0])
+            tok = Square(0.42, fill_color=OUTPUT, fill_opacity=0.9, stroke_width=0).move_to([x, ROWS[0], 0])
             cols.append(VGroup(block, tok))
             slow = k < 2   # the first two steps slowly, then at speed: the audience has seen the beat
             self.play(FadeIn(block, shift=DOWN * 0.1), run_time=0.4 if slow else 0.12)
@@ -40,7 +40,7 @@ class Batching(TalkSlide):
         added = []
         for k in range(N):
             for r in range(1, 4):
-                added.append(Square(0.3, fill_color=OUTPUT, fill_opacity=0.9, stroke_width=0).move_to([X0 + k * W1, ROWS[r], 0]))
+                added.append(Square(0.42, fill_color=OUTPUT, fill_opacity=0.9, stroke_width=0).move_to([X0 + k * W1, ROWS[r], 0]))
                 cols[k].add(added[-1])
         self.play(FadeIn(rl[1:]), LaggedStart(*[FadeIn(m, shift=DOWN * 0.1) for m in added], lag_ratio=0.02), per_step.to(4), run_time=1.6)
         cap = swap_caption(self, cap, "Four requests: one read of the weights, four tokens per step")

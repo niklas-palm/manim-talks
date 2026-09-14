@@ -61,8 +61,8 @@ GAP_TIGHT, GAP, GAP_WIDE = 0.12, 0.25, 0.5   # the three gaps a scene uses: labe
 def guides() -> VGroup:
     """The alignment grid as faint lines, for review renders only: GUIDES=1 bin/render.sh <talk> ql <Scene>.
     Titles, content band, caption band, the five columns. Nothing in a deck should sit a little off these lines."""
-    g = VGroup(*[Line([x, -4, 0], [x, 4, 0], color=DIM, stroke_width=1, stroke_opacity=0.35) for x in COLS],
-               *[Line([-7.1, y, 0], [7.1, y, 0], color=DIM, stroke_width=1, stroke_opacity=0.35) for y in ROWS + [CAPTION_Y, 3.3]])
+    g = VGroup(*[Line([x, -4, 0], [x, 4, 0], color=MUTED, stroke_width=1, stroke_opacity=0.5) for x in COLS],
+               *[Line([-7.1, y, 0], [7.1, y, 0], color=MUTED, stroke_width=1, stroke_opacity=0.5) for y in ROWS + [CAPTION_Y, 3.3]])
     return g.set_z_index(-5)
 
 # ------------------------------------------------------------------------------------------------ the scene

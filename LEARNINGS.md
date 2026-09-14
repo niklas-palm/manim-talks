@@ -138,3 +138,21 @@ First principles that the passes confirmed, written to outlast the decks they ca
   now a checker rule, which is where a lesson that keeps recurring belongs.
 - Review by looking, at half size, before the 1080p render, and again after. Every pass found something the previous one
   had called done.
+
+## From the pacing pass (2026-09-14, afternoon)
+
+- A still first step is cheap when a scene builds its furniture in one play: insert the click after that play and write
+  a note that names what is on screen. Where the opening was an animation of the object itself, a FadeIn of the
+  finished object is the still and the reveal becomes the first mechanism.
+- The still step needs its own anchor for the eye: a claim line or a label, otherwise the frame reads as unfinished.
+- When a first click is split, ask whether the moved animation belongs to the next step's idea; merging it there keeps
+  one idea per click without adding a step.
+- First occurrences at 0.3 to 0.6 s per beat, repeats at 0.07 to 0.3 s, is the shape that held in every deck.
+- A long value in a fixed-column row is shortened, not shrunk: "cdn.example.net." fit where a longer alias did not.
+- A row that sat at y -0.35 left the bottom third empty; at y -1.0 the same picture used the band. Where a picture
+  does not grow into the lower band, move it down rather than leave the band empty.
+- A picture that runs past the frame edge on purpose (a list too long to show) should fade towards the edge; cut off
+  rows read as overflow, faded rows read as "it continues".
+- Known imperfections left on purpose in the reference deck: the Industry scene is a labelled list of fronts around the
+  two-phase picture, and the Fleet scene's first two steps use the upper half. Both would be better as pictures that
+  grow; recorded here rather than redesigned in this pass.
