@@ -27,8 +27,8 @@ class ApplyRequest(TalkSlide):
         frame = self.camera.frame
         t = title_still(self, "kubectl apply writes a record, not a process", "1  a record, not a process")   # the deck opens on this still
         S = Stage()
-        manifest = code(MANIFEST, "yaml", 17).move_to([COLS[3], 2.3, 0], aligned_edge=UL)   # what the user typed, in the node column until the nodes take it
-        ml = label("what kubectl apply sends", 15, MUTED).move_to([COLS[3], Y_LABELS, 0], aligned_edge=LEFT)
+        manifest = code(MANIFEST, "yaml", 17).move_to([X_NODE - W_NODE / 2, 2.3, 0], aligned_edge=UL)   # what the user typed, in the node column until the nodes take it
+        ml = label("what kubectl apply sends", 15, MUTED).move_to([X_NODE - W_NODE / 2, Y_LABELS, 0], aligned_edge=LEFT)
         self.add(S.client, S.api, S.store, manifest, ml)
         self.wait(0.3)
         self.next_slide("""This talk is for engineers who use kubectl every day and have never watched the machinery. In fifteen minutes we

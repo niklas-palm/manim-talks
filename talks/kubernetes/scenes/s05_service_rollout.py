@@ -59,7 +59,7 @@ class ServiceRollout(TalkSlide):
         self.next_slide("""A new pod lands on node two: a frontend, drawn in blue because it is something the user asked for. The three
         web pods run on node one. The frontend needs to reach them, and that is the question of this scene.""")
         qs = VGroup(*[DashedLine(front.get_top(), p.get_bottom(), color=HOT, stroke_width=1.6, dash_length=0.08) for p in pods.values()])
-        q = label("which address?", 16, HOT).move_to([COLS[3], Y_LABELS, 0], aligned_edge=LEFT)
+        q = label("which address?", 16, HOT).move_to([X_NODE - W_NODE / 2, Y_LABELS, 0], aligned_edge=LEFT)
         self.play(Create(qs), FadeIn(q), run_time=0.7)
         self.next_slide("""Each pod has its own IP address, and the set changes: d replaced b in the last move and has a new address; the
         next rollout will replace all three. A client cannot keep a list. This is the problem a Service solves, and it is
@@ -72,7 +72,7 @@ class ServiceRollout(TalkSlide):
         self.play(svc.animate.scale(1 / 0.7).move_to(S.slots[3]), run_time=0.5)
         S.cards["svc"] = svc
         ec, we = S.ctrl["extra"], S.watches["extra"]
-        self.play(FadeIn(ec), Create(we[0]), run_time=0.5)
+        self.play(FadeIn(ec), Create(we), run_time=0.5)
         pulse(self, svc, ec[2])
         eps = card("EndpointSlice", "3 pod addresses", ACTUAL).scale(0.7).move_to(ec[2].get_center())
         self.play(FadeIn(eps), run_time=0.2)
@@ -87,7 +87,7 @@ class ServiceRollout(TalkSlide):
         Every time a pod comes or goes, this list is rewritten. Nothing routes yet; a list exists.""")
         # --- kube-proxy on every node
         chips = VGroup(*[Rectangle(width=0.5, height=0.14, fill_color=TEAL, fill_opacity=0.8, stroke_width=0).move_to(n[0].get_top() + DOWN * 0.2) for n in S.nodes])
-        kp = label("kube-proxy on every node", 15, TEAL).move_to([COLS[3], Y_LABELS, 0], aligned_edge=LEFT)
+        kp = label("kube-proxy on every node", 15, TEAL).move_to([X_NODE - W_NODE / 2, Y_LABELS, 0], aligned_edge=LEFT)
         self.play(LaggedStart(*[FadeIn(c) for c in chips], lag_ratio=0.2), FadeIn(kp), run_time=0.6)
         for target in ("c", "a"):
             d = Dot(color=DESIRED, radius=0.08).move_to(front.get_center())
@@ -111,8 +111,8 @@ class ServiceRollout(TalkSlide):
         percent extra pods, rounded up, so one above three; and at most twenty-five percent unavailable, rounded down, so
         zero below three. The old ReplicaSet stays, at zero, for rollback; ten are kept by default.""")
         # --- the rollout at speed: v2 up, v1 down, the list following
-        nv1 = Counter("v1 pods", 3, "", ACTUAL, size=22).move_to([COLS[3], Y_COUNTERS, 0], aligned_edge=LEFT)
-        nv2 = Counter("v2 pods (outlined)", 0, "", ACTUAL, size=22).move_to([X_NODE, Y_COUNTERS, 0], aligned_edge=LEFT)
+        nv1 = Counter("v1 pods", 3, "", ACTUAL, size=22).move_to([X_NODE - W_NODE / 2, Y_COUNTERS, 0], aligned_edge=LEFT)
+        nv2 = Counter("v2 pods (outlined)", 0, "", ACTUAL, size=22).move_to([X_NODE + 0.2, Y_COUNTERS, 0], aligned_edge=LEFT)
         self.play(FadeIn(nv1), FadeIn(nv2), run_time=0.4)
         slots_new = [(1, 1), (1, 2), (0, 0)]
         old = ["a", "c", "d"]

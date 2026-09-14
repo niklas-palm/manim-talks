@@ -4,7 +4,7 @@ leaves, and the group's committed offsets turn out to be a log too.
 
   Final frame: producer at the top centre with the hash rule as code beside it, a write-load gauge on the left
   margin, three brokers (x -4.0, 0, 4.0; y 1.0) each with a partition, the consumer group row at y -1.3 under the
-  brokers, the __consumer_offsets log at y -2.5, the claim in the caption band.
+  brokers, the __consumer_offsets log in the right half at y -2.75, the claim in the caption band.
   Clicks: 1 everything to one partition, broker 1 saturates  2 split by key hash; order per partition  3 consumer
   group, one partition per member  4 a member leaves, its partition is reassigned  5 committed offsets are a log.
 """
@@ -59,15 +59,15 @@ class Partitions(TalkSlide):
         # --- a consumer group
         cons = [consumer(f"consumer {i + 1}").move_to([x, CY, 0]) for i, x in enumerate(XS)]
         grp = SurroundingRectangle(VGroup(*cons), color=READER, buff=GAP, corner_radius=0.1, stroke_width=1.5)
-        gl = label("consumer group: one partition per member", 16, READER).next_to(grp, UP, buff=GAP_TIGHT).align_to(grp, LEFT)
-        ptrs = [Pointer(f"c{i + 1}", READER).place(logs[i], 0) for i in range(3)]
+        gl = label("consumer group: one partition per member", 16, READER).next_to(grp, DOWN, buff=GAP_TIGHT).align_to(grp, LEFT)   # below: the pointer tags own the space above
+        ptrs = [Pointer(f"c{i + 1}", READER).place(logs[i], 0, dy=1.05) for i in range(3)]   # below the broker box, not on its border
         self.play(FadeIn(VGroup(*cons)), Create(grp), FadeIn(gl), *[FadeIn(p) for p in ptrs], run_time=0.6)
         for step in range(3):
             rt = 0.35 if step == 0 else 0.15   # the first round of reads slowly, one partition to one consumer
             for i in range(3):
                 if step < len(logs[i].cells):
                     travel(self, logs[i].cells[step], cons[i], run_time=rt, carry=logs[i].cells[step])
-            self.play(*[ptrs[i].to(logs[i], min(step + 1, len(logs[i].cells))) for i in range(3)], run_time=rt)
+            self.play(*[ptrs[i].to(logs[i], min(step + 1, len(logs[i].cells)), dy=1.05) for i in range(3)], run_time=rt)
         cl = claim(self, cl, "a group shares the partitions, one reader each", READER)
         self.next_slide("""Now the readers. A consumer group is a set of consumers that share the work of a topic: each partition is read by
         exactly one member of the group, and each member reads its partitions in order from its own offsets. Three
@@ -84,7 +84,7 @@ class Partitions(TalkSlide):
             for i in range(3):
                 if step < len(logs[i].cells):
                     travel(self, logs[i].cells[step], cons[min(i, 1)], run_time=0.15, carry=logs[i].cells[step])
-            self.play(*[ptrs[i].to(logs[i], min(step + 1, len(logs[i].cells))) for i in range(3)], run_time=0.2)
+            self.play(*[ptrs[i].to(logs[i], min(step + 1, len(logs[i].cells)), dy=1.05) for i in range(3)], run_time=0.2)
         cl = claim(self, cl, "rebalance: the partition moves to another member", READER)
         self.next_slide("""Consumer three crashes. Its partition cannot stay unread, so the group rebalances: partition two is assigned to
         consumer two, which now reads two partitions from their committed offsets. In the classic protocol every member
@@ -93,7 +93,7 @@ class Partitions(TalkSlide):
         coordinator assign partitions and moves them one at a time, so the members that keep their partitions never pause.
         It is enabled per group with group.protocol=consumer and becomes the default in 5.0.""")
         # --- committed offsets are a log too
-        olog = Log(-2.9, -2.5, capacity=12, name="__consumer_offsets: committed positions, a compacted topic", gap=GAP)
+        olog = Log(0.6, -2.75, capacity=9, name="__consumer_offsets: the group's committed positions", gap=GAP)   # right half, clear of the group label and the claim
         self.play(FadeOut(cl), FadeIn(olog), run_time=0.5)
         for i, src in enumerate([cons[0], cons[1], cons[1], cons[0]]):
             d = Dot(color=READER, radius=0.09).move_to(src.get_center())   # from the consumer itself, not its edge

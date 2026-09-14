@@ -66,9 +66,9 @@ class Attention(TalkSlide):
         self.remove(qbig); self.add(qbig_t)   # the exact object move 3's second scene rebuilds
         self.play(FadeIn(qbl), run_time=0.3)
         keys = [tri[j][1] for j in range(6)]
-        lines = VGroup(*[Line(qbig_t.get_left(), kc.get_bottom(), color=MUTED, stroke_width=1.8, stroke_opacity=0.65) for kc in keys])
+        lines = VGroup(*[Line(qbig_t.get_corner(UL) + DOWN * 0.05, kc.get_bottom(), color=MUTED, stroke_width=1.8, stroke_opacity=0.65) for kc in keys])   # to the query's top corner, so the fan stays above the scores
         self.play(LaggedStart(*[Create(l) for l in lines], lag_ratio=0.08), run_time=1.0)
-        slabels = VGroup(*[label(f"{s:.1f}", 20, TEXT).move_to([XS[j], ROWS[2] - 0.35, 0]) for j, s in enumerate(SCORES)])
+        slabels = VGroup(*[label(f"{s:.1f}", 20, TEXT).move_to([XS[j], ROWS[2] - 0.55, 0]) for j, s in enumerate(SCORES)])   # below the lowest line of the fan
         self.play(LaggedStart(*[FadeIn(s, shift=DOWN * 0.05) for s in slabels], lag_ratio=0.06), run_time=0.8)
         sl = label('score: query of "mat" times each key', 18, MUTED).move_to([0, ROWS[3] - 0.2, 0])
         self.play(FadeIn(sl))

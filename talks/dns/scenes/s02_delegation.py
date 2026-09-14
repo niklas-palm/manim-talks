@@ -61,7 +61,7 @@ class Delegation(TalkSlide):
         # --- the two actors: the laptop moves to its place beside the resolver
         res = resolver_box()
         self.play(client.animate.move_to([X_CLIENT, Y_RESOLVER, 0]), FadeIn(res), run_time=0.6)
-        a1 = arrow(client, res, "", MUTED)
+        a1 = client_link(client, res)
         al = label("one question, one answer", 15, MUTED).next_to(client, DOWN, buff=GAP_TIGHT)
         self.play(Create(a1[0]), FadeIn(al), run_time=0.5)
         self.next_slide("""Two actors do the asking. Your laptop's stub resolver, a library inside the operating system, asks exactly one

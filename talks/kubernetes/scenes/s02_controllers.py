@@ -20,7 +20,7 @@ class Controllers(TalkSlide):
         self.add(*S.base(S.cards["deploy"]))
         # --- the title changes as the Deployment controller appears: no cut
         c1, w1 = S.ctrl["deploy"], S.watches["deploy"]
-        t = retitle(self, t, "Controllers: loops that chase the gap", "2  loops that chase the gap", extra=[FadeIn(c1), Create(w1[0]), FadeIn(w1[1])])
+        t = retitle(self, t, "Controllers: loops that chase the gap", "2  loops that chase the gap", extra=[FadeIn(c1), Create(w1[:3]), FadeIn(w1[3])])
         self.next_slide("""Where the last scene ended: the Deployment record sits in etcd, the nodes are empty, three desired and
         none running. One new thing on screen, and it is not moving yet: the Deployment controller, a box with a loop drawn in
         it, connected to the API server by a dashed line labelled watch. It has not done anything. Next click, it does.""")
@@ -42,11 +42,11 @@ class Controllers(TalkSlide):
         a record.""")
         # --- the ReplicaSet controller, opened under the zoom
         c2, w2 = S.ctrl["rs"], S.watches["rs"]
-        self.play(FadeOut(cmp2), FadeIn(c2), Create(w2[0]), run_time=0.7)
+        self.play(FadeOut(cmp2), FadeIn(c2), Create(w2), run_time=0.7)
         pulse(self, rs, c2[2])
         wide = VGroup(t, *S.base(), c1, w1, w2, *S.cards.values())
         self.play(frame.animate.scale(ZOOM).move_to(c2.get_center()), FadeOut(wide), FadeOut(c2[2]),
-                  c2[0].animate.stretch_to_fit_height(2.2).shift(DOWN * 0.55), run_time=1.2)
+                  c2[0].animate.stretch_to_fit_height(2.2).shift(DOWN * (2.2 - H_CTRL) / 2), run_time=1.2)
         y = c2[0].get_center()[1]
         wants = Counter("wants", 3, "", DESIRED, size=16).move_to([X_CTRL - 1.1, y + 0.05, 0], aligned_edge=LEFT)
         has = Counter("has", 0, "", ACTUAL, size=16).move_to([X_CTRL - 0.1, y + 0.05, 0], aligned_edge=LEFT)
@@ -57,7 +57,7 @@ class Controllers(TalkSlide):
         self.wait(0.4)
         self.play(FadeOut(VGroup(wants, has, gap, act)), run_time=0.3)
         self.play(frame.animate.scale(1 / ZOOM).move_to(ORIGIN), FadeIn(wide), FadeIn(c2[2]),
-                  c2[0].animate.stretch_to_fit_height(1.05).shift(UP * 0.55), run_time=1.2)
+                  c2[0].animate.stretch_to_fit_height(H_CTRL).shift(UP * (2.2 - H_CTRL) / 2), run_time=1.2)
         for i, name in enumerate("abc"):
             p = card(f"Pod {name}", "no node").scale(0.7).move_to(c2[2].get_center())
             p[2].set_color(HOT)

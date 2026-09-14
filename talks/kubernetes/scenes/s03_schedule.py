@@ -75,7 +75,7 @@ class SchedulerKubelet(TalkSlide):
         # --- zoom into node 1: the kubelet
         n1 = S.nodes[0]
         wk = watch(n1, S.api, NODE)
-        self.play(Create(wk[0]), n1[5].animate.set_color(TEAL), run_time=0.5)
+        self.play(Create(wk), n1[5].animate.set_color(TEAL), run_time=0.5)
         pulse(self, pa, n1[5], color=DESIRED, run_time=0.6)
         wide2 = VGroup(t, S.client, S.api, S.store, S.desired, S.running, S.nodes[1], S.nodes[2], *S.ctrl.values(), *S.watches.values(), *S.cards.values(), wk)
         self.play(frame.animate.scale(ZK).move_to(n1.get_center()), FadeOut(wide2), run_time=1.0)
@@ -106,7 +106,7 @@ class SchedulerKubelet(TalkSlide):
             self.play(nd[0].animate.set_stroke(color=NODE, width=2.5), run_time=0.15)
             if ni != 0:
                 wkn = watch(nd, S.api, NODE)
-                self.play(Create(wkn[0]), nd[5].animate.set_color(TEAL), run_time=0.3)
+                self.play(Create(wkn), nd[5].animate.set_color(TEAL), run_time=0.3)
             pp = S.place_pod(ni, si)
             self.play(FadeIn(pp, scale=0.5), nd[4].animate.stretch_to_fit_width(used).align_to(nd[3], LEFT), run_time=0.3)
             self.play(pc[0].animate.set_stroke(color=ACTUAL), S.running.to(int(S.running.tracker.get_value()) + 1), run_time=0.3)

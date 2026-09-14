@@ -58,7 +58,8 @@ class Retention(TalkSlide):
         for c in [KEY_A, KEY_B, KEY_C, KEY_A, KEY_B, KEY_A, KEY_C, KEY_B]:
             clog.put(c)
         compc = config("cleanup.policy\n= compact", 15).move_to([XR, CY, 0], aligned_edge=LEFT)
-        self.play(FadeOut(age), FadeOut(retc), FadeOut(rollc), FadeIn(clog), FadeIn(compc), run_time=0.6)
+        cprod = producer("producer", w=1.5).move_to([-5.85, CY, 0])   # the topic's writer: every record, and later the tombstone, comes from here
+        self.play(FadeOut(age), FadeOut(retc), FadeOut(rollc), FadeIn(cprod), FadeIn(clog), FadeIn(compc), run_time=0.6)
         keep = {}
         for i, c in enumerate(clog.cells):
             keep[c.get_fill_color().to_hex()] = i
@@ -75,9 +76,9 @@ class Retention(TalkSlide):
         latest value of every key. This is how a topic becomes a table you can rebuild from, and it is exactly how
         __consumer_offsets and Kafka's own metadata log are kept small.""")
         # --- a tombstone
-        tomb = Square(SIDE, fill_opacity=0, stroke_color=KEY_B, stroke_width=2.5).move_to([clog.slot(len(clog.cells))[0], CY + 1.1, 0])
+        tomb = Square(SIDE, fill_opacity=0, stroke_color=KEY_B, stroke_width=2.5).move_to(cprod.get_center())   # born at the producer, like every record
         cross = VGroup(Line(UL * 0.11, DR * 0.11, color=KEY_B, stroke_width=2), Line(UR * 0.11, DL * 0.11, color=KEY_B, stroke_width=2)).move_to(tomb)
-        tl = label("tombstone: key bob, value null", 15, KEY_B).next_to(tomb, RIGHT, buff=GAP_TIGHT)
+        tl = label("tombstone: key bob, value null", 15, KEY_B).next_to(cprod, UP, buff=GAP_TIGHT).align_to(cprod, LEFT)
         self.play(FadeIn(tomb), FadeIn(cross), FadeIn(tl), run_time=0.4)
         n = len(clog.cells)
         self.play(VGroup(tomb, cross).animate.move_to(clog.slot(n)), FadeOut(tl), run_time=0.5)

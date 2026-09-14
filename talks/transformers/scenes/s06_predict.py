@@ -46,7 +46,7 @@ class Predict(TalkSlide):
         rnd = random.Random(5)
         hs = [rnd.uniform(0.1, 0.5) for _ in range(12)]
         hs[7] = 2.3
-        dist = Bars(hs, width=0.55, gap=0.12, color=ATTN).move_to([3.0, ROWS[4], 0], aligned_edge=DOWN)
+        dist = Bars(hs, width=0.55, gap=0.12, color=ATTN).move_to([2.5, ROWS[4], 0], aligned_edge=DOWN)   # clear of the right frame edge
         dl = label("softmax: a probability per token, summing to 1", 18, ATTN).next_to(dist, UP, buff=GAP_WIDE)
         self.play(FadeOut(VGroup(vocab, vocl)), TransformFromCopy(scores, dist), FadeIn(dl), run_time=1.0)
         self.next_slide("""Softmax again turns the scores into probabilities that sum to one: the model's guess at the next word, spread over

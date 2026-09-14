@@ -140,9 +140,9 @@ def partitions_end() -> dict:
     cons = [consumer(f"consumer {i + 1}").move_to([x, P_CY, 0]) for i, x in enumerate(P_XS)]
     d["cons"] = cons
     d["grp"] = SurroundingRectangle(VGroup(*cons), color=READER, buff=GAP, corner_radius=0.1, stroke_width=1.5)
-    d["gl"] = label("consumer group: one partition per member", 16, READER).next_to(d["grp"], UP, buff=GAP_TIGHT).align_to(d["grp"], LEFT)
-    d["ptrs"] = [Pointer(n, READER).place(d["logs"][i], min(6, len(d["logs"][i].cells))) for i, n in enumerate(("c1", "c2", "c2"))]   # six read rounds happened
-    olog = Log(-2.9, -2.5, capacity=12, name="__consumer_offsets: committed positions, a compacted topic", gap=GAP)
+    d["gl"] = label("consumer group: one partition per member", 16, READER).next_to(d["grp"], DOWN, buff=GAP_TIGHT).align_to(d["grp"], LEFT)
+    d["ptrs"] = [Pointer(n, READER).place(d["logs"][i], min(6, len(d["logs"][i].cells)), dy=1.05) for i, n in enumerate(("c1", "c2", "c2"))]   # six read rounds happened; clear of the box edge
+    olog = Log(0.6, -2.75, capacity=9, name="__consumer_offsets: the group's committed positions", gap=GAP)
     for _ in range(4):
         olog.put(READER)
     d["olog"] = olog
@@ -177,6 +177,7 @@ def replication_end() -> dict:
     """Move 3's last frame: broker 2 leads, all three copies hold the same eight records and are in sync."""
     d = replication_stage(("broker 1: follower", "broker 2: leader", "broker 3: follower"))
     d["boxes"][1][1].set_color(SYNC)
+    d["prod"].move_to([-5.45, R_YS[1], 0]); d["cons"].move_to([5.45, R_YS[1], 0])   # they follow the leader, so the arrows stay horizontal
     for log in d["logs"]:
         for c in R_SEQ:
             log.put(c)
@@ -222,6 +223,7 @@ def retention_end() -> dict:
         if i not in survivors or C_SEQ[i] == KEY_B:
             clog.cells[i].set_opacity(0); clog.offs[i].set_opacity(0)
     d["clog"] = clog
+    d["cprod"] = producer("producer", w=1.5).move_to([-5.85, S_CY, 0])   # what writes the compacted topic; the tombstone comes from here
     d["headl"] = label("latest record per key; offsets keep gaps", 15, LOGC).next_to(clog.rail, DOWN, buff=0.45).align_to(clog.rail, LEFT)
     d["compc"] = config("cleanup.policy\n= compact", 15).move_to([S_XR, S_CY, 0], aligned_edge=LEFT)
     d["delc"] = config("delete.retention.ms\n= 86400000", 15).next_to(d["compc"], DOWN, buff=GAP).align_to(d["compc"], LEFT)

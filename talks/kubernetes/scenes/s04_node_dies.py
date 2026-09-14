@@ -26,7 +26,7 @@ class NodeDies(TalkSlide):
             n[5].set_color(TEAL)
         self.add(*S.base(*[S.ctrl[k] for k in ("deploy", "rs", "sched")], *[S.watches[k] for k in ("deploy", "rs", "sched")], *S.cards.values(), *pods.values(), kw[0], kw[1]))
         # --- the title changes as the third node's line joins the other two: no cut
-        hb = label("lease renewed every 10 s", 15, TEAL).move_to([COLS[3], Y_LABELS, 0], aligned_edge=LEFT)
+        hb = label("lease renewed every 10 s", 15, TEAL).move_to([X_NODE - W_NODE / 2, Y_LABELS, 0], aligned_edge=LEFT)
         t = retitle(self, t, "A node dies: the same loops, nothing new", "4  a node dies", extra=[Create(kw[2][0]), S.nodes[2][5].animate.set_color(TEAL), FadeIn(hb)])
         self.next_slide("""The cluster at rest: three Pods running on two nodes, three desired, every loop idle. One thing changed as the
         title did: the third node's kubelet drew its own dashed line to the API server, like the two that already had pods.
@@ -44,7 +44,7 @@ class NodeDies(TalkSlide):
         # --- node 2 stops; 40 s to NotReady; 300 s toleration; eviction
         n2 = S.nodes[1]
         nc, wn = S.ctrl["extra"], S.watches["extra"]
-        self.play(FadeIn(nc), Create(wn[0]), run_time=0.6)
+        self.play(FadeIn(nc), Create(wn), run_time=0.6)
         self.play(n2[0].animate.set_stroke(color=HOT), n2[5].animate.set_color(HOT), FadeOut(kw[1]), run_time=0.5)
         for _ in range(2):   # the other two keep beating
             dots = [Dot(color=TEAL, radius=0.07).move_to(n[5].get_center()) for n in (S.nodes[0], S.nodes[2])]
@@ -54,7 +54,7 @@ class NodeDies(TalkSlide):
         since = Counter("since node 2's last heartbeat", 0, "s", HOT, size=22).move_to([COLS[3], Y_COUNTERS, 0], aligned_edge=LEFT)
         self.play(FadeIn(since), run_time=0.3)
         self.play(since.to(40), run_time=1.2)
-        nr = label("NotReady, tainted", 15, HOT).move_to(n2[0].get_bottom() + UP * 0.16).align_to(n2[0].get_left() + RIGHT * GAP, LEFT)
+        nr = label("NotReady, tainted", 15, HOT).move_to(n2[0].get_bottom() + UP * 0.12).align_to(n2[0].get_left() + RIGHT * GAP, LEFT)
         self.play(FadeIn(nr), n2[0].animate.set_fill(HOT, 0.08), run_time=0.4)
         tol = label("tolerated 300 s", 15, MUTED).next_to(pods["b"], UP, buff=0.08)
         self.play(FadeIn(tol), run_time=0.3)

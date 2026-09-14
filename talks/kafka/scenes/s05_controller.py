@@ -2,14 +2,15 @@
 replicated by Raft (dashed lines); brokers on the bottom row fetch it (dashed lines). An event, a broker fenced, is
 appended and propagates. Closing: Kafka's own state is a log.
 
-  Final frame: three controller boxes (y 2.1), the metadata log across the middle (y 0.2), dashed replicate and fetch
-  relations, three brokers (y -1.7), the event label on the log, the claim in the caption band.
+  Final frame: three controller boxes (y 2.1), the metadata log across the middle (y 0.2) spanning all three columns,
+  vertical dashed Raft and fetch relations in each column, three brokers (y -1.7), the event label beside broker 3's
+  relation, the claim in the caption band.
   Clicks: 1 the quorum and its log  2 an event travels: appended, replicated, fetched  3 KRaft only since 4.0.
 """
 from lib.palette import *
 from objects import *
 
-CX = [-4.3, 0.0, 4.3]
+CX = [-4.0, 0.0, 4.0]          # controllers and brokers share these columns; the relations run straight down them
 LY, CELL = 0.2, 0.52
 
 
@@ -18,15 +19,21 @@ class Controller(TalkSlide):
         # --- the last frame of move 4, rebuilt; then the compacted topic becomes the cluster's own metadata log
         d = retention_end()
         t = title_still(self, "Disks fill: retention and compaction", "4  retention and compaction")
-        self.add(d["segs"][1], d["segs"][2], d["logs"][1], d["logs"][2], d["ptr"], d["pl"], d["active"], d["clog"], d["headl"], d["compc"], d["delc"], d["dr"], d["claim"])
-        ctrls = VGroup(*[broker(n, 3.9, 1.0, SYNC if i == 0 else LOGC).move_to([x, 2.1, 0]) for i, (n, x) in enumerate(zip(("controller 1: active", "controller 2: standby", "controller 3: standby"), CX))])
-        mlog = Log(-3.6, LY, capacity=12, name="__cluster_metadata: the cluster's state", cell=CELL, gap=GAP)
+        self.add(d["segs"][1], d["segs"][2], d["logs"][1], d["logs"][2], d["ptr"], d["pl"], d["active"], d["cprod"], d["clog"], d["headl"], d["compc"], d["delc"], d["dr"], d["claim"])
+        ctrls = VGroup(*[broker(n, 3.6, 1.0, SYNC if i == 0 else LOGC).move_to([x, 2.1, 0]) for i, (n, x) in enumerate(zip(("controller 1: active", "controller 2: standby", "controller 3: standby"), CX))])
+        mlog = Log(-4.35, LY, capacity=14, name="__cluster_metadata: the cluster's state", cell=CELL, gap=GAP)   # spans the three columns
+        mlog.name.set_x(2.0)   # between the middle and right relations, so no line crosses it
         for c in (LOGC, LOGC, SYNC, LOGC, LOGC, LOGC):
             mlog.put(c)
-        brks = VGroup(*[broker(f"broker {i + 1}", 3.9, 1.0).move_to([x, -1.7, 0]) for i, x in enumerate(CX)])
-        raft = VGroup(*[dashed(c, mlog.rail, "Raft" if i == 1 else "", SYNC) for i, c in enumerate(ctrls)])
-        fetch = VGroup(*[dashed(mlog.rail, b, "fetch" if i == 1 else "", MUTED) for i, b in enumerate(brks)])
-        gone = VGroup(d["segs"][1], d["segs"][2], d["logs"][1], d["logs"][2], d["ptr"], d["pl"], d["active"], d["headl"], d["compc"], d["delc"], d["dr"], d["claim"])
+        brks = VGroup(*[broker(f"broker {i + 1}", 3.6, 1.0).move_to([x, -1.7, 0]) for i, x in enumerate(CX)])
+        # standing relations run straight down each column: controller to log (Raft), log to broker (fetch); never skewed
+        def vdash(x, y0, y1, color):
+            return DashedLine([x, y0, 0], [x, y1, 0], color=color, stroke_width=1.6, dash_length=0.1, stroke_opacity=0.7)
+        raft = VGroup(*[vdash(x, ctrls[i][0].get_bottom()[1] - 0.08, mlog.rail.get_top()[1] + 0.08, SYNC) for i, x in enumerate(CX)])
+        raft.add(label("Raft", 13, SYNC).next_to(raft[1], RIGHT, buff=GAP_TIGHT))
+        fetch = VGroup(*[vdash(x, mlog.rail.get_bottom()[1] - 0.08, brks[i][0].get_top()[1] + 0.08, MUTED) for i, x in enumerate(CX)])
+        fetch.add(label("fetch", 13, MUTED).next_to(fetch[1], RIGHT, buff=GAP_TIGHT))
+        gone = VGroup(d["segs"][1], d["segs"][2], d["logs"][1], d["logs"][2], d["ptr"], d["pl"], d["active"], d["cprod"], d["headl"], d["compc"], d["delc"], d["dr"], d["claim"])
         t = retitle(self, t, "Who decides: the controller quorum", "5  the controller",
                     extra=[FadeOut(gone), ReplacementTransform(d["clog"], mlog), FadeIn(ctrls), FadeIn(brks)], run_time=1.0)
         self.play(Create(raft), Create(fetch), run_time=0.6)
@@ -39,7 +46,7 @@ class Controller(TalkSlide):
         broker fetches that log from the active controller and keeps a local copy, so it learns cluster state the way a
         consumer learns anything: by reading a log from an offset.""")
         # --- an event travels
-        ev = label("broker 3 fenced", 16, FAIL).next_to(mlog.rail, UP, buff=GAP_TIGHT).align_to(mlog.rail, RIGHT)
+        ev = label("broker 3 fenced", 16, FAIL).move_to([CX[2] - 0.15, -0.72, 0], aligned_edge=RIGHT)   # beside broker 3's own relation, between log and broker
         self.play(brks[2][0].animate.set_stroke(FAIL), brks[2][1].animate.set_color(FAIL), FadeIn(ev), run_time=0.5)
         cell = mlog.append(self, FAIL, source=ctrls[0], rt=0.4)
         for k in (1, 2):

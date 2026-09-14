@@ -102,7 +102,7 @@ class Replication(TalkSlide):
         self.play(FadeIn(lag2), run_time=0.3)
         cell = logs[0].append(self, KEY_B, source=prod, rt=0.25)
         self.play(lag2.to(30), *isr.set({1}, out={2, 3}), boxes[1][1].animate.set_color(FAIL), boxes[1][0].animate.set_stroke(FAIL), run_time=0.6)
-        minc = config("min.insync.replicas\n= 2", 15).move_to([-3.3, YS[1] + 0.25, 0], aligned_edge=RIGHT)
+        minc = config("min.insync.replicas\n= 2", 15).move_to([-3.55, YS[1] + 0.25, 0], aligned_edge=RIGHT)   # clear of the box edge
         refused = label("NotEnoughReplicas", 16, FAIL).next_to(minc, DOWN, buff=GAP_TIGHT).align_to(minc, RIGHT)
         cell2 = Square(CELL, fill_color=KEY_C, fill_opacity=0.9, stroke_width=0).move_to(prod.get_center())
         self.add(cell2)
@@ -128,6 +128,7 @@ class Replication(TalkSlide):
                   boxes[2][1].animate.set_color(LOGC), boxes[2][0].animate.set_stroke(LOGC), hwm.animate.move_to(hwm_pos(logs[0], len(logs[0].cells))), run_time=0.6)
         self.play(boxes[0][0].animate.set_stroke(FAIL).set_fill(FAIL, 0.12), boxes[0][1].animate.set_color(FAIL), logs[0].cells.animate.set_fill(opacity=0.25), logs[0].offs.animate.set_opacity(0.3),
                   FadeOut(hwm), FadeOut(ptr), FadeOut(a_in), FadeOut(a_out), run_time=0.7)
+        self.play(prod.animate.move_to([-5.45, R_YS[1], 0]), cons.animate.move_to([5.45, R_YS[1], 0]), run_time=0.5)   # producer and consumer follow the leader: horizontal arrows, no crossing
         newname = label("broker 2: leader", 17, SYNC).move_to(boxes[1][1], aligned_edge=LEFT)
         a_in2 = arrow(prod, boxes[1], "acks=all", MUTED)
         a_out2 = arrow(boxes[1], cons, "fetch", MUTED)

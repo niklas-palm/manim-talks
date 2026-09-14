@@ -67,7 +67,7 @@ VEC_Y = -1.0                              # where the embedding vectors sit unde
 SCORES = [1.2, 0.4, 2.1, 0.2, 0.9, 2.6]   # illustrative match strengths for "mat"; the mechanism is exact, the numbers are chosen
 QBIG_POS = [COLS[4] - 0.8, ROWS[2] - 0.7, 0]
 OUT_POS = [COLS[4] - 0.8, ROWS[4] + 0.45, 0]
-PIPE_Y = -0.85                            # the centre line of the layer and prediction pictures (moves 4 and 5); low enough that labels above the vectors clear the token row
+PIPE_Y = -1.05                            # the centre line of the layer and prediction pictures (moves 4 and 5); low enough that labels above the vectors clear the token row
 
 
 def big_tokens(side: float = 1.3, y: float = ROWS[1]) -> VGroup:
@@ -158,7 +158,7 @@ def projection_parts(filled: bool = False) -> tuple:
     joined = column(9, ATTN, 0.16).move_to([COLS[1], y, 0])
     jl = label("concatenate\nthe three outputs", 17, ATTN).next_to(joined, LEFT, buff=GAP)
     proj = grid(8, 9, WEIGHTS, cell=0.16).move_to([COLS[2], y, 0])
-    pl = label("one more matrix, Wo", 17, WEIGHTS).next_to(proj, UP, buff=GAP_TIGHT)
+    pl = label("one more matrix, Wo", 17, WEIGHTS).next_to(proj, DOWN, buff=GAP_TIGHT)   # below: above would touch the head tiles
     result = column(8, TOKEN, 0.16, op=0.95 if filled else 0.0).move_to([COLS[3] - 0.6, y, 0])
     rl = label('attention output for "mat":\nthe token\'s size again', 17, TOKEN).next_to(result, RIGHT, buff=GAP)
     return joined, jl, proj, pl, result, rl

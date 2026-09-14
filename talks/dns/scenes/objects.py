@@ -179,9 +179,21 @@ def list_end_state() -> dict:
 
 
 def delegation_pointers(recs: VGroup, boxes: VGroup) -> VGroup:
-    """The two arrows from a zone's NS record to the zone it points at."""
-    return VGroup(Arrow(recs[0][2].get_bottom(), boxes[1][1].get_top() + RIGHT * 0.3, color=ZONE, stroke_width=2, buff=0.05, tip_length=0.15),
-                  Arrow(recs[1][2].get_bottom(), boxes[2][1].get_top() + RIGHT * 0.3, color=ZONE, stroke_width=2, buff=0.05, tip_length=0.15))
+    """The two arrows from a zone's NS record to the zone it points at: straight down from the record's type, through
+    its own box's bottom edge, to the top edge of the next box. Vertical on purpose (rule 11b): the only line each
+    crosses is the border of the box it leaves, and the audience sees why."""
+    def down(rec, box):
+        x = rec[2].get_center()[0]
+        return Arrow([x, rec[0].get_bottom()[1] - 0.02, 0], [x, box[0].get_top()[1] + 0.02, 0], color=ZONE, stroke_width=2, buff=0, tip_length=0.15, max_tip_length_to_length_ratio=0.5)
+    return VGroup(down(recs[0], boxes[1]), down(recs[1], boxes[2]))
+
+
+def client_link(client: VGroup, res: VGroup) -> VGroup:
+    """The line between the laptop and the resolver: horizontal, from the laptop's right edge to the resolver's left
+    edge at the laptop's height. The library's arrow() aims at the far box's extreme boundary point, which for a box as
+    tall as the resolver is its top corner, so the line came out skewed."""
+    y = client.get_center()[1]
+    return VGroup(Arrow([client[0].get_right()[0] + GAP_TIGHT, y, 0], [res[0].get_left()[0] - GAP_TIGHT, y, 0], buff=0, color=MUTED, stroke_width=2.2, tip_length=0.18))
 
 
 def delegation_end_state() -> dict:
@@ -189,7 +201,7 @@ def delegation_end_state() -> dict:
     boxes, recs = tree()
     ptrs = delegation_pointers(recs, boxes)
     client, res = client_box(), resolver_box()
-    a1 = arrow(client, res, "", MUTED)
+    a1 = client_link(client, res)
     al = label("one question, one answer", 15, MUTED).next_to(client, DOWN, buff=GAP_TIGHT)
     rows = VGroup(cache_row(recs[0], CACHE_Y[0]), cache_row(recs[1], CACHE_Y[1]), cache_row(recs[2], CACHE_Y[2]))
     return {"boxes": boxes, "recs": recs, "ptrs": ptrs, "client": client, "res": res, "a1": a1, "al": al, "rows": rows}
