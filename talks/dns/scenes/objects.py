@@ -77,27 +77,31 @@ def client_box(y: float = Y_RESOLVER, name: str = "your laptop", sub: str = "app
 
 
 def question(scene, a: Mobject, b: Mobject, text: str = "", run_time: float = 0.5):
-    """A question travels from a to b: a blue dot with the name beside it."""
-    right = a.get_x() < b.get_x()
-    d = Dot(color=NAME, radius=0.12).move_to(a.get_right() if right else a.get_left())
+    """A question travels from the thing that asks to the thing that will answer: a blue dot with the name beside it.
+    Pass the exact objects (the client node, the resolver's name label, the record in a zone), never a container's
+    edge: the dot starts at a's centre and ends at b's centre."""
+    d = Dot(color=NAME, radius=0.12).move_to(a.get_center())
     lab = label(text, 14, NAME).next_to(d, UP, buff=0.06) if text else VGroup()
     g = VGroup(d, lab)
     scene.add(g)
-    target = b.get_left() if right else b.get_right()
-    scene.play(g.animate.move_to(target + (UP * 0.14 if text else 0)), run_time=run_time)
+    scene.play(g.animate.move_to(b.get_center() + (UP * 0.14 if text else 0)), run_time=run_time)
     scene.play(FadeOut(g, run_time=0.15))
 
 
-def answer(scene, a: Mobject, b: Mobject, color: str, text: str = "", run_time: float = 0.5):
-    """An answer travels back: violet for a pointer to who to ask next, yellow for the address, red for 'no'."""
-    left = a.get_x() > b.get_x()
-    d = Dot(color=color, radius=0.12).move_to(a.get_left() if left else a.get_right())
+def answer(scene, a: Mobject, b: Mobject, color: str, text: str = "", run_time: float = 0.5, becomes: Mobject = None):
+    """An answer travels back from the record that answers to the thing that receives it: violet for a pointer to who
+    to ask next, yellow for the address, red for 'no'. With `becomes`, the answer lands on the cache row it turns
+    into and that row appears as the dot arrives: one motion per exchange, never a dot to a box and a row elsewhere."""
+    d = Dot(color=color, radius=0.12).move_to(a.get_center())
     lab = label(text, 14, color).next_to(d, DOWN, buff=0.06) if text else VGroup()
     g = VGroup(d, lab)
     scene.add(g)
-    target = b.get_right() if left else b.get_left()
+    target = (becomes if becomes is not None else b).get_center()
     scene.play(g.animate.move_to(target + (DOWN * 0.14 if text else 0)), run_time=run_time)
-    scene.play(FadeOut(g, run_time=0.15))
+    if becomes is not None:
+        scene.play(FadeOut(g), FadeIn(becomes), run_time=0.25)
+    else:
+        scene.play(FadeOut(g, run_time=0.15))
 
 
 def cache_row(rec: VGroup, slot_y: float) -> VGroup:

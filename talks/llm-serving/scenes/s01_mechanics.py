@@ -469,14 +469,7 @@ class Mechanics(TalkSlide):
                 column they finish at once and wait for the bus. Same bytes, a fifth of the work per byte: that is why decode
                 is bound by memory bandwidth, and why the bus gauge is the one that is pegged.""")
         cap = swap_caption(self, cap, "Prefill: one read per prompt. Decode: one read per token")
-        # --- hand-over: the stage folds into one GPU drawing, and the title becomes the next move's
-        from s02_ceiling import start_ceiling, TITLE_CEILING
-        nxt = start_ceiling(self, add=False)
-        stage_bits = VGroup(sentence, toks, words, rl, gauges, ratio, reads, produced, cread, more, ll, logits, lgl, layers, rack, *sum(filled, []))
-        t = retitle(self, t, *TITLE_CEILING, extra=[FadeOut(cap), stage_bits.animate.scale(0.25).move_to(nxt["gpu"].get_center()).set_opacity(0.0),
-                                                  FadeIn(VGroup(*nxt["shown"]))], run_time=1.4)
-        self.remove(stage_bits)
-        self.finish("""Prefill: one read for the whole prompt. Decode: one read plus the cache, per token. The loop runs on without a click, and watch the cache counter: each token adds a column, so every later token
+        self.next_slide("""Prefill: one read for the whole prompt. Decode: one read plus the cache, per token. The loop runs on without a click, and watch the cache counter: each token adds a column, so every later token
         reads one more cell per layer; the read grows with the length of the conversation. The weight read is the same every
         step; the cache read is not. On one request it is small next to the weights. With many requests in flight the weights
         are read once for all of them, while each request's cache is read on its own, and at long contexts it is the cache
@@ -484,4 +477,12 @@ class Mechanics(TalkSlide):
         talk so far. Prefill: one read of the model for the whole prompt, five columns of work per weight, arithmetic-bound.
         Decode: one read of the model plus a read of a growing cache for every token, one column per weight, bandwidth-bound.
         Same multiplication, opposite bottleneck, and the gauges showed which one at each moment. Everything that follows is
-        about those two gauges: what they cost, and how to move them. The whole stage then folds into one GPU drawing, because the next question is about the machine. The still picture first. Left, one GPU: the RTX PRO 6000 Blackwell Server Edition, the card in a g7e instance, 96 GB of memory, and its bus gauge pegged because we are about to ask what the bus can do at most. Right, the model, named: a dense 32B in fp8, one byte per weight, so every token reads all 32 GB. Two numbers from two spec sheets, the card's bandwidth and the model's bytes per token. The next click divides one by the other.""")
+        about those two gauges: what they cost, and how to move them.""")
+        # --- hand-over: the stage folds into one GPU drawing, and the title becomes the next move's
+        from s02_ceiling import start_ceiling, TITLE_CEILING
+        nxt = start_ceiling(self, add=False)
+        stage_bits = VGroup(sentence, toks, words, rl, gauges, ratio, reads, produced, cread, more, ll, logits, lgl, layers, rack, *sum(filled, []))
+        t = retitle(self, t, *TITLE_CEILING, extra=[FadeOut(cap), stage_bits.animate.scale(0.25).move_to(nxt["gpu"].get_center()).set_opacity(0.0),
+                                                  FadeIn(VGroup(*nxt["shown"]))], run_time=1.4)
+        self.remove(stage_bits)
+        self.finish("""The whole stage then folds into one GPU drawing, because the next question is about the machine. The still picture first. Left, one GPU: the RTX PRO 6000 Blackwell Server Edition, the card in a g7e instance, 96 GB of memory, and its bus gauge pegged because we are about to ask what the bus can do at most. Right, the model, named: a dense 32B in fp8, one byte per weight, so every token reads all 32 GB. Two numbers from two spec sheets, the card's bandwidth and the model's bytes per token. The next click divides one by the other.""")

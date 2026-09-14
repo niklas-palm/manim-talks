@@ -68,15 +68,15 @@ class ServiceRollout(TalkSlide):
         self.play(FadeOut(qs), FadeOut(q), run_time=0.3)
         svc = card("Service", "10.96.0.10").scale(0.7).move_to(S.client.get_center() + DOWN * 0.8)
         self.play(FadeIn(svc), run_time=0.3)
-        self.play(svc.animate.move_to(S.api[0].get_left() + LEFT * 0.4), run_time=0.4)
+        self.play(svc.animate.move_to(S.api[0].get_center()), run_time=0.4)
         self.play(svc.animate.scale(1 / 0.7).move_to(S.slots[3]), run_time=0.5)
         S.cards["svc"] = svc
         ec, we = S.ctrl["extra"], S.watches["extra"]
         self.play(FadeIn(ec), Create(we[0]), run_time=0.5)
-        pulse(self, svc.get_right(), ec[2])
+        pulse(self, svc, ec[2])
         eps = card("EndpointSlice", "3 pod addresses", ACTUAL).scale(0.7).move_to(ec[2].get_center())
         self.play(FadeIn(eps), run_time=0.2)
-        self.play(eps.animate.move_to(S.api[0].get_right() + RIGHT * 0.4), run_time=0.35)
+        self.play(eps.animate.move_to(S.api[0].get_center()), run_time=0.35)
         self.play(eps.animate.scale(1 / 0.7).move_to(S.slots[5]), run_time=0.4)
         S.cards["eps"] = eps
         for p in pods.values():   # the list points at the ready pods

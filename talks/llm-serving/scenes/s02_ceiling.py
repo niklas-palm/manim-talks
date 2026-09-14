@@ -82,18 +82,9 @@ class DecodeCeiling(TalkSlide):
                   FadeOut(meas), FadeOut(mlat), gpu.bandwidth.set(0.97), run_time=1.0)
         self.play(bw.to(3.35), res.to(1120), lat.to(0.9), run_time=2.0)
         self.play(FadeIn(dense2), FadeIn(meas2), run_time=0.6)
+        self.next_slide("""The same division on a different card, because the card is half the answer. The H100 in a p5 instance moves 3.35 terabytes per second, twice this card's 1.6, so both ceilings double: 105 tokens per second for the dense 32B, about 1,120 for this model, under a millisecond between tokens. That is what hardware buys, and it is the only thing that raises this line; no engine setting does. Then the measurement, the other half. At eight requests in flight this model decoded at 67 tokens per second per request here and 102 on the H100; the dense 27B in fp8 went from 35 to 54. Half again on both, not twice: part of every step is overhead that bandwidth does not shrink, and the faster the bus, the larger that part's share. So: the card sets the latency ceiling. Throughput is a different question, and one request answers it badly, with the bus idle most of the time. The engine's knob between the two words is the batch, and that is the next step.""")
         # --- hand-over: the ceiling gives way to the timeline of steps; the title changes with it
         from s03_batching import start_batching, TITLE_BATCHING
         nxt = start_batching(self, add=False)
         t = handover(self, t, *TITLE_BATCHING, leaving=[gpu, card2, bw, mk, mname2, by, bar, num2, den2, eq, res, lat, dense2, meas2, d1, d2], arriving=nxt["shown"])
-        self.finish("""The same division on a different card, because the card is half the answer. The H100 in a p5 instance moves
-        3.35 terabytes per second, twice this card's 1.6, so both ceilings double: 105 tokens per second for the dense 32B,
-        about 1,120 for this model, under a millisecond between tokens. That is what hardware buys, and it is the only thing
-        that raises this line; no engine setting does. Then the measurement, the other half. At eight requests in flight
-        this model decoded at 67 tokens per second per request here and 102 on the H100; the dense 27B in fp8 went from 35
-        to 54. Half again on both, not twice: part of every step is overhead that bandwidth does not shrink, and the faster
-        the bus, the larger that part's share. So: the card sets the latency ceiling. Throughput is a different question,
-        and one request answers it badly, with the bus idle most of the time. The engine's knob between the two words is
-        the batch, and the picture becomes a timeline: a time axis, one decode step after another from left to right; a
-        row for the weights read and a row for one request; two counters, weights read per step and tokens produced per
-        step, both at one. Nothing moves yet.""")
+        self.finish("""The picture becomes a timeline: a time axis, one decode step after another from left to right; a row for the weights read and a row for one request; two counters, weights read per step and tokens produced per step, both at one. Nothing moves yet.""")

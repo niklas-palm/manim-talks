@@ -537,10 +537,10 @@ class Stack(VGroup):
 
     def append(self, scene, b: VGroup, frm=None, run_time: float = 0.45):
         target = self.slot(len(self.blocks))
-        if frm is not None:
-            b.move_to(frm.get_center())
+        if frm is not None:                       # born small at its source, growing into its slot: the audience sees where it came from
+            b.scale(0.25).move_to(frm.get_center())
             scene.add(b)
-            scene.play(b.animate.move_to(target), run_time=run_time)
+            scene.play(b.animate.scale(4.0).move_to(target), run_time=run_time)
         else:
             b.move_to(target)
             scene.play(FadeIn(b, shift=DOWN * 0.15), run_time=run_time)

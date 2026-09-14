@@ -69,19 +69,13 @@ class Quantisation(TalkSlide):
         fl3 = label("about 160 conversations of 8k tokens (48 KB per token in fp8)", 15, MUTED).move_to(fl, aligned_edge=LEFT)
         kl = label("the cache has its own precision, set separately", 15, CACHE).next_to(gpu, DOWN, buff=0.12)
         self.play(gpu.cache.animate.set_fill(CACHE, 1.0), gpu.set_cache(60), fit.to(1270000), FadeOut(fl2), FadeIn(fl3), FadeIn(kl), run_time=1.5)
+        self.next_slide("""The KV cache is a second, independent decision. Its entries can be stored in fp8 as well, which halves the bytes per cached token, 48 kilobytes instead of 96 for this model, so the same 58 GB holds about 1.27 million tokens; that last figure is what the engine reported at start on this card, the other two follow from the same arithmetic. On this GPU's attention kernels the fp8 cache also measured 12 percent faster decode. The two knobs are set separately and the right answer for one does not follow from the other: on H100s the same cache setting measured slower, because the kernels differ. The obvious question is what all this did to the answers. It gets its own move, five, because the answer has a mechanism worth seeing and a measurement worth trusting. The short version: fp8 costs nothing we could measure on any task; 4-bit costs a little, always. Hold the question until then.""")
         # --- hand-over: the weights bar grows into a stack of layers, the next knob's picture
         nxt = start_moe(self, add=False)
         wcopy = gpu.weights.copy()
         t = retitle(self, t, *TITLE_MOE, extra=[FadeOut(VGroup(strip, gpu, bytes_, bl2, fit, fl3, rate, rl, kl)), ReplacementTransform(wcopy, nxt["dense"]),
                                               FadeIn(nxt["dl"]), FadeIn(nxt["bytes_d"])], run_time=1.4)
-        self.finish("""The KV cache is a second, independent decision. Its entries can be stored in fp8 as well, which halves the bytes
-        per cached token, 48 kilobytes instead of 96 for this model, so the same 58 GB holds about 1.27 million tokens; that
-        last figure is what the engine reported at start on this card, the other two follow from the same arithmetic. On this
-        GPU's attention kernels the fp8 cache also measured 12 percent faster decode. The two knobs are set separately and the
-        right answer for one does not follow from the other: on H100s the same cache setting measured slower, because the
-        kernels differ. The obvious question is what all this did to the answers. It gets its own move, five, because the
-        answer has a mechanism worth seeing and a measurement worth trusting. The short version: fp8 costs nothing we could
-        measure on any task; 4-bit costs a little, always. Hold the question until then. Then the picture hands over: The still picture: a dense model as a stack of six layers, each layer one solid block of weights, and a counter for the bytes a token reads on its way down: 32 GB, all of it. Nothing moves yet; the next click sends one token through.""")
+        self.finish("""The picture hands over. The still picture: a dense model as a stack of six layers, each layer one solid block of weights, and a counter for the bytes a token reads on its way down: 32 GB, all of it. Nothing moves yet; the next click sends one token through.""")
 
 
 class MixtureOfExperts(TalkSlide):
@@ -137,14 +131,11 @@ class MixtureOfExperts(TalkSlide):
             self.play(*[row[j].animate.set_fill(OUTPUT, 1.0) for j in picks], toks.animate.move_to(row.get_center()), used.to(7), run_time=0.22)
         self.play(bytes_m.to(11), toks.animate.next_to(layers, DOWN, buff=0.08), run_time=0.6)
         self.play(FadeOut(toks), run_time=0.2)
+        self.next_slide("""the catch: a batch of eight tokens picks seven of eight experts; under load most of the model is read anyway. The catch is the batch. Remember, the engine decodes many requests in one step. Eight tokens each pick their own two experts, and together they pick most of them: seven of eight per layer here, and the counter shows it. The step now reads eleven of the thirty gigabytes in the drawing, not three. On the real model, with 128 experts and eight chosen per token, a batch of 128 touches nearly all of them, and we measured it on the memory bus: at one request the memory controller is busy 39 percent of the time and the step reads about the active 3 GB; at 128 in flight it is busy 77 percent of the time and the step reads essentially all 29 GB. The mixture-of-experts advantage is large at low concurrency and shrinks as the batch grows. Size a fleet on the loaded number, never the batch-of-one number. Two knobs so far, both about bytes per step. The third is about not reading at all.""")
         # --- hand-over: the two stacks give way to a conversation's tokens, the third knob's picture
         nxt = start_prefix(self, add=False)
         t = handover(self, t, *TITLE_PREFIX, leaving=[dense, dl, bytes_d, layers, ml, bytes_m, used, key2], arriving=nxt["shown"])
-        self.finish("""the catch: a batch of eight tokens picks seven of eight experts; under load most of the model is read anyway. The catch is the batch. Remember, the engine decodes many requests in one step. Eight tokens each pick their own two experts, and together they pick most of them: seven of eight per layer here, and the counter shows it. The step now reads eleven of the thirty gigabytes in the drawing, not three. On the real model, with 128 experts and eight
-        chosen per token, a batch of 128 touches nearly all of them, and we measured it on the memory bus: at one request the
-        memory controller is busy 39 percent of the time and the step reads about the active 3 GB; at 128 in flight it is busy
-        77 percent of the time and the step reads essentially all 29 GB. The mixture-of-experts advantage is large at low
-        concurrency and shrinks as the batch grows. Size a fleet on the loaded number, never the batch-of-one number. Two knobs so far, both about bytes per step. The third is about not reading at all. Then the picture hands over: The still picture: the first turn of a conversation, six prompt tokens in blue and three answer tokens in yellow, and a counter of tokens prefilled, nine. Where the attention state of those nine tokens went is the next click.""")
+        self.finish("""The picture hands over. The still picture: the first turn of a conversation, six prompt tokens in blue and three answer tokens in yellow, and a counter of tokens prefilled, nine. Where the attention state of those nine tokens went is the next click.""")
 
 
 class PrefixCache(TalkSlide):
@@ -154,7 +145,6 @@ class PrefixCache(TalkSlide):
         l1, turn1, prefill = p["l1"], p["turn1"], p["prefill"]
         blocks = VGroup(*[RoundedRectangle(corner_radius=0.06, width=0.9, height=0.5, fill_color=CACHE, fill_opacity=0.85, stroke_width=0) for _ in range(3)]).arrange(RIGHT, buff=0.08).move_to([turn1.get_left()[0], -1.3, 0], aligned_edge=LEFT)
         bl = label("KV cache blocks, one engine", 16, CACHE).next_to(blocks, DOWN, buff=0.12)
-        prefill = Counter("tokens prefilled", 9, "", PROMPT).move_to([3.2, 1.9, 0], aligned_edge=LEFT)
         self.play(TransformFromCopy(turn1, blocks), FadeIn(bl), run_time=0.9)
         self.next_slide("""The first turn of a conversation: six prompt tokens, three answer tokens. Prefill read nine tokens and left
         their attention state in the cache, stored in fixed-size blocks and tagged by the tokens they hold.""")
@@ -192,7 +182,7 @@ class PrefixCache(TalkSlide):
         rate = 0
         for k, target in enumerate([5, 0, 7, home, 4, 1]):
             dot = Dot(color=PROMPT, radius=0.09).move_to(lb[0].get_bottom())
-            self.play(dot.animate.move_to(engines[target][0].get_top()), run_time=0.35)
+            self.play(dot.animate.move_to(caches[target].get_center()), run_time=0.35)
             hit = target == home
             rate = 21 if k >= 3 else rate + (21 if hit else 0)
             self.play(Flash(engines[target][0], color=CACHE if hit else HOT, flash_radius=0.6, num_lines=8), FadeOut(dot), hits.to(rate), run_time=0.3)
@@ -204,7 +194,7 @@ class PrefixCache(TalkSlide):
         self.play(FadeOut(rr), FadeIn(st), run_time=0.4)
         for _ in range(4):
             dot = Dot(color=PROMPT, radius=0.09).move_to(lb[0].get_bottom())
-            self.play(dot.animate.move_to(engines[home][0].get_top()), run_time=0.3)
+            self.play(dot.animate.move_to(caches[home].get_center()), run_time=0.3)
             self.play(Flash(engines[home][0], color=CACHE, flash_radius=0.6, num_lines=8), FadeOut(dot), hits.to(75), run_time=0.3)
         self.next_slide("""The fix is not in the engine. A load balancer cookie pins each client's conversation to the engine that holds
         its blocks. Same engines, same cache, same model: 75 percent of turns hit, and the fleet served 14 percent more requests
@@ -226,23 +216,17 @@ class PrefixCache(TalkSlide):
             self.play(sp.animate.arrange(RIGHT, buff=0.05).move_to(host[e]), caches[e].animate.set_fill(CACHE, 0.9), run_time=0.5)
             spills[e] = sp
         dot = Dot(color=PROMPT, radius=0.09).move_to(lb[0].get_bottom())   # a turn comes home: its block comes back from host RAM
-        self.play(dot.animate.move_to(engines[home][0].get_top()), run_time=0.3)
+        self.play(dot.animate.move_to(caches[home].get_center()), run_time=0.3)
         self.play(spills[home][0].animate.move_to(caches[home]), Flash(engines[home][0], color=CACHE, flash_radius=0.6, num_lines=8), FadeOut(dot), run_time=0.4)
         self.remove(spills[home][0])
         copies = VGroup(*[spills[e][1].copy() for e in (home, 1, 4)])   # the shared store: copies any engine can read
         self.play(*[c.animate.move_to([engines[e].get_x() + 0.2 * i - 0.2, store.get_y(), 0]) for i, (c, e) in enumerate(zip(copies, (home, 1, 4)))], run_time=0.6)
         far = 6
         dot = Dot(color=PROMPT, radius=0.09).move_to(lb[0].get_bottom())   # a turn lands on a far engine and still finds its blocks
-        self.play(dot.animate.move_to(engines[far][0].get_top()), run_time=0.3)
+        self.play(dot.animate.move_to(caches[far].get_center()), run_time=0.3)
         self.play(copies[0].animate.move_to(caches[far]), Flash(engines[far][0], color=CACHE, flash_radius=0.6, num_lines=8), FadeOut(dot), run_time=0.5)
         self.play(caches[far].animate.set_fill(CACHE, 0.9), FadeOut(copies[0]), run_time=0.3)
-        # --- hand-over: the fleet of engines gives way to the model that does not fit one GPU
-        from s05_parallelism import start_parallelism, TITLE_PAR
-        nxt = start_parallelism(self, add=False)
-        spills[home].remove(spills[home][0])
-        leaving = [q2, lb, hits, engines, caches, host, store, tiers, ex, *spills.values(), copies[1], copies[2]]
-        t = handover(self, t, *TITLE_PAR, leaving=leaving, arriving=nxt["shown"])
-        self.finish("""a shared store (LMCache, Mooncake, Dynamo KVBM): a long document many users ask about, an agent's context between tool calls. The other way out attacks a different limit: the cache is small and blocks are evicted long before a
+        self.next_slide("""a shared store (LMCache, Mooncake, Dynamo KVBM): a long document many users ask about, an agent's context between tool calls. The other way out attacks a different limit: the cache is small and blocks are evicted long before a
         conversation is over, so even the home engine forgets. Three engines fill up here and spill blocks; a turn that comes
         home gets its block back from host RAM, and a turn that lands on a far engine can still find a copy in a store every
         engine can read. What lives in such a store: a long document many users ask about, a system prompt shared by a
@@ -261,4 +245,11 @@ class PrefixCache(TalkSlide):
         publishes before paying for either. One caveat for the operators in the room: the cookie pins a client, not a user.
         Behind an API gateway that holds one cookie jar, stickiness would pin the whole gateway to one engine. Turn it on only
         when clients keep a cookie per end-user conversation, or have the gateway replay it per session; or use a router that
-        looks at the prefix itself, which move seven comes back to. Then the picture hands over: 236 GB of weights and no GPU that holds them: divide the model, and pay at the seams. Some models do not fit one card. A 235B mixture of experts in fp8 is 236 GB of weights; the largest single GPU we can rent holds 96. So the model has to be divided over several GPUs, and how it is divided shows up as time.""")
+        looks at the prefix itself, which move seven comes back to.""")
+        # --- hand-over: the fleet of engines gives way to the model that does not fit one GPU
+        from s05_parallelism import start_parallelism, TITLE_PAR
+        nxt = start_parallelism(self, add=False)
+        spills[home].remove(spills[home][0])
+        leaving = [q2, lb, hits, engines, caches, host, store, tiers, ex, *spills.values(), copies[1], copies[2]]
+        t = handover(self, t, *TITLE_PAR, leaving=leaving, arriving=nxt["shown"])
+        self.finish("""The picture hands over. 236 GB of weights and no GPU that holds them: divide the model, and pay at the seams. Some models do not fit one card. A 235B mixture of experts in fp8 is 236 GB of weights; the largest single GPU we can rent holds 96. So the model has to be divided over several GPUs, and how it is divided shows up as time.""")

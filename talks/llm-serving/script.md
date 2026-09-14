@@ -3,10 +3,10 @@
 One line per step (each `next_slide()` in the scenes), with the section of `docs/tuning.md` in the
 companion repository that carries the measurement. Timings are targets for a 45-minute slot.
 
-## Opening (2 min)
-- Title. Say who the talk is for: engineers who will host a model, or buy hosting, and want to know what they are paying for.
-- The spine. Read it slowly. Everything that follows is this sentence with numbers.
-- The seven moves. Do not explain them; the list is a promise.
+## Opening (folded into move 1)
+- No title slide. The deck opens on the sentence, and the first note introduces the talk: who it is for, the spine
+  sentence, the seven moves. Every later scene begins on the previous scene's last frame; the hand-over is the last step
+  of each scene and its note names what the new picture shows.
 
 ## 1. Two jobs, two costs (9 min)
 - **Mechanics**, one continuous picture. The sentence, then its tokens with ids, then the lookup that turns each into a vector. The stage: layer stack, empty cache rack, the two gauges, two counters. Zoom into layer one with all five vectors as a block: one row of a matrix, read once, multiplies all five columns; the sweep fills five output columns per read; five keys and values into the cache row; each query fans out over the keys up to its own; feed-forward read once for five columns; layer two replays the same at speed. Zoom out, the block continues down the stack: one read of the model for the whole prompt, compute gauge pegged. Sample a token. Decode: the token goes back in alone; zoom in a second time and the same stages run for one column, with the weights read and the cache read named where they happen, ghost columns showing what prefill had; bus pegged, compute idle. Back out, the loop runs, the cache counter grows by one column per token. (*Two phases*, *Decode speed per request is capped by bandwidth*)

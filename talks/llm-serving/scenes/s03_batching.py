@@ -237,11 +237,12 @@ class Batching(TalkSlide):
         a latency spike. So the number of requests a GPU can serve is set by the memory left after the weights.""")
         self.play(gpu.set_cache(3 + 128 * 0.45), run_time=0.5)
         cap = swap_caption(self, cap, "Shrink the weights and more requests fit. That is the next knob.")
+        self.next_slide("""Which sets up the first thing anyone does when they host a model: make the weights smaller. Smaller weights
+        mean fewer bytes per decode step, so faster tokens, and more memory left for cache, so a bigger batch. Both gauges move
+        in the right direction at once.""")
         # --- hand-over: the measured GPU becomes the 96 GB card with the model's weights in it; the curve gives way to the counters
         from s04_knobs import start_quantisation, TITLE_Q
         nxt = start_quantisation(self, add=False)
         ttl = retitle(self, ttl, *TITLE_Q, extra=[FadeOut(VGroup(inflight, each, total, clk, ax, xl, yl, per_dot, agg_dot, curve, pl, al, cap)),
                                             ReplacementTransform(gpu, nxt["gpu"]), FadeIn(VGroup(*[m for m in nxt["shown"] if m is not nxt["gpu"]]))], run_time=1.4)
-        self.finish("""Which sets up the first thing anyone does when they host a model: make the weights smaller. Smaller weights
-        mean fewer bytes per decode step, so faster tokens, and more memory left for cache, so a bigger batch. Both gauges move
-        in the right direction at once. Then the picture hands over: this talk's model: a 30B mixture of experts, 3B active per token, on the 96 GB card. The 30B model as it ships, in 16-bit: 30 billion weights at two bytes each is 57 GB, and every decode step reads what a token needs from them. On the 96 GB card that leaves about 30 GB for the cache. Read the middle number carefully: 330,000 tokens of context is the whole cache, shared by every request in flight; at 96 kilobytes per token that is about forty conversations of 8,000 tokens, or one request at the model's full 262,000-token context. The cache, not the weights, is what limits how many requests fit. The bottom number is prefill work, prompt tokens per second, the measured throughput of one GPU inside an eight-second latency budget.""")
+        self.finish("""The picture hands over. this talk's model: a 30B mixture of experts, 3B active per token, on the 96 GB card. The 30B model as it ships, in 16-bit: 30 billion weights at two bytes each is 57 GB, and every decode step reads what a token needs from them. On the 96 GB card that leaves about 30 GB for the cache. Read the middle number carefully: 330,000 tokens of context is the whole cache, shared by every request in flight; at 96 kilobytes per token that is about forty conversations of 8,000 tokens, or one request at the model's full 262,000-token context. The cache, not the weights, is what limits how many requests fit. The bottom number is prefill work, prompt tokens per second, the measured throughput of one GPU inside an eight-second latency budget.""")

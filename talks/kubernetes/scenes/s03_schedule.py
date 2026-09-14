@@ -37,7 +37,7 @@ class SchedulerKubelet(TalkSlide):
         nodes on the right are still empty. Nothing moves until the next click.""")
         pa = S.cards["a"]
         ring = SurroundingRectangle(pa, color=CONTROL, buff=0.06, stroke_width=2.2)
-        pulse(self, pa.get_right(), sc[2], color=HOT, run_time=0.6)
+        pulse(self, pa, sc[2], color=HOT, run_time=0.6)
         self.play(Create(ring), run_time=0.4)
         self.next_slide("""The scheduler is another loop, and its trigger is the red line on those cards: a Pod record with no node. It
         watches for exactly those, takes one, and answers one question: which node? It does not start anything either.
@@ -63,8 +63,8 @@ class SchedulerKubelet(TalkSlide):
         self.wait(0.3)
         self.play(FadeOut(scores), FadeOut(need), FadeOut(out), run_time=0.3)
         self.play(frame.animate.scale(1 / ZN).move_to(ORIGIN), FadeIn(wide), run_time=1.0)
-        pulse(self, sc[2], S.api[0].get_right(), color=CONTROL, run_time=0.4)
-        pulse(self, S.api[0].get_right(), pa, color=CONTROL, run_time=0.4)
+        pulse(self, sc[2], S.api[0], color=CONTROL, run_time=0.4)
+        pulse(self, S.api[0], pa, color=CONTROL, run_time=0.4)
         set_detail(self, pa, "node 1", TEAL)
         self.play(FadeOut(ring), S.nodes[0][0].animate.set_stroke(color=NODE, width=2.5), run_time=0.4)
         self.next_slide("""Second, scoring: the feasible nodes are ranked. One common rule prefers the node with the most free resources
@@ -89,8 +89,8 @@ class SchedulerKubelet(TalkSlide):
         self.wait(0.3)
         self.play(FadeOut(sl), run_time=0.2)
         self.play(frame.animate.scale(1 / ZK).move_to(ORIGIN), FadeIn(wide2), run_time=1.0)
-        pulse(self, p1, S.api[0].get_right(), color=ACTUAL, run_time=0.5)
-        pulse(self, S.api[0].get_right(), pa, color=ACTUAL, run_time=0.3)
+        pulse(self, p1, S.api[0], color=ACTUAL, run_time=0.5)
+        pulse(self, S.api[0], pa, color=ACTUAL, run_time=0.3)
         self.play(pa[0].animate.set_stroke(color=ACTUAL), S.running.to(1), run_time=0.4)
         set_detail(self, pa, "node 1, Running", ACTUAL)
         self.next_slide("""The kubelet is the agent on every node, and it is a loop too: it watches the API server for Pod records bound to

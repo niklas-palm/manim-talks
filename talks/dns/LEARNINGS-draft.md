@@ -15,3 +15,15 @@
 - The one true cross-fade left (Price to Standing, the alias picture to the root's machines) still scores
   "identical" at the seam, because the fade happens inside the new scene's first play, not at the boundary.
 - Deleting the opening scene lost nothing: its note's content moved into the first scene's first note.
+
+## Travelling objects (follow-up, same day)
+
+- `question()` and `answer()` now take the exact objects: a question starts at the asker (the laptop node, the
+  resolver's name label) and ends at the record that will answer; an answer starts at that record and, with
+  `becomes=row`, ends on the cache row it turns into, which appears as the dot arrives. One motion per exchange. The
+  earlier version moved dots between box edges and faded rows in elsewhere; on the contact sheet the two never met.
+- A `Counter` faded in with `FadeIn` shows its digits at full opacity from the first frame, because the digit updater
+  redraws them: detach the updater (`upd = c.num.updaters[0]; c.num.clear_updaters()`), play the fade, then re-attach.
+  Same root cause as the survive-the-FadeOut trap noted above; one library fix would cover both.
+- `bin/review.sh` at 0.5 s still produced only seven frames per scene here; sampling eight frames evenly across a
+  section clip with ffmpeg was the reliable way to see where a dot starts and lands.

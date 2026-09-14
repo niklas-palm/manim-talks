@@ -70,35 +70,32 @@ class Delegation(TalkSlide):
         1.1.1.1 or 8.8.8.8. It walks the tree on your behalf, and it has a cache, which is the whole of move three. Watch
         the walk.""")
         # --- hop one: the root
-        question(self, res, root, "www.example.com?")
+        question(self, res[1], r_root, "www.example.com?")
         self.play(r_root[0].animate.set_fill(ZONE, 0.35), run_time=0.3)
-        answer(self, root, res, ZONE, "not mine: ask com's servers")
-        self.play(r_root[0].animate.set_fill(ZONE, 0.10), run_time=0.2)
         c1 = cache_row(r_root, CACHE_Y[0])
-        self.play(FadeIn(c1), run_time=0.4)
+        answer(self, r_root, res, ZONE, "not mine: ask com's servers", becomes=c1)   # the pointer lands on the row it becomes
+        self.play(r_root[0].animate.set_fill(ZONE, 0.10), run_time=0.2)
         self.next_slide("""Hop one. The resolver knows the root servers' addresses by configuration; that is the one list everyone does
         hold, and it is thirteen lines long. It asks a root server the full question. The root is not authoritative for
         the name and says so with a referral: an NS record, a pointer to com's servers, with their addresses attached as
         glue so the resolver does not need a second lookup to find them. The resolver keeps the pointer; it will be worth a
         great deal.""")
         # --- hop two: com
-        question(self, res, tld, "www.example.com?")
+        question(self, res[1], r_tld, "www.example.com?")
         self.play(r_tld[0].animate.set_fill(ZONE, 0.35), run_time=0.3)
-        answer(self, tld, res, ZONE, "not mine: ask example.com's servers")
-        self.play(r_tld[0].animate.set_fill(ZONE, 0.10), run_time=0.2)
         c2 = cache_row(r_tld, CACHE_Y[1])
-        self.play(FadeIn(c2), run_time=0.4)
+        answer(self, r_tld, res, ZONE, "not mine: ask example.com's servers", becomes=c2)
+        self.play(r_tld[0].animate.set_fill(ZONE, 0.10), run_time=0.2)
         self.next_slide("""Hop two. The same question to one of com's servers. Com is not authoritative for www.example.com either; it
         holds the pointer to example.com's servers, hera and elliott at Cloudflare in this case, and returns it. Another
         referral, another record kept. Every answer so far has been a pointer to who to ask next: rule one.""")
         # --- hop three: the address
-        question(self, res, auth, "www.example.com?")
+        question(self, res[1], r_auth, "www.example.com?")
         self.play(r_auth[0].animate.set_fill(ADDRESS, 0.35), run_time=0.3)
-        answer(self, auth, res, ADDRESS, "104.20.23.154")
-        self.play(r_auth[0].animate.set_fill(ADDRESS, 0.10), run_time=0.2)
         c3 = cache_row(r_auth, CACHE_Y[2])
-        self.play(FadeIn(c3), run_time=0.4)
-        answer(self, res, client, ADDRESS, "104.20.23.154")
+        answer(self, r_auth, res, ADDRESS, "104.20.23.154", becomes=c3)
+        self.play(r_auth[0].animate.set_fill(ADDRESS, 0.10), run_time=0.2)
+        answer(self, c3, client, ADDRESS, "104.20.23.154")   # from the row that holds it to the laptop that asked
         self.play(Flash(client[0], color=ADDRESS, flash_radius=1.2, num_lines=8), run_time=0.4)
         self.finish("""Hop three. The example.com servers are authoritative for the name: they hold the A record and return the address.
         The resolver keeps it and sends it home to the laptop, which never saw the walk: one question out, one answer

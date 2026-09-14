@@ -48,11 +48,12 @@ class ApplyRequest(TalkSlide):
         # --- zoom into the API server: three gates
         gates, gnames = S.api[2], S.api[3]
         self.play(frame.animate.scale(ZOOM).move_to(S.api.get_center() + DOWN * 0.1), FadeOut(t), FadeOut(S.store), FadeOut(S.client), FadeOut(manifest), FadeOut(ml),
-                  req.animate.scale(0.6).move_to(S.api[0].get_left() + LEFT * 0.6 + DOWN * 0.12), run_time=1.0)
+                  req.animate.scale(0.6).move_to(gates[0].get_center() + LEFT * 0.5), run_time=1.0)   # from kubectl straight to the first gate
         for k in range(3):
-            self.play(req.animate.move_to(gates[k].get_center() + LEFT * 0.5), run_time=0.4)
+            if k:
+                self.play(req.animate.move_to(gates[k].get_center() + LEFT * 0.5), run_time=0.4)
             self.play(gates[k].animate.set_fill(DESIRED, 1.0), gnames[k].animate.set_color(TEXT), run_time=0.3)
-        self.play(req.animate.move_to(S.api[0].get_right() + RIGHT * 0.6 + DOWN * 0.12), run_time=0.4)
+        self.play(req.animate.move_to(gates[2].get_center() + RIGHT * 0.5), run_time=0.4)   # past the last gate; the next motion is the write into etcd's slot
         self.next_slide("""Inside the API server the request passes three gates, in this order. Authentication: who are you; a certificate,
         a token, a service account, and a failure is a 401. Authorisation: may this user do this to this object; RBAC, and
         a no is a 403. Admission: controllers that can change or reject the object itself; this is where defaults are

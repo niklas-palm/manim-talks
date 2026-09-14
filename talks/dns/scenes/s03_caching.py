@@ -25,14 +25,16 @@ class Caching(TalkSlide):
         # --- the first change: the cached rows get their time to live, and the hop counter says what the walk cost
         fuses = VGroup(*[fuse(r) for r in rows])
         hops = Counter("hops into the tree", 3, "", ZONE, size=24).move_to([-MARGIN, -2.4, 0], aligned_edge=LEFT)
+        upd = hops.num.updaters[0]; hops.num.clear_updaters()   # the digit updater redraws at full opacity and would show the counter before its fade
         t = retitle(self, t, "Caching: remember what you were told", "3  caching: remember what you were told", extra=[FadeIn(fuses), FadeIn(hops), FadeOut(d["al"])])
+        hops.num.add_updater(upd)
         self.next_slide("""Same picture, one addition: under each record the resolver kept, a teal bar, its time to live, running out from
         the moment it arrived; and at the bottom left the hop counter, at three, what the first walk cost. Watch what the
         second question costs.""")
         # --- the same name again: one hop
-        question(self, client, res, "www.example.com?", run_time=0.6)
+        question(self, client, res[1], "www.example.com?", run_time=0.6)
         self.play(rows[2][0].animate.set_fill(REMEMBERED, 0.45), hops.to(0), run_time=0.3)
-        answer(self, res, client, ADDRESS, "104.20.23.154")
+        answer(self, rows[2], client, ADDRESS, "104.20.23.154")   # from the cached row itself
         self.play(rows[2][0].animate.set_fill(REMEMBERED, 0.14), run_time=0.2)
         self.next_slide("""Rule two. The walk left three records in the resolver's cache, each with the time to live its zone attached: the
         teal bar under each row is that time, running out. Now the same laptop, or any of the thousands of others behind
@@ -42,22 +44,22 @@ class Caching(TalkSlide):
         # --- a different name under com: the root is skipped
         client2 = client_box(y=-1.1, name="another laptop", sub="same resolver")
         self.play(FadeIn(client2), run_time=0.4)
-        question(self, client2, res, "mail.other.com?")
+        question(self, client2, res[1], "mail.other.com?")
         self.play(rows[0][0].animate.set_fill(REMEMBERED, 0.45), run_time=0.3)
         skip = label("root skipped: com's servers already known", 15, REMEMBERED).next_to(res, DOWN, buff=GAP_TIGHT).align_to(res, LEFT)
         self.play(FadeIn(skip), run_time=0.3)
-        question(self, res, tld, "mail.other.com?")
-        answer(self, tld, res, ZONE, "ask other.com's servers")
+        question(self, res[1], r_tld, "mail.other.com?")
         other = record("other.com.", "NS", "ns1.other.com.", "2 days", ZONE)
         c4 = cache_row(other, CACHE_Y[3])
-        self.play(FadeIn(c4), FadeIn(fuse(c4)), hops.to(1), rows[0][0].animate.set_fill(REMEMBERED, 0.14), run_time=0.4)
+        answer(self, r_tld, res, ZONE, "ask other.com's servers", becomes=c4)
+        self.play(FadeIn(fuse(c4)), hops.to(1), rows[0][0].animate.set_fill(REMEMBERED, 0.14), run_time=0.4)
         far = box(W_TREE, 0.6, "other.com.   another owner's zone", ZONE, size=16).move_to([X_TREE, -2.5, 0])
         self.play(FadeIn(far), run_time=0.3)
-        question(self, res, far, "mail.other.com?")
-        answer(self, far, res, ADDRESS, "198.51.100.7")
+        question(self, res[1], far[1], "mail.other.com?")
         c5 = cache_row(record("mail.other.com.", "A", "198.51.100.7", "5 min", ADDRESS), CACHE_Y[4])
-        self.play(FadeIn(c5), FadeIn(fuse(c5)), hops.to(2), run_time=0.4)
-        answer(self, res, client2, ADDRESS, "198.51.100.7")
+        answer(self, far[1], res, ADDRESS, "198.51.100.7", becomes=c5)
+        self.play(FadeIn(fuse(c5)), hops.to(2), run_time=0.4)
+        answer(self, c5, client2, ADDRESS, "198.51.100.7")
         ttls = label("pointers near the top: days; the address: minutes", 16, REMEMBERED).move_to([X_TREE - W_TREE / 2, -3.25, 0], aligned_edge=LEFT)
         self.play(FadeOut(skip), FadeIn(ttls), run_time=0.4)
         self.next_slide("""A different name, mail.other.com, under com as well. The resolver already holds the pointer to com's servers,
@@ -72,12 +74,13 @@ class Caching(TalkSlide):
         self.play(FadeIn(clock), run_time=0.3)
         self.play(Transform(fuses[2], fuse(rows[2], 0.0)), Transform(fuses[0], fuse(rows[0], 0.998)), Transform(fuses[1], fuse(rows[1], 0.996)), run_time=1.6, rate_func=linear)
         self.play(rows[2][0].animate.set_fill(HOT, 0.3), run_time=0.3)
-        question(self, client, res, "www.example.com?")
-        question(self, res, auth, "www.example.com?")
-        answer(self, auth, res, ADDRESS, "104.20.23.154")
+        question(self, client, res[1], "www.example.com?")
+        self.play(FadeOut(rows[2]), FadeOut(fuses[2]), run_time=0.3)   # the expired row leaves before the walk refreshes it
+        question(self, res[1], r_auth, "www.example.com?")
         fresh = cache_row(r_auth, CACHE_Y[2])
-        self.play(FadeOut(rows[2]), FadeOut(fuses[2]), FadeIn(fresh), FadeIn(fuse(fresh)), hops.to(1), run_time=0.5)
-        answer(self, res, client, ADDRESS, "104.20.23.154")
+        answer(self, r_auth, res, ADDRESS, "104.20.23.154", becomes=fresh)
+        self.play(FadeIn(fuse(fresh)), hops.to(1), run_time=0.4)
+        answer(self, fresh, client, ADDRESS, "104.20.23.154")
         cost = VGroup(label("hit: no network, about 0 ms", 16, REMEMBERED), label("miss: about 130 ms; 4 to 6% time out", 16, HOT)).arrange(DOWN, aligned_edge=LEFT, buff=0.08).move_to([X_RESOLVER - W_RESOLVER / 2, -2.55, 0], aligned_edge=LEFT)
         self.play(FadeOut(clock), FadeOut(ttls), FadeIn(cost), run_time=0.4)
         self.next_slide("""Time passes; five minutes here, compressed. The address's time to live runs out and the row may no longer be used;

@@ -19,9 +19,9 @@ class OneList(TalkSlide):
         self.next_slide("""The whole talk opens on this picture, nothing moving yet; the title says where we are. On the left, your laptop: the program that has a name and needs an
         address. In the middle, the oldest idea on the internet: one list that every machine holds, a name on the left and
         its address on the right, a hosts file. Everything in this talk is what happened to that list.""")
-        question(self, client, lst, "www.example.com?", run_time=0.6)
+        question(self, client, lst[0], "www.example.com?", run_time=0.6)
         self.play(lst[0][0].animate.set_fill(ADDRESS, 0.4), run_time=0.3)
-        answer(self, lst, client, ADDRESS, "104.20.23.154")
+        answer(self, lst[0], client, ADDRESS, "104.20.23.154")
         self.play(lst[0][0].animate.set_fill(TEXT, 0.07), run_time=0.3)
         self.next_slide("""Start with the job. A program has a name, www.example.com, and needs an address, because packets are sent to
         addresses, not names. The first design, and the one the early internet ran on, is a list: every machine keeps a

@@ -76,7 +76,7 @@ class Standing(TalkSlide):
         rules = VGroup(label("every answer is the address, or a pointer to who to ask next", 20, TEXT, thread=True),
                        label("every level remembers an answer exactly as long as it was told to", 20, TEXT, thread=True)).arrange(DOWN, aligned_edge=LEFT, buff=0.12).move_to([0, -2.85, 0])
         self.play(FadeIn(rules[0]), run_time=0.5)
-        for a, b, col in ((res, root, ZONE), (res, tld, ZONE), (res, auth, ADDRESS)):
+        for a, b, col in ((res[1], root[1], ZONE), (res[1], tld[1], ZONE), (res[1], auth[1], ADDRESS)):
             question(self, a, b, run_time=0.25)
             answer(self, b, a, col, run_time=0.25)
         self.play(FadeIn(rules[1]), run_time=0.5)

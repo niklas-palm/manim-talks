@@ -35,7 +35,7 @@ class NodeDies(TalkSlide):
         for _ in range(2):
             dots = [Dot(color=TEAL, radius=0.07).move_to(n[5].get_center()) for n in S.nodes]
             self.add(*dots)
-            self.play(*[d.animate.move_to(S.api[0].get_right()) for d in dots], run_time=0.6)
+            self.play(*[d.animate.move_to(S.api[0].get_center()) for d in dots], run_time=0.6)
             self.play(*[FadeOut(d) for d in dots], run_time=0.15)
             self.wait(0.2)
         self.next_slide("""Three running, three desired, and the loops idle. One more loop was working all along, quietly: every kubelet
@@ -49,7 +49,7 @@ class NodeDies(TalkSlide):
         for _ in range(2):   # the other two keep beating
             dots = [Dot(color=TEAL, radius=0.07).move_to(n[5].get_center()) for n in (S.nodes[0], S.nodes[2])]
             self.add(*dots)
-            self.play(*[d.animate.move_to(S.api[0].get_right()) for d in dots], run_time=0.5)
+            self.play(*[d.animate.move_to(S.api[0].get_center()) for d in dots], run_time=0.5)
             self.play(*[FadeOut(d) for d in dots], run_time=0.1)
         since = Counter("since node 2's last heartbeat", 0, "s", HOT, size=22).move_to([COLS[3], Y_COUNTERS, 0], aligned_edge=LEFT)
         self.play(FadeIn(since), run_time=0.3)
@@ -71,13 +71,13 @@ class NodeDies(TalkSlide):
         # --- the same loops close the gap
         self.play(FadeOut(since), FadeOut(nr), FadeOut(hb), run_time=0.3)
         rsc = S.ctrl["rs"]
-        pulse(self, S.cards["rs"].get_right(), rsc[2])
+        pulse(self, S.cards["rs"], rsc[2])
         cmp = label("wants 3, has 2", 15, TEXT).next_to(rsc, DOWN, buff=GAP_TIGHT).align_to(rsc, LEFT)
         self.play(FadeIn(cmp), run_time=0.3)
         pd = card("Pod d", "no node").scale(0.7).move_to(rsc[2].get_center())
         pd[2].set_color(HOT)
         self.play(FadeIn(pd), run_time=0.2)
-        self.play(pd.animate.move_to(S.api[0].get_right() + RIGHT * 0.4), run_time=0.35)
+        self.play(pd.animate.move_to(S.api[0].get_center()), run_time=0.35)
         self.play(pd.animate.scale(1 / 0.7).move_to(S.slots[5]), FadeOut(cmp), run_time=0.4)
         S.cards["d"] = pd
         ring = SurroundingRectangle(pd, color=CONTROL, buff=0.06, stroke_width=2.2)

@@ -24,12 +24,12 @@ class Controllers(TalkSlide):
         self.next_slide("""Where the last scene ended: the Deployment record sits in etcd, the nodes are empty, three desired and
         none running. One new thing on screen, and it is not moving yet: the Deployment controller, a box with a loop drawn in
         it, connected to the API server by a dashed line labelled watch. It has not done anything. Next click, it does.""")
-        pulse(self, S.cards["deploy"].get_right(), c1[2], run_time=0.6)            # observe, slowly the first time
+        pulse(self, S.cards["deploy"], c1[2], run_time=0.6)            # observe, slowly the first time
         cmp = label("wants 1, has 0", 15, TEXT).next_to(c1, DOWN, buff=GAP_TIGHT).align_to(c1, LEFT)
         self.play(FadeIn(cmp), run_time=0.3)
         rs = card("ReplicaSet", "3 replicas, v1").scale(0.7).move_to(c1[2].get_center())
         self.play(FadeIn(rs), run_time=0.3)
-        self.play(rs.animate.move_to(S.api[0].get_right() + RIGHT * 0.4), run_time=0.5)   # act: through the API server
+        self.play(rs.animate.move_to(S.api[0].get_center()), run_time=0.5)   # act: to the API server itself, then into the store
         self.play(rs.animate.scale(1 / 0.7).move_to(S.slots[1]), run_time=0.6)
         S.cards["rs"] = rs
         cmp2 = label("wants 1, has 1", 15, MUTED).move_to(cmp)
@@ -43,7 +43,7 @@ class Controllers(TalkSlide):
         # --- the ReplicaSet controller, opened under the zoom
         c2, w2 = S.ctrl["rs"], S.watches["rs"]
         self.play(FadeOut(cmp2), FadeIn(c2), Create(w2[0]), run_time=0.7)
-        pulse(self, rs.get_right(), c2[2])
+        pulse(self, rs, c2[2])
         wide = VGroup(t, *S.base(), c1, w1, w2, *S.cards.values())
         self.play(frame.animate.scale(ZOOM).move_to(c2.get_center()), FadeOut(wide), FadeOut(c2[2]),
                   c2[0].animate.stretch_to_fit_height(2.2).shift(DOWN * 0.55), run_time=1.2)
@@ -62,7 +62,7 @@ class Controllers(TalkSlide):
             p = card(f"Pod {name}", "no node").scale(0.7).move_to(c2[2].get_center())
             p[2].set_color(HOT)
             self.play(FadeIn(p), run_time=0.15)
-            self.play(p.animate.move_to(S.api[0].get_right() + RIGHT * 0.4), run_time=0.3)
+            self.play(p.animate.move_to(S.api[0].get_center()), run_time=0.3)
             self.play(p.animate.scale(1 / 0.7).move_to(S.slots[2 + i]), run_time=0.35)
             S.cards[name] = p
         self.next_slide("""The ReplicaSet controller is the same loop for a different record. Open it up: it wants three Pods that match

@@ -83,12 +83,13 @@ class Fleet(TalkSlide):
         into whatever dashboard you have; the balancer's numbers alone cannot tell the three apart.""")
         self.play(FadeOut(gauges), *[e[0].animate.set_fill(WEIGHTS, 0.1) for e in fleet[:3]])
         cap = swap_caption(self, cap, "Agents: long requests with tools; the engine parses the calls, the client streams")
+        self.next_slide("""One last shape change, because most new traffic is agents. An agent sends the model a list of tools and expects
+        a structured call back, so the engine needs a parser for that model's tool-call format, or the call comes back as plain
+        text and the agent stalls without an error. Agent steps carry the whole trajectory, tens of thousands of tokens on a
+        busy engine, so they run long, longer than the timeouts most proxies and gateways apply to a request that has not started
+        answering. Stream them. None of this changes the machine; it changes what the machine is asked to hold.""")
         # --- hand-over: the fleet gives way to the two phases every engine schedules
         from s08_industry import start_industry, TITLE_IND
         nxt = start_industry(self, add=False)
         t = handover(self, t, *TITLE_IND, leaving=[fleet, new, lb, links, newlink, cap], arriving=nxt["shown"])
-        self.finish("""One last shape change, because most new traffic is agents. An agent sends the model a list of tools and expects
-        a structured call back, so the engine needs a parser for that model's tool-call format, or the call comes back as plain
-        text and the agent stalls without an error. Agent steps carry the whole trajectory, tens of thousands of tokens on a
-        busy engine, so they run long, longer than the timeouts most proxies and gateways apply to a request that has not started
-        answering. Stream them. None of this changes the machine; it changes what the machine is asked to hold. Then the picture hands over: vLLM, SGLang, TensorRT-LLM: different code, the same shape. A prefill phase, a decode loop, a scheduler that decides which requests share each step. The frontier is not a new shape; it is a list of attacks on the two costs we started with. Here are the five that matter this year, placed on the part of the pipeline they attack.""")
+        self.finish("""The picture hands over. vLLM, SGLang, TensorRT-LLM: different code, the same shape. A prefill phase, a decode loop, a scheduler that decides which requests share each step. The frontier is not a new shape; it is a list of attacks on the two costs we started with. Here are the five that matter this year, placed on the part of the pipeline they attack.""")

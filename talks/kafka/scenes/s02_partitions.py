@@ -96,7 +96,7 @@ class Partitions(TalkSlide):
         olog = Log(-2.9, -2.5, capacity=12, name="__consumer_offsets: committed positions, a compacted topic", gap=GAP)
         self.play(FadeOut(cl), FadeIn(olog), run_time=0.5)
         for i, src in enumerate([cons[0], cons[1], cons[1], cons[0]]):
-            d = Dot(color=READER, radius=0.09).move_to(src.get_bottom())
+            d = Dot(color=READER, radius=0.09).move_to(src.get_center())   # from the consumer itself, not its edge
             self.add(d)
             self.play(d.animate.move_to(olog.slot(i)), run_time=0.3)
             self.remove(d)

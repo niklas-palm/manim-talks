@@ -10,7 +10,7 @@ hosting decision is about which of those two you are paying for.** Seven moves h
 
 | Move | Scenes | Minutes |
 |---|---|---|
-| 1. Two jobs, two costs | `Opening`, `Mechanics` (one continuous picture: text, tokens, a layer up close, prefill, decode, text), `DecodeCeiling` (a dense model's ceiling first, then this model's) | 9 |
+| 1. Two jobs, two costs | `Mechanics` (one continuous picture: text, tokens, a layer up close, prefill, decode, text), `DecodeCeiling` (a dense model's ceiling first, then this model's) | 9 |
 | 2. Why the engine batches | `Batching` (decode as a timeline of steps: one request, four sharing each read, continuous batching; then the measured curve) | 7 |
 | 3. Three knobs: weights, experts, cache | `Quantisation`, `MixtureOfExperts`, `PrefixCache` (routing and offloading) | 8 |
 | 4. More than one GPU | `Parallelism` (the whole vector on every GPU, a slice of every matrix each, the all-reduce animated between the GPUs; then the step timelines) | 6 |
@@ -44,12 +44,15 @@ scenes/s00 .. s08    one file per move; scenes are presented in file order
 script.md            the spine, the moves, the sources
 ```
 
-## Pacing
+## Pacing and seams
 
-Every scene opens on a still picture: the first click shows the title and the furniture with nothing moving, so the
-speaker can name what is on screen; the mechanism starts on the next click. The first time something happens it is
-slow enough to follow; repetitions (the decode loop, layer two, later tokens) play at speed inside one click. 82 steps
-in 14 scenes.
+There is no title slide: the deck opens on the first picture, the sentence, and the speaker introduces the talk over it.
+Every scene opens on a still (the previous scene's last frame) and the mechanism starts on the next click; the first
+occurrence of a mechanism is slow enough to follow and repetitions play at speed inside one click. Scene boundaries are
+invisible: the last step of every scene hands over to the next one (the stage folds into the GPU drawing, the measured
+GPU becomes the 96 GB card, the weights bar grows into the dense stack, the grid of questions is cleared for the next
+comparison, the two phases shrink to the top for the close), and the title changes in place as the picture changes.
+`bin/seams.py llm-serving` reports every seam as identical or title only. 82 steps in 13 scenes.
 
 ## Style rules
 

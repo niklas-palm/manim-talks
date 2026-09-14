@@ -78,16 +78,11 @@ class Industry(TalkSlide):
         batch already uses the read; the engine documentation says the same, high gain at low load, medium at best when busy.""")
         f4 = front("4-bit as arithmetic", "Blackwell computes in NVFP4 natively; 4-bit stops being a decompression trick", OUTPUT, RIGHT * 1.7 + DOWN * 1.3)
         f5 = front("reasoning effort", "tokens per answer becomes the capacity setting: 1.7 to 3.5 times", OUTPUT, RIGHT * 1.7 + DOWN * 2.45)
+        self.next_slide("""Two more on the decode side. Blackwell GPUs compute in four-bit floating point natively, with a scale per block of sixteen values, so NVFP4 weights stop being something the kernel decompresses and become something it multiplies: another 25 percent here, and the vendor's own numbers put the accuracy cost within a point of fp8 when the build is calibrated, which is exactly the caveat move five ended on. And reasoning models turn the number of tokens per answer into a knob, effort, which changes capacity by 1.7 to 3.5 times, more than any flag on the engine. Back to the spine: a model reads your prompt once and then writes one token at a time, and every item on this slide is an attack on one of those two costs.""")
         # --- hand-over: the fronts fade, the two phases shrink to the top, and the close begins on them
         grp = VGroup(pre, dec, arrow, loop)
         t = retitle(self, t, *TITLE_CLOSE, extra=[FadeOut(VGroup(f1, f2, f6, f3, f4, f5, cap)), grp.animate.scale(0.6).move_to([0, 2.0, 0])], run_time=1.2)
-        self.finish("""Two more on the decode side. Blackwell GPUs compute in four-bit floating point natively, with a scale per block of
-        sixteen values, so NVFP4 weights stop being something the kernel decompresses and become something it multiplies:
-        another 25 percent here, and the vendor's own numbers put the accuracy cost within a point of fp8 when the build is
-        calibrated, which is exactly the caveat move five ended on. And reasoning models turn the number of tokens per answer
-        into a knob, effort, which changes capacity by 1.7 to 3.5 times, more than any flag on the engine. Back to the spine:
-        a model reads your prompt once and then writes one token at a time, and every item on this slide is an attack on one
-        of those two costs. Then the picture hands over: The fronts fade and the two phases shrink to the top: five things to take home, each a measurement rather than an opinion.""")
+        self.finish("""The picture hands over. The fronts fade and the two phases shrink to the top: five things to take home, each a measurement rather than an opinion.""")
 
 
 class Close(TalkSlide):

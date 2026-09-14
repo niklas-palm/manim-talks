@@ -59,7 +59,7 @@ class Replication(TalkSlide):
             if ack:
                 d = Dot(color=SYNC, radius=0.07).move_to(cell.get_center())
                 self.add(d)
-                self.play(d.animate.move_to(prod.get_right()), hwm.animate.move_to(hwm_pos(logs[0], len(logs[0].cells))), run_time=rt)
+                self.play(d.animate.move_to(prod.get_center()), hwm.animate.move_to(hwm_pos(logs[0], len(logs[0].cells))), run_time=rt)   # the acknowledgement lands on the producer itself
                 self.play(FadeOut(d), Flash(prod, color=SYNC, flash_radius=0.9, num_lines=8), run_time=0.25)
             return cell
 
