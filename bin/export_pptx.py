@@ -8,13 +8,16 @@ Manim writes with --save_sections are the natural unit; the JSON index gives the
 is the timing tree PowerPoint itself writes for a video set to "Start: Automatically"; python-pptx has no API for it,
 so the XML is inserted after the movie is added.
 
-Usage: bin/export_pptx.py <talk> [ql|qm|qh] [out.pptx]      default quality qh, output talks/<talk>/<talk>.pptx
+Usage: bin/export_pptx.py <talk> [ql|qm|qh] [out.pptx] [--click]   default quality qh, output talks/<talk>/<talk>.pptx;
+--click leaves the clips to start on click instead of automatically
 Requires python-pptx (pip install python-pptx) and ffmpeg (poster frames)."""
 import glob, json, os, re, subprocess, sys, tempfile
 from lxml import etree
 from pptx import Presentation
 from pptx.util import Inches
 
+CLICK = "--click" in sys.argv
+sys.argv = [a for a in sys.argv if a != "--click"]
 talk = sys.argv[1] if len(sys.argv) > 1 else sys.exit(__doc__)
 Q = {"ql": "480p15", "qm": "720p30", "qh": "1080p60"}[sys.argv[2] if len(sys.argv) > 2 else "qh"]
 root = f"talks/{talk}"
@@ -63,8 +66,13 @@ for f in sorted(glob.glob(f"{root}/scenes/s*.py")):
             slide = prs.slides.add_slide(blank)
             movie = slide.shapes.add_movie(clip, 0, 0, prs.slide_width, prs.slide_height, poster_frame_image=png, mime_type="video/mp4")
             spid = movie.shape_id
-            timing = etree.fromstring(AUTOPLAY % (NS, int(float(sec["duration"]) * 1000), spid, spid))
-            slide.element.append(timing)   # p:timing belongs after p:clrMapOvr; appending to the slide element puts it last, which is where PowerPoint writes it
+            if not CLICK:
+                timing = etree.fromstring(AUTOPLAY % (NS, int(float(sec["duration"]) * 1000), spid, spid))
+                old = slide.element.find(f"{{{NS}}}timing")   # python-pptx already wrote a bare media timing node for the movie
+                if old is not None:                           # two p:timing elements make the file invalid; replace, do not append
+                    slide.element.replace(old, timing)
+                else:
+                    slide.element.append(timing)
             note = notes[k] if k < len(notes) else ""
             slide.notes_slide.notes_text_frame.text = f"{scene}, step {k + 1}\n\n{note}"
             n_steps += 1

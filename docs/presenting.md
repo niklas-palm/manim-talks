@@ -54,6 +54,7 @@ click in PowerPoint does what a click in the presenter does; the clip holds on i
 the slide's notes with the scene name and step number. The poster frame is the clip's first frame, so a slide looks
 like the end of the previous one until it plays. This is a convenience for people who must present from PowerPoint;
 the web presenter remains the reference, and the two-window flow, the timer and the next-step preview exist only
-there. The autoplay is the timing XML PowerPoint writes for "Start: Automatically"; open the file once in PowerPoint
-before relying on it, and if a slide does not start by itself, set the video to start automatically in the Playback
-tab and report the case in `LEARNINGS.md`.
+there. The autoplay is the timing XML PowerPoint writes for "Start: Automatically", and it is verified: PowerPoint
+opens the file without repair and reports the clips' play-on-entry as true through its object model. Pass `--click`
+for clips that wait for a click instead. python-pptx writes a bare timing node of its own when it adds a movie; the
+export replaces it rather than adding a second, because two timing elements make the file unopenable.

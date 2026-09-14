@@ -186,3 +186,14 @@ First principles that the passes confirmed, written to outlast the decks they ca
   come from where it would be.
 - `bin/review.sh` at half-second spacing still misses where a dot starts and lands; sample eight frames across the
   step's clip with ffmpeg when checking a travel.
+
+## PowerPoint export, verified (2026-09-14, evening)
+
+- The export was broken until now: python-pptx writes its own `<p:timing>` when it adds a movie, and the autoplay
+  timing was appended as a second one. PowerPoint silently refused to open such a file (no repair prompt, no window,
+  no presentation listed). Replacing the existing element fixed it. Lesson: re-reading a file with the library that
+  wrote it proves nothing about the consumer; validate against the real consumer.
+- Verification without touching anything else in PowerPoint: open the one file, address the presentation by its
+  name, read `count of slides`, `media type` and `play on entry of play settings of animation settings` of the movie
+  shape, close that presentation by name. `active presentation` is never used.
+- `--click` exports clips that start on click, for speakers who want to talk over the still first.
