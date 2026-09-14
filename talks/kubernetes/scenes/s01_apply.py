@@ -64,14 +64,14 @@ class ApplyRequest(TalkSlide):
         members = S.store[2]
         copies = VGroup(*[req[0].copy().scale(0.25).move_to(m) for m in members])
         self.play(LaggedStart(*[FadeIn(c) for c in copies], lag_ratio=0.3), run_time=0.7)
-        ql = label("quorum: 2 of 3", 15, TEAL).next_to(S.store, DOWN, buff=GAP_TIGHT).align_to(S.store, LEFT)
+        ql = label("quorum: 2 of 3", 15, NODE).next_to(S.store, DOWN, buff=GAP_TIGHT).align_to(S.store, LEFT)
         self.play(FadeOut(copies), FadeIn(ql), run_time=0.4)
         ok = label("201 created", 15, DESIRED).next_to(S.client, DOWN, buff=GAP_TIGHT)
         self.play(FadeIn(ok), run_time=0.3)
         self.play(members[2].animate.set_color(HOT), run_time=0.4)
         copies = VGroup(*[req[0].copy().scale(0.25).move_to(m) for m in members[:2]])
         self.play(LaggedStart(*[FadeIn(c) for c in copies], lag_ratio=0.3), run_time=0.6)
-        self.play(FadeOut(copies), members[2].animate.set_color(TEAL), run_time=0.4)
+        self.play(FadeOut(copies), members[2].animate.set_color(NODE), run_time=0.4)
         self.next_slide("""The record lands in etcd, and etcd is not one machine. It is usually three, sometimes five, and a write counts as
         done when a majority has it: for n members, n over two plus one, so two of three. Only then does the client hear
         "created". Watch one member die: the write still lands on two, and nothing stops; five members tolerate two failures.

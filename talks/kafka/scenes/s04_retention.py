@@ -76,8 +76,8 @@ class Retention(TalkSlide):
         latest value of every key. This is how a topic becomes a table you can rebuild from, and it is exactly how
         __consumer_offsets and Kafka's own metadata log are kept small.""")
         # --- a tombstone
-        tomb = Square(SIDE, fill_opacity=0, stroke_color=KEY_B, stroke_width=2.5).move_to(cprod.get_center())   # born at the producer, like every record
-        cross = VGroup(Line(UL * 0.11, DR * 0.11, color=KEY_B, stroke_width=2), Line(UR * 0.11, DL * 0.11, color=KEY_B, stroke_width=2)).move_to(tomb)
+        tomb = Square(SIDE, fill_opacity=0, stroke_color=KEY_B, stroke_width=sw()).move_to(cprod.get_center())   # born at the producer, like every record
+        cross = VGroup(Line(UL * 0.11, DR * 0.11, color=KEY_B, stroke_width=sw(0.8)), Line(UR * 0.11, DL * 0.11, color=KEY_B, stroke_width=sw(0.8))).move_to(tomb)
         tl = label("tombstone:\nkey bob, value null", 15, KEY_B).next_to(cprod, UP, buff=GAP_TIGHT).align_to(cprod, LEFT)   # two lines: clear of the topic name
         self.play(FadeIn(tomb), FadeIn(cross), FadeIn(tl), run_time=0.4)
         n = len(clog.cells)

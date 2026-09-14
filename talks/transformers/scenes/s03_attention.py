@@ -66,7 +66,7 @@ class Attention(TalkSlide):
         self.remove(qbig); self.add(qbig_t)   # the exact object move 3's second scene rebuilds
         self.play(FadeIn(qbl), run_time=0.3)
         keys = [tri[j][1] for j in range(6)]
-        lines = VGroup(*[Line(qbig_t.get_left(), kc.get_bottom(), color=MUTED, stroke_width=1.8, stroke_opacity=0.65) for kc in keys])   # from the query's left edge up to each key's bottom: the fan stays under the triples and left of the query's label
+        lines = VGroup(*[Line(qbig_t.get_left(), kc.get_bottom(), color=MUTED, stroke_width=sw(0.72), stroke_opacity=0.65) for kc in keys])   # from the query's left edge up to each key's bottom: the fan stays under the triples and left of the query's label
         self.play(LaggedStart(*[Create(l) for l in lines], lag_ratio=0.08), run_time=1.0)
         slabels = VGroup(*[label(f"{s:.1f}", 20, TEXT).next_to(tri[j], RIGHT, buff=GAP_TIGHT) for j, s in enumerate(SCORES)])   # beside each token's triple, above the fan, so no line crosses a score
         self.play(LaggedStart(*[FadeIn(s, shift=DOWN * 0.05) for s in slabels], lag_ratio=0.06), run_time=0.8)

@@ -28,7 +28,7 @@ class Controller(TalkSlide):
         brks = VGroup(*[broker(f"broker {i + 1}", 3.6, 1.0).move_to([x, -1.7, 0]) for i, x in enumerate(CX)])
         # standing relations run straight down each column: controller to log (Raft), log to broker (fetch); never skewed
         def vdash(x, y0, y1, color):
-            return DashedLine([x, y0, 0], [x, y1, 0], color=color, stroke_width=1.6, dash_length=0.1, stroke_opacity=0.7)
+            return DashedLine([x, y0, 0], [x, y1, 0], color=color, stroke_width=sw(0.64), dash_length=0.1, stroke_opacity=0.7)
         raft = VGroup(*[vdash(x, ctrls[i][0].get_bottom()[1] - 0.08, mlog.rail.get_top()[1] + 0.08, SYNC) for i, x in enumerate(CX)])
         raft.add(label("Raft", 13, SYNC).next_to(raft[1], RIGHT, buff=GAP_TIGHT))
         fetch = VGroup(*[vdash(x, mlog.rail.get_bottom()[1] - 0.08, brks[i][0].get_top()[1] + 0.08, MUTED) for i, x in enumerate(CX)])

@@ -7,10 +7,27 @@ members in one play (the trap that leaves the member behind). Exit code 1 if any
 flagged. It is a checklist helper, not a judge: docs/review.md is the review."""
 import glob, json, os, re, sys
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from lib import theme as _theme
+
 talk = sys.argv[1] if len(sys.argv) > 1 else sys.exit(__doc__)
 Q = {"ql": "480p15", "qm": "720p30", "qh": "1080p60"}[sys.argv[2] if len(sys.argv) > 2 else "qh"]
 root = f"talks/{talk}"
 flags = []
+
+# The look this talk presents in, and whether it is fit to present: contrast against the background, accents that can
+# be told apart, fonts that are installed. bin/themes.py check says the same for every theme.
+_name = open(f"{root}/.theme").read().strip() if os.path.exists(f"{root}/.theme") else _theme.active_name()
+_th = _theme.load(_name, probe_fonts=True)
+flags += [f"theme {_name}: {b}" for b in _theme.validate(_th)]
+_have = _theme.fonts_available()
+flags += [f"theme {_name}: the {k} font '{_th[k]}' is not installed; Pango will substitute one"
+          for k in ("font", "code_font") if _have and _th[k] not in _have]
+
+# A hue named in a scene is a hue that will not follow the theme: a talk maps its nouns onto slots in objects.py.
+for _f in sorted(glob.glob(f"{root}/scenes/s*.py")):
+    for _hue in re.findall(r"\b(BLUE|YELLOW|VIOLET|TEAL|GREEN|ORANGE|RED)\b", open(_f).read()):
+        flags.append(f"{os.path.basename(_f)} names the colour {_hue}: use the meaning from objects.py instead")
 
 for f, what in [("script.md", "the spine, moves and sources"), ("README.md", "what the talk is"), ("scenes/objects.py", "the talk's colours and shared drawings")]:
     if not os.path.exists(f"{root}/{f}"):
@@ -55,7 +72,7 @@ for f in sorted(glob.glob(f"{root}/scenes/s*.py")):
             if len(re.findall(r"(?<!swap_)caption\(self", step)) + step.count("swap_caption(") > 1:
                 flags.append(f"{name}: {c.group(1)} changes the caption more than once inside one step")
 
-print(f"{talk}: {'ok' if not flags else str(len(flags)) + ' flags'}")
+print(f"{talk}: {'ok' if not flags else str(len(flags)) + ' flags'}  (theme {_name}, {_th['mode']})")
 for x in flags:
     print("  -", x)
 sys.exit(1 if flags else 0)

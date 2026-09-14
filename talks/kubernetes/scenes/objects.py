@@ -12,7 +12,7 @@ others are recognised by shape and colour. Sentences go in the notes.
 """
 from lib.palette import *
 
-DESIRED, ACTUAL, CONTROL, NODE, HOT = BLUE, YELLOW, VIOLET, TEAL, RED
+DESIRED, ACTUAL, CONTROL, NODE, HOT = A1, A2, A3, A4, ALERT
 set_thread({"desired": DESIRED, "record": DESIRED, "records": DESIRED, "running": ACTUAL, "actual": ACTUAL,
             "controller": CONTROL, "controllers": CONTROL, "scheduler": CONTROL, "node": NODE, "nodes": NODE, "kubelet": NODE})
 
@@ -40,7 +40,7 @@ CARD_W, CARD_H = 1.6, 0.66
 
 def card(kind: str, detail: str = "", color: str = DESIRED) -> VGroup:
     """A record in the store: its kind, and one status line. card[0] frame, card[1] kind, card[2] status."""
-    r = RoundedRectangle(corner_radius=0.08, width=CARD_W, height=CARD_H, stroke_color=color, stroke_width=2, fill_color=color, fill_opacity=0.14)
+    r = RoundedRectangle(corner_radius=rad(0.53), width=CARD_W, height=CARD_H, stroke_color=color, stroke_width=sw(0.8), fill_color=color, fill_opacity=FILL * 1.4)
     g = VGroup(r, label(kind, 16, TEXT).move_to(r.get_top() + DOWN * 0.19))
     g.add(label(detail if detail else " ", 15, MUTED).move_to(r.get_bottom() + UP * 0.19))
     return g
@@ -59,7 +59,7 @@ def apiserver() -> VGroup:
     it. [0] box, [1] name, [2] gates, [3] gate names."""
     g = box(X_R - X_L, H_API, "", CONTROL)
     name = label("API server", 18, CONTROL).move_to([X_L + GAP, Y_API, 0], aligned_edge=LEFT)
-    gates = VGroup(*[Rectangle(width=0.09, height=0.36, fill_color=DIM, fill_opacity=0.9, stroke_width=0).move_to([x, Y_API + 0.1, 0]) for x in X_GATES])
+    gates = VGroup(*[Rectangle(width=0.09, height=0.36, fill_color=DIM, fill_opacity=SOLID, stroke_width=0).move_to([x, Y_API + 0.1, 0]) for x in X_GATES])
     names = VGroup(*[label(s, 16, MUTED).next_to(gt, DOWN, buff=0.05) for s, gt in zip(("authenticate", "authorise", "admit"), gates)])
     g.move_to([0, Y_API, 0])
     g.add(name, gates, names)
@@ -88,7 +88,7 @@ def controller(name: str) -> VGroup:
     inside the box with padding. [0] box, [1] name, [2] loop arc."""
     g = box(W_CTRL, H_ROW, "", CONTROL)
     nm = label(name.replace(" ", "\n", 1), 15, CONTROL).move_to(g[0].get_left() + RIGHT * 0.15, aligned_edge=LEFT)
-    arc = Arc(radius=0.17, start_angle=PI / 2, angle=-1.7 * PI, color=CONTROL, stroke_width=2.4).move_to(g[0].get_right() + LEFT * 0.34)
+    arc = Arc(radius=0.17, start_angle=PI / 2, angle=-1.7 * PI, color=CONTROL, stroke_width=sw(0.96)).move_to(g[0].get_right() + LEFT * 0.34)
     arc.add_tip(tip_length=0.11, tip_width=0.11)
     g.add(nm, arc)
     return g
@@ -102,17 +102,17 @@ def node_box(name: str, used: float = 0.3) -> VGroup:
     left, right, top = g[0].get_left()[0] + 0.15, g[0].get_right()[0] - 0.15, g[0].get_top()[1]
     name = label(name, 15, TEAL).move_to([left, top - 0.24, 0], aligned_edge=LEFT)
     kub = label("kubelet", 15, MUTED).move_to([right, top - 0.24, 0], aligned_edge=RIGHT)
-    slots = VGroup(*[Rectangle(width=0.38, height=0.38, stroke_color=DIM, stroke_width=1.3, fill_opacity=0) for _ in range(3)]).arrange(RIGHT, buff=0.13)
+    slots = VGroup(*[Rectangle(width=0.38, height=0.38, stroke_color=DIM, stroke_width=sw(0.52), fill_opacity=0) for _ in range(3)]).arrange(RIGHT, buff=0.13)
     slots.move_to([left, top - 0.64, 0], aligned_edge=LEFT)
     ml = label("memory", 13, MUTED).move_to([left, top - 1.26, 0], aligned_edge=LEFT)
-    frame = Rectangle(width=right - left - 0.05, height=0.16, stroke_color=DIM, stroke_width=1.3, fill_opacity=0).move_to([left, top - 1.45, 0], aligned_edge=LEFT)
-    fill = Rectangle(width=max(0.01, frame.width * used), height=0.14, fill_color=DIM, fill_opacity=0.9, stroke_width=0).align_to(frame, LEFT).set_y(frame.get_y())
+    frame = Rectangle(width=right - left - 0.05, height=0.16, stroke_color=DIM, stroke_width=sw(0.52), fill_opacity=0).move_to([left, top - 1.45, 0], aligned_edge=LEFT)
+    fill = Rectangle(width=max(0.01, frame.width * used), height=0.14, fill_color=DIM, fill_opacity=SOLID, stroke_width=0).align_to(frame, LEFT).set_y(frame.get_y())
     g.add(name, slots, frame, fill, kub, ml)
     return g
 
 
 def pod(color: str = ACTUAL, side: float = 0.34) -> Square:
-    return Square(side, fill_color=color, fill_opacity=0.92, stroke_width=0)
+    return Square(side, fill_color=color, fill_opacity=SOLID, stroke_width=0)
 
 
 def watch(a: Mobject, color: str = CONTROL, legend: bool = False) -> VGroup:
@@ -121,7 +121,7 @@ def watch(a: Mobject, color: str = CONTROL, legend: bool = False) -> VGroup:
     x = a.get_center()[0]
     above = a.get_center()[1] > Y_API
     y0, y1 = (a.get_bottom()[1], Y_API + H_API / 2) if above else (a.get_top()[1], Y_API - H_API / 2)
-    ln = DashedLine([x, y0, 0], [x, y1, 0], color=color, stroke_width=1.8, dash_length=0.1, stroke_opacity=0.7)
+    ln = DashedLine([x, y0, 0], [x, y1, 0], color=color, stroke_width=sw(0.72), dash_length=0.1, stroke_opacity=0.7)
     g = VGroup(ln)
     if legend:
         g.add(label("watch", 15, MUTED).move_to([x + 0.1, (y0 + y1) / 2, 0], aligned_edge=LEFT))

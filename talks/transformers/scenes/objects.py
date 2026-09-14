@@ -16,7 +16,7 @@ of bars. Cells are 0.14 to 0.25 units unless a picture is a deliberate miniature
 """
 from lib.palette import *
 
-TOKEN, QUERY, KEY, VALUE, WEIGHTS, ATTN, MASK = BLUE, YELLOW, TEAL, GREEN, VIOLET, ORANGE, RED
+TOKEN, QUERY, KEY, VALUE, WEIGHTS, ATTN, MASK = A1, A2, A4, A5, A3, A6, ALERT
 set_thread({"token": TOKEN, "tokens": TOKEN, "query": QUERY, "queries": QUERY, "key": KEY, "keys": KEY,
             "value": VALUE, "values": VALUE, "attention": ATTN, "weights": WEIGHTS, "weight": WEIGHTS})
 
@@ -48,10 +48,10 @@ def layer_glyph(w: float = 4.2, h: float = 0.74) -> VGroup:
     """One layer as a miniature of the pictures already shown: a vector goes in, becomes query/key/value, the fan reads
     the row, the feed-forward grid, a vector comes out. Repeated down the stack so the audience sees "the same again".
     A deliberate miniature: its cells are below the usual minimum because the full-size version was just shown."""
-    box_ = RoundedRectangle(corner_radius=0.1, width=w, height=h, stroke_color=WEIGHTS, stroke_width=2, fill_color=WEIGHTS, fill_opacity=0.08)
+    box_ = RoundedRectangle(corner_radius=rad(0.67), width=w, height=h, stroke_color=WEIGHTS, stroke_width=sw(0.8), fill_color=WEIGHTS, fill_opacity=FILL * 0.8)
     vin = column(4, TOKEN, 0.1)
     tri = VGroup(column(3, QUERY, 0.08), column(3, KEY, 0.08), column(3, VALUE, 0.08)).arrange(RIGHT, buff=0.03)
-    fan = VGroup(*[Line(ORIGIN, RIGHT * 0.45 + UP * (0.16 - 0.08 * i), color=MUTED, stroke_width=1.2) for i in range(5)])
+    fan = VGroup(*[Line(ORIGIN, RIGHT * 0.45 + UP * (0.16 - 0.08 * i), color=MUTED, stroke_width=sw(0.48)) for i in range(5)])
     att = column(3, ATTN, 0.08)
     ff = grid(4, 6, WEIGHTS, cell=0.08)
     vout = column(4, TOKEN, 0.1)
@@ -72,7 +72,7 @@ PIPE_Y = -1.25                            # the centre line of the layer and pre
 
 def big_tokens(side: float = 1.3, y: float = ROWS[1]) -> VGroup:
     """The six tokens as squares with their words inside (move 1 at 1.3, move 2 at 1.0)."""
-    toks = VGroup(*[VGroup(Square(side, fill_color=TOKEN, fill_opacity=0.85, stroke_width=0), label(w, 28 if side > 1.1 else 22, "#0f1116")) for w in WORDS])
+    toks = VGroup(*[VGroup(Square(side, fill_color=TOKEN, fill_opacity=SOLID * 0.94, stroke_width=0), label(w, 28 if side > 1.1 else 22, "#0f1116")) for w in WORDS])
     for g, x in zip(toks, XS):
         g.move_to([x, y, 0]); g[1].move_to(g[0])
     return toks
@@ -85,7 +85,7 @@ def all_edges(toks: VGroup) -> VGroup:
         for b in range(6):
             if a != b:
                 edges.add(ArcBetweenPoints(toks[a][0].get_bottom(), toks[b][0].get_bottom(), angle=PI / 2.2 if a < b else -PI / 2.2,
-                                           color=ATTN, stroke_width=2.0, stroke_opacity=0.6))
+                                           color=ATTN, stroke_width=sw(0.8), stroke_opacity=0.6))
     return edges
 
 
@@ -120,7 +120,7 @@ def triples(vecs) -> VGroup:
 def softmax_bars() -> tuple:
     """The attention weights of "mat" as bars under the tokens, with their values and the label. Returns (bars, labels, caption)."""
     weights = softmax(SCORES)
-    bars = VGroup(*[Rectangle(width=0.5, height=max(0.05, w * 3.4), fill_color=ATTN, fill_opacity=0.45 + 0.5 * (w == max(weights)), stroke_width=0)
+    bars = VGroup(*[Rectangle(width=0.5, height=max(0.05, w * 3.4), fill_color=ATTN, fill_opacity=SOLID * 0.5 + 0.5 * (w == max(weights)), stroke_width=0)
                     .move_to([XS[j], ROWS[4], 0], aligned_edge=DOWN) for j, w in enumerate(weights)])
     wlabels = VGroup(*[label(f"{w:.2f}", 18, ATTN).next_to(b, UP, buff=GAP_TIGHT) for b, w in zip(bars, weights)])
     bl = label("softmax: weights that sum to 1", 18, ATTN).move_to([0, ROWS[4] - 0.35, 0])
@@ -140,11 +140,11 @@ def head_tiles() -> VGroup:
     """Three attention heads side by side, each with its own query, key, value and output (move 3, second scene)."""
     heads = VGroup()
     for hh in range(3):
-        tile = VGroup(RoundedRectangle(corner_radius=0.12, width=3.9, height=1.5, stroke_color=ATTN, stroke_width=2, fill_color=ATTN, fill_opacity=0.07),
+        tile = VGroup(RoundedRectangle(corner_radius=rad(0.8), width=3.9, height=1.5, stroke_color=ATTN, stroke_width=sw(0.8), fill_color=ATTN, fill_opacity=FILL * 0.7),
                       label(f"head {hh + 1}: its own Wq, Wk, Wv", 17, ATTN))
         tile[1].next_to(tile[0].get_top(), DOWN, buff=GAP_TIGHT)
         trio = VGroup(column(3, QUERY, 0.22), column(3, KEY, 0.22), column(3, VALUE, 0.22)).arrange(RIGHT, buff=0.1)
-        ar = Arrow(ORIGIN, RIGHT * 0.9, buff=0, color=MUTED, stroke_width=2.5, tip_length=0.18)
+        ar = Arrow(ORIGIN, RIGHT * 0.9, buff=0, color=MUTED, stroke_width=sw(), tip_length=0.18)
         outc = column(3, ATTN, 0.24)
         inner = VGroup(trio, ar, outc).arrange(RIGHT, buff=GAP).move_to(tile[0]).shift(DOWN * 0.2)
         tile.add(inner)

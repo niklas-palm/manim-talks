@@ -58,7 +58,7 @@ class Partitions(TalkSlide):
         the key so that the things that must stay ordered share it.""")
         # --- a consumer group
         cons = [consumer(f"consumer {i + 1}").move_to([x, CY, 0]) for i, x in enumerate(XS)]
-        grp = SurroundingRectangle(VGroup(*cons), color=READER, buff=GAP, corner_radius=0.1, stroke_width=1.5)
+        grp = SurroundingRectangle(VGroup(*cons), color=READER, buff=GAP, corner_radius=rad(0.67), stroke_width=sw(0.6))
         gl = label("consumer group: one partition per member", 16, READER).next_to(grp, DOWN, buff=GAP_TIGHT).align_to(grp, LEFT)   # below: the pointer tags own the space above
         ptrs = [Pointer(f"c{i + 1}", READER).place(logs[i], 0, dy=1.05) for i in range(3)]   # below the broker box, not on its border
         self.play(FadeIn(VGroup(*cons)), Create(grp), FadeIn(gl), *[FadeIn(p) for p in ptrs], run_time=0.6)

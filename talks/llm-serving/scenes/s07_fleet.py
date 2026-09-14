@@ -49,9 +49,9 @@ class Fleet(TalkSlide):
         lb = box(2.8, 0.65, "load balancer", DIM, size=19).shift(UP * 0.8)
         # one trunk down from the balancer, a rail, a drop into each engine: every link vertical or horizontal
         rail_y = (lb[0].get_bottom()[1] + fleet[0][0].get_top()[1]) / 2
-        trunk = Line(lb[0].get_bottom(), [lb.get_x(), rail_y, 0], color=DIM, stroke_width=1.5)
-        rail = Line([fleet[0].get_x(), rail_y, 0], [fleet[-1].get_x(), rail_y, 0], color=DIM, stroke_width=1.5)
-        links = VGroup(trunk, rail, *[Line([e.get_x(), rail_y, 0], e[0].get_top(), color=DIM, stroke_width=1.5) for e in fleet])
+        trunk = Line(lb[0].get_bottom(), [lb.get_x(), rail_y, 0], color=DIM, stroke_width=sw(0.6))
+        rail = Line([fleet[0].get_x(), rail_y, 0], [fleet[-1].get_x(), rail_y, 0], color=DIM, stroke_width=sw(0.6))
+        links = VGroup(trunk, rail, *[Line([e.get_x(), rail_y, 0], e[0].get_top(), color=DIM, stroke_width=sw(0.6)) for e in fleet])
         self.play(FadeIn(lb), LaggedStart(*[FadeIn(e, shift=UP * 0.15) for e in fleet], lag_ratio=0.08), Create(links))
         self.next_slide("""The shape that follows: several independent engines behind a balancer, rather than one large engine over many
         GPUs. Move four gave the throughput reason, replicas over parallelism past the degree where the model fits. There are two
@@ -61,12 +61,12 @@ class Fleet(TalkSlide):
         cap = swap_caption(self, cap, "Adding an engine takes minutes: size for the peak, autoscale the trend")
         clock = VGroup(label("decide", 15, DIM), label("get a machine", 15, DIM), label("load the weights", 15, DIM), label("serving", 15, OUTPUT)).arrange(RIGHT, buff=0.55).shift(UP * 2.3)
         bar = Line(clock.get_left() + DOWN * 0.28, clock.get_right() + DOWN * 0.28, color=DIM)
-        prog = Line(bar.get_start(), bar.get_start(), color=OUTPUT, stroke_width=6)
+        prog = Line(bar.get_start(), bar.get_start(), color=OUTPUT, stroke_width=sw(2.4))
         self.play(FadeIn(clock), Create(bar))
         self.add(prog)
         self.play(prog.animate.put_start_and_end_on(bar.get_start(), bar.get_end()), run_time=2.5)
         new = engine("9", OUTPUT).next_to(fleet, RIGHT, buff=0.18)
-        newlink = Line([new.get_x(), rail_y, 0], new[0].get_top(), color=DIM, stroke_width=1.5)
+        newlink = Line([new.get_x(), rail_y, 0], new[0].get_top(), color=DIM, stroke_width=sw(0.6))
         self.play(FadeIn(new), rail.animate.put_start_and_end_on(rail.get_start(), [new.get_x(), rail_y, 0]), Create(newlink))
         self.next_slide("""Adding an engine means loading the model: minutes. Size for the peak, autoscale for the trend. Autoscaling is slower than people expect, for a reason that is not about any one stack. A new engine has to
         notice the load, get a machine with a GPU, pull an image, and load tens of gigabytes of weights before it answers its

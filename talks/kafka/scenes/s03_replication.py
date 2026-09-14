@@ -94,7 +94,7 @@ class Replication(TalkSlide):
         self.play(lag2.to(30), *isr.set({1}, out={2, 3}), boxes[1][1].animate.set_color(FAIL), boxes[1][0].animate.set_stroke(FAIL), run_time=0.6)
         minc = config("min.insync.replicas\n= 2", 15).move_to([-XR, YS[1] + 0.25, 0], aligned_edge=RIGHT)   # clear of the box edge
         refused = label("NotEnoughReplicas", 16, FAIL).next_to(minc, DOWN, buff=GAP_TIGHT).align_to(minc, RIGHT)
-        cell2 = Square(CELL, fill_color=KEY_C, fill_opacity=0.9, stroke_width=0).move_to(prod.get_center())
+        cell2 = Square(CELL, fill_color=KEY_C, fill_opacity=SOLID, stroke_width=0).move_to(prod.get_center())
         self.add(cell2)
         self.play(FadeIn(minc), cell2.animate.move_to(logs[0].slot(len(logs[0].cells))), run_time=0.3)
         self.play(cell2.animate.set_fill(FAIL).move_to(prod.get_center()), FadeIn(refused), run_time=0.35)

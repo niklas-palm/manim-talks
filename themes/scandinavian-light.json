@@ -1,0 +1,26 @@
+{
+  "mode": "light",
+  "description": "Scandinavian: warm off-white, thin lines, small corners, dusty blue and mustard. Quiet, bright, lots of air.",
+  "font": "Helvetica",
+  "code_style": "xcode",
+  "bg": "#F4F2EE",
+  "text": "#1A1D21",
+  "muted": "#5F6773",
+  "dim": "#C0C5CC",
+  "caption": "#3A414B",
+  "hi": "#0F1216",
+  "panel": "#E8E5DF",
+  "accents": {
+    "a1": "#2A6280",
+    "a2": "#8F6108",
+    "a3": "#5E4E7D",
+    "a4": "#1F6E60",
+    "a5": "#41682F",
+    "a6": "#9E4A24",
+    "alert": "#A32027"
+  },
+  "radius": 0.06,
+  "stroke": 1.8,
+  "fill": 0.07,
+  "solid": 0.85
+}

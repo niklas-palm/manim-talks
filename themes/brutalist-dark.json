@@ -1,0 +1,27 @@
+{
+  "mode": "dark",
+  "description": "Brutalist raw: pure black, square corners, heavy strokes, no fills, uppercase titles, primary colours at full strength.",
+  "font": "Helvetica",
+  "code_style": "github-dark",
+  "bg": "#000000",
+  "text": "#FFFFFF",
+  "muted": "#B4B4B4",
+  "dim": "#525252",
+  "caption": "#E0E0E0",
+  "hi": "#FFFFFF",
+  "panel": "#0D0D0D",
+  "accents": {
+    "a1": "#00A6FF",
+    "a2": "#FFD400",
+    "a3": "#B07CFF",
+    "a4": "#00E5C0",
+    "a5": "#5BE06A",
+    "a6": "#FF7A1A",
+    "alert": "#FF2D2D"
+  },
+  "radius": 0.0,
+  "stroke": 4.0,
+  "fill": 0.0,
+  "solid": 1.0,
+  "title_case": "upper"
+}

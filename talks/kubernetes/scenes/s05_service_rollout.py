@@ -28,7 +28,7 @@ class ServiceRollout(TalkSlide):
         n2 = S.nodes[1]
         n2[0].set_stroke(color=HOT, opacity=0.35).set_fill(HOT, 0.08); n2[5].set_color(HOT)      # node two as move four left it: dead
         for n in (S.nodes[0], S.nodes[2]):
-            n[5].set_color(TEAL)
+            n[5].set_color(NODE)
         kw = {0: watch(S.nodes[0], NODE), 2: watch(S.nodes[2], NODE)}
         nc, wn = S.ctrl["extra"], S.watches["extra"]
         self.add(*S.base(*[S.ctrl[k] for k in ("deploy", "rs", "sched")], nc, *[S.watches[k] for k in ("deploy", "rs", "sched")], wn, *S.cards.values(), *pods.values(), *kw.values()))
@@ -37,7 +37,7 @@ class ServiceRollout(TalkSlide):
         rs_kind = label("ReplicaSet v1", 16, TEXT).move_to(S.cards["rs"][1])
         rs_detail = label("3 replicas", 15, MUTED).move_to(S.cards["rs"][2])
         t = retitle(self, t, "A stable address for changing pods, and changing the pods", "5  a stable address, and change",
-                    extra=[n2[0].animate.set_stroke(color=NODE, opacity=1.0).set_fill(NODE, 0.10), n2[5].animate.set_color(TEAL), Create(kw[1][0]),
+                    extra=[n2[0].animate.set_stroke(color=NODE, opacity=1.0).set_fill(NODE, 0.10), n2[5].animate.set_color(NODE), Create(kw[1][0]),
                            mem(n2, 0.3), FadeOut(nc), FadeOut(wn), *[FadeOut(c) for c in pod_cards],
                            FadeOut(S.cards["rs"][1]), FadeIn(rs_kind), FadeOut(S.cards["rs"][2]), FadeIn(rs_detail)], run_time=1.0)
         S.cards["rs"].remove(S.cards["rs"][1], S.cards["rs"][2]); S.cards["rs"].add(rs_kind, rs_detail)
@@ -58,7 +58,7 @@ class ServiceRollout(TalkSlide):
         self.play(FadeIn(front), FadeIn(fl), run_time=0.4)
         self.next_slide("""A new pod lands on node two: a frontend, drawn in blue because it is something the user asked for. The three
         web pods run on node one. The frontend needs to reach them, and that is the question of this scene.""")
-        qs = DashedLine(front.get_left(), pods["d"].get_right(), color=HOT, stroke_width=1.6, dash_length=0.08)   # one straight line along the row of pods, from the frontend to the web pods
+        qs = DashedLine(front.get_left(), pods["d"].get_right(), color=HOT, stroke_width=sw(0.64), dash_length=0.08)   # one straight line along the row of pods, from the frontend to the web pods
         q = label("which address?", 16, HOT).move_to([X_NODES_L, Y_LABELS, 0], aligned_edge=LEFT)
         self.play(Create(qs), FadeIn(q), run_time=0.7)
         self.next_slide("""Each pod has its own IP address, and the set changes: d replaced b in the last move and has a new address; the
@@ -86,8 +86,8 @@ class ServiceRollout(TalkSlide):
         Services and Pods, and derives another record: the list of ready pod addresses that match the selector, right now.
         Every time a pod comes or goes, this list is rewritten. Nothing routes yet; a list exists.""")
         # --- kube-proxy on every node
-        chips = VGroup(*[Rectangle(width=0.5, height=0.14, fill_color=TEAL, fill_opacity=0.8, stroke_width=0).move_to(n[0].get_corner(DL) + RIGHT * 0.15 + UP * 0.24, aligned_edge=LEFT) for n in S.nodes])   # the free row under the memory bar
-        kp = label("kube-proxy on every node", 15, TEAL).move_to([X_NODES_L, Y_LABELS, 0], aligned_edge=LEFT)
+        chips = VGroup(*[Rectangle(width=0.5, height=0.14, fill_color=NODE, fill_opacity=SOLID * 0.89, stroke_width=0).move_to(n[0].get_corner(DL) + RIGHT * 0.15 + UP * 0.24, aligned_edge=LEFT) for n in S.nodes])   # the free row under the memory bar
+        kp = label("kube-proxy on every node", 15, NODE).move_to([X_NODES_L, Y_LABELS, 0], aligned_edge=LEFT)
         self.play(LaggedStart(*[FadeIn(c) for c in chips], lag_ratio=0.2), FadeIn(kp), run_time=0.6)
         for target in ("c", "a"):
             d = Dot(color=DESIRED, radius=0.08).move_to(front.get_center())

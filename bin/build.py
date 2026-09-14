@@ -8,6 +8,16 @@ Scene changes swap between two stacked video elements, the next one already load
 Boundaries come from the per-step durations Manim writes into the section index. Usage: bin/build.py <talk> [ql|qm|qh]; writes talks/<talk>/present.html and presenter.html."""
 import glob, json, os, re, sys
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from lib import theme as _theme
+
+TH = _theme.load()                       # the theme the render used (bin/render.sh exports THEME), so the page matches the picture
+def _mix(k):                             # k of the way from the background towards the ink: chrome that works dark or light
+    return _theme.blend(TH["bg"], TH["text"], k)
+CH = {"bg": TH["bg"], "page": _mix(0.05), "ink": TH["text"], "muted": TH["muted"], "faint": _mix(0.45),
+      "line": _mix(0.18), "btn": _mix(0.11), "btnline": _mix(0.24), "accent": TH["accents"]["a1"], "font": TH["font"],
+      "veil": "rgba(%d,%d,%d,.88)" % tuple(round(v * 255) for v in _theme.rgb(TH["bg"]))}
+
 talk = sys.argv[1] if len(sys.argv) > 1 else None
 if not talk:
     sys.exit("usage: bin/build.py <talk> [ql|qm|qh]")
@@ -58,10 +68,10 @@ function next(){show(i+1)} function prev(){show(i-1)}
 """
 
 present = f"""<!doctype html><meta charset="utf-8"><title>{TITLE}</title>
-<style>html,body{{margin:0;height:100%;background:#0f1116;overflow:hidden;font:16px Helvetica,sans-serif;color:#e8e8e8}}
-video{{position:fixed;inset:0;width:100vw;height:100vh;object-fit:contain;background:#0f1116}}
-#hint{{position:fixed;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:rgba(15,17,22,.85);cursor:pointer}}
-#hint b{{font-size:28px;font-weight:500}} #hint span{{color:#9aa0ad}}</style>
+<style>html,body{{margin:0;height:100%;background:{CH["bg"]};overflow:hidden;font:16px {CH["font"]},sans-serif;color:{CH["ink"]}}}
+video{{position:fixed;inset:0;width:100vw;height:100vh;object-fit:contain;background:{CH["bg"]}}}
+#hint{{position:fixed;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:{CH["veil"]};cursor:pointer}}
+#hint b{{font-size:28px;font-weight:500}} #hint span{{color:{CH["muted"]}}}</style>
 <video id="a" playsinline preload="auto" muted></video><video id="b" playsinline preload="auto" muted></video>
 <div id="hint"><b>{TITLE}</b><span>{len(steps)} steps. Click or right arrow to advance, left to go back, f for full screen.</span><span>Open presenter.html for notes and remote control.</span></div>
 <script>
@@ -77,15 +87,15 @@ ch.onmessage=e=>handle(e.data);window.addEventListener('message',e=>handle(e.dat
 </script>"""
 
 presenter = f"""<!doctype html><meta charset="utf-8"><title>Presenter</title>
-<style>html,body{{margin:0;height:100%;background:#15181f;color:#e8e8e8;font:18px/1.5 Helvetica,sans-serif}}
-#top{{display:flex;gap:24px;align-items:center;padding:14px 22px;border-bottom:1px solid #2a2e38;color:#9aa0ad}}
-#top b{{color:#e8e8e8;font-weight:500}} #clock{{margin-left:auto;font-variant-numeric:tabular-nums;font-size:22px}}
+<style>html,body{{margin:0;height:100%;background:{CH["page"]};color:{CH["ink"]};font:18px/1.5 {CH["font"]},sans-serif}}
+#top{{display:flex;gap:24px;align-items:center;padding:14px 22px;border-bottom:1px solid {CH["line"]};color:{CH["muted"]}}}
+#top b{{color:{CH["ink"]};font-weight:500}} #clock{{margin-left:auto;font-variant-numeric:tabular-nums;font-size:22px}}
 #main{{display:grid;grid-template-columns:1.25fr 1fr;gap:22px;padding:22px}}
-#nextstage{{position:relative;aspect-ratio:16/9;background:#0f1116;border-radius:8px;overflow:hidden;width:62%;margin-bottom:16px}} #nextstage video{{position:absolute;inset:0;width:100%;height:100%}} #nextlabel{{font-size:12px;color:#9aa0ad;letter-spacing:.04em;margin-bottom:4px}}
-#stage{{position:relative;aspect-ratio:16/9;background:#0f1116;border-radius:8px;overflow:hidden}} #stage video{{position:absolute;inset:0;width:100%;height:100%}}
-#note{{font-size:21px;line-height:1.55;color:#f2f2f2}} #note h3{{margin:0 0 10px;font-weight:500;color:#58c4dd;font-size:16px;letter-spacing:.02em}}
-#nextnote{{margin-top:22px;color:#9aa0ad;font-size:15px;border-top:1px solid #2a2e38;padding-top:14px}}
-#keys{{padding:0 22px 16px;color:#5b6070;font-size:14px}} button{{background:#242833;color:#e8e8e8;border:1px solid #3a3f4b;border-radius:6px;padding:6px 14px;font:16px Helvetica;cursor:pointer}}</style>
+#nextstage{{position:relative;aspect-ratio:16/9;background:{CH["bg"]};border-radius:8px;overflow:hidden;width:62%;margin-bottom:16px}} #nextstage video{{position:absolute;inset:0;width:100%;height:100%}} #nextlabel{{font-size:12px;color:{CH["muted"]};letter-spacing:.04em;margin-bottom:4px}}
+#stage{{position:relative;aspect-ratio:16/9;background:{CH["bg"]};border-radius:8px;overflow:hidden}} #stage video{{position:absolute;inset:0;width:100%;height:100%}}
+#note{{font-size:21px;line-height:1.55;color:{CH["ink"]}}} #note h3{{margin:0 0 10px;font-weight:500;color:{CH["accent"]};font-size:16px;letter-spacing:.02em}}
+#nextnote{{margin-top:22px;color:{CH["muted"]};font-size:15px;border-top:1px solid {CH["line"]};padding-top:14px}}
+#keys{{padding:0 22px 16px;color:{CH["faint"]};font-size:14px}} button{{background:{CH["btn"]};color:{CH["ink"]};border:1px solid {CH["btnline"]};border-radius:6px;padding:6px 14px;font:16px {CH["font"]};cursor:pointer}}</style>
 <div id="top"><button onclick="open_audience()">open audience window</button><button onclick="send(-1)">back</button><button onclick="send(1)">next</button><span id="pos"></span><b id="scene"></b><span id="clock">00:00</span></div>
 <div id="main"><div id="stage"><video id="a" muted playsinline preload="auto"></video><video id="b" muted playsinline preload="auto"></video></div>
 <div><div id="nextlabel">NEXT: WHERE THE CLICK ENDS UP</div><div id="nextstage"><video id="n" muted playsinline preload="auto"></video></div><div id="note"><h3></h3><div id="txt"></div></div><div id="nextnote"></div></div></div>

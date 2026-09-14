@@ -26,13 +26,13 @@ def small(s: str, color: str = TEXT) -> Text:
 
 
 def cache_cell(slot: Mobject) -> Rectangle:
-    return Rectangle(width=0.22, height=0.36, fill_color=CACHE, fill_opacity=0.9, stroke_width=0).move_to(slot)
+    return Rectangle(width=0.22, height=0.36, fill_color=CACHE, fill_opacity=SOLID, stroke_width=0).move_to(slot)
 
 
 def vector(seed: int, color: str = PROMPT, cell: float = 0.065) -> VGroup:
     """A token's vector: eight cells whose shades stand for different numbers, so two vectors look different."""
     rnd = random.Random(seed)
-    return VGroup(*[Square(cell, fill_color=color, fill_opacity=0.3 + 0.7 * rnd.random(), stroke_width=0) for _ in range(8)]).arrange(DOWN, buff=0.012)
+    return VGroup(*[Square(cell, fill_color=color, fill_opacity=SOLID * 0.33 + 0.7 * rnd.random(), stroke_width=0) for _ in range(8)]).arrange(DOWN, buff=0.012)
 
 
 def shades(v: VGroup) -> list:
@@ -91,9 +91,9 @@ def single_parts(y: float):
 
 def attend_one(scene, q, cells, att, color, rt: float = 0.5):
     """One query scored against every stored key, the values unfolding into the new vector. Returns the visible vector."""
-    lines = VGroup(*[Line(q.get_right(), c.get_left(), color=TEXT, stroke_width=1.4, stroke_opacity=0.7) for c in cells])
+    lines = VGroup(*[Line(q.get_right(), c.get_left(), color=TEXT, stroke_width=sw(0.56), stroke_opacity=0.7) for c in cells])
     scene.play(Create(lines), LaggedStart(*[c.animate.set_fill(BRIGHT, 1.0) for c in cells], lag_ratio=0.1), run_time=rt)
-    back = VGroup(*[Square(0.12, fill_color=CACHE, fill_opacity=0.9, stroke_width=0).move_to(c) for c in cells])
+    back = VGroup(*[Square(0.12, fill_color=CACHE, fill_opacity=SOLID, stroke_width=0).move_to(c) for c in cells])
     scene.remove(att)
     att = column(8, color).move_to(att)
     scene.play(*[c.animate.set_fill(CACHE, 0.9) for c in cells], ReplacementTransform(back, att), FadeOut(lines), run_time=rt)
@@ -204,10 +204,10 @@ def store_kv(scene, k, v, slots, rt: float = 0.9):
 def attend_block(scene, q, cells, att, color, rt: float = 0.6):
     """Each token's query scored against its own key and the keys before it (the causal fan), the values unfolding into
     the attention block. Returns the visible block."""
-    lines = VGroup(*[Line(q[c].get_right(), cells[j].get_left(), color=TEXT, stroke_width=1.2, stroke_opacity=0.6) for c in range(len(q)) for j in range(c + 1)])
+    lines = VGroup(*[Line(q[c].get_right(), cells[j].get_left(), color=TEXT, stroke_width=sw(0.48), stroke_opacity=0.6) for c in range(len(q)) for j in range(c + 1)])
     scene.play(Create(lines, lag_ratio=0.02), run_time=rt)
     scene.play(LaggedStart(*[c_.animate.set_fill(BRIGHT, 1.0) for c_ in cells], lag_ratio=0.15), run_time=rt * 0.8)
-    back = VGroup(*[Square(0.12, fill_color=CACHE, fill_opacity=0.9, stroke_width=0).move_to(c_) for c_ in cells])
+    back = VGroup(*[Square(0.12, fill_color=CACHE, fill_opacity=SOLID, stroke_width=0).move_to(c_) for c_ in cells])
     scene.remove(att)
     att = block_of(len(q), color).move_to(att)
     scene.play(*[c_.animate.set_fill(CACHE, 0.9) for c_ in cells], ReplacementTransform(back, att), FadeOut(lines), run_time=rt * 1.4)
@@ -241,7 +241,7 @@ class Mechanics(TalkSlide):
         one GPU, what precision costs in answers, the fleet, and where the industry is. Start from actual text: a prompt someone typed. Five words. We follow them through the machine and out the
         other side, on one picture that only grows. Everything later in the talk is a consequence of what happens on this
         picture, so it is worth twenty minutes.""")
-        toks = VGroup(*[VGroup(Square(0.5, fill_color=PROMPT, fill_opacity=0.9, stroke_width=0), label(w, 13, "#0f1116")) for w in WORDS]).arrange(RIGHT, buff=0.1).move_to([-6.4, 2.25, 0], aligned_edge=LEFT)
+        toks = VGroup(*[VGroup(Square(0.5, fill_color=PROMPT, fill_opacity=SOLID, stroke_width=0), label(w, 13, "#0f1116")) for w in WORDS]).arrange(RIGHT, buff=0.1).move_to([-6.4, 2.25, 0], aligned_edge=LEFT)
         ids = VGroup(*[label(i, 13, DIM).next_to(k, DOWN, buff=0.05) for i, k in zip(IDS, toks)])
         self.play(ReplacementTransform(sentence.copy(), toks), run_time=0.8)   # a copy is morphed, so toks itself is not padded with empty submobjects
         self.play(FadeIn(ids))
@@ -250,14 +250,14 @@ class Mechanics(TalkSlide):
         integer from a vocabulary of thirty to two hundred thousand entries. The model never sees letters, only these integers.
         The two 'the's differ, capitalised and not: two entries.""")
         # --- embedding: each integer selects a row of a table and becomes a vector
-        table = VGroup(*[Square(0.13, fill_color=WEIGHTS, fill_opacity=0.5, stroke_width=0) for _ in range(14 * 8)]).arrange_in_grid(rows=14, cols=8, buff=0.02).move_to([3.0, 1.4, 0])
+        table = VGroup(*[Square(0.13, fill_color=WEIGHTS, fill_opacity=SOLID * 0.56, stroke_width=0) for _ in range(14 * 8)]).arrange_in_grid(rows=14, cols=8, buff=0.02).move_to([3.0, 1.4, 0])
         tl = label("embedding table: one row per vocabulary entry, a few thousand numbers each", 13, WEIGHTS).next_to(table, UP, buff=0.12)
         self.play(FadeIn(table), FadeIn(tl))
         cap = swap_caption(self, cap, "Embedding: each integer selects a row; the token becomes a vector")
         vectors = VGroup()
         for i, row_i in enumerate(ROWS):
             row = VGroup(*[table[row_i * 8 + c] for c in range(8)])
-            line = Line(ids[i].get_right(), row.get_left(), color=PROMPT, stroke_width=1.2, stroke_opacity=0.6)
+            line = Line(ids[i].get_right(), row.get_left(), color=PROMPT, stroke_width=sw(0.48), stroke_opacity=0.6)
             v = vector(row_i).next_to(toks[i], DOWN, buff=0.1)
             self.play(Create(line), *[c.animate.set_fill(PROMPT, 0.9) for c in row], run_time=0.25)
             self.play(ReplacementTransform(row.copy(), v), FadeOut(line), FadeOut(ids[i]), *[c.animate.set_fill(WEIGHTS, 0.5) for c in row], run_time=0.4)
@@ -267,12 +267,12 @@ class Mechanics(TalkSlide):
         column of numbers, drawn as eight shaded cells. Five tokens, five vectors, and the two 'the's are different rows. This
         is the only step where the integer matters; everything after this is arithmetic on these columns.""")
         # --- the stage: layers, cache rack, gauges, counters
-        layers = VGroup(*[box(3.6, 0.5, "", WEIGHTS, fill=0.12) for _ in range(L)]).arrange(DOWN, buff=0.26).move_to([-2.6, -0.15, 0])
+        layers = VGroup(*[box(3.6, 0.5, "", WEIGHTS, fill=FILL * 1.2) for _ in range(L)]).arrange(DOWN, buff=0.26).move_to([-2.6, -0.15, 0])
         ll = VGroup(*[label(f"layer {i + 1}", 12, WEIGHTS).next_to(b, LEFT, buff=0.12) for i, b in enumerate(layers)])
         more = label("of 32 to 96", 12, DIM).next_to(layers[-1], LEFT, buff=0.12).shift(DOWN * 0.4)
         rack = VGroup()
         for r in range(L):
-            row = VGroup(*[Rectangle(width=0.26, height=0.4, stroke_color=DIM, stroke_width=1, fill_opacity=0) for _ in range(TOK)]).arrange(RIGHT, buff=0.05).move_to([0.9, layers[r].get_y(), 0], aligned_edge=LEFT)
+            row = VGroup(*[Rectangle(width=0.26, height=0.4, stroke_color=DIM, stroke_width=sw(0.4), fill_opacity=0) for _ in range(TOK)]).arrange(RIGHT, buff=0.05).move_to([0.9, layers[r].get_y(), 0], aligned_edge=LEFT)
             rack.add(row)
         rl = label("KV cache: one column per token, one row per layer", 13, CACHE).next_to(rack, UP, buff=0.12).align_to(rack, LEFT)
         bus, comp = Gauge("bus", OUTPUT, 1.5), Gauge("compute", PROMPT, 1.5)
@@ -380,7 +380,7 @@ class Mechanics(TalkSlide):
         of the model for the whole prompt. A longer prompt costs more arithmetic, not more reads.""")
         base = layers[-1].get_bottom() + DOWN * 0.95
         def bars(heights):
-            g = VGroup(*[Rectangle(width=0.16, height=max(0.04, h), fill_color=OUTPUT, fill_opacity=0.35 + 0.6 * (h == max(heights)), stroke_width=0) for h in heights])
+            g = VGroup(*[Rectangle(width=0.16, height=max(0.04, h), fill_color=OUTPUT, fill_opacity=SOLID * 0.39 + 0.6 * (h == max(heights)), stroke_width=0) for h in heights])
             g.arrange(RIGHT, buff=0.05, aligned_edge=DOWN).move_to(base, aligned_edge=DOWN).shift(LEFT * 0.6)
             return g
         rnd = random.Random(7)
@@ -392,7 +392,7 @@ class Mechanics(TalkSlide):
         self.play(block.animate.move_to(logits.get_center() + UP * 0.6).set_opacity(0.0), FadeIn(logits), FadeIn(lgl), run_time=0.6)
         self.remove(block)
         top = max(logits, key=lambda b: b.height)
-        newtok = VGroup(Square(0.5, fill_color=OUTPUT, fill_opacity=0.9, stroke_width=0), label(ANSWER[0], 13, "#0f1116")).next_to(top, UP, buff=0.12)
+        newtok = VGroup(Square(0.5, fill_color=OUTPUT, fill_opacity=SOLID, stroke_width=0), label(ANSWER[0], 13, "#0f1116")).next_to(top, UP, buff=0.12)
         self.play(FadeIn(newtok, shift=UP * 0.2), produced.to(1), run_time=0.5)
         words = VGroup(label(" " + ANSWER[0], 34, OUTPUT).next_to(sentence, RIGHT, buff=0.12))
         self.play(newtok.animate.move_to([-6.4 + 0.25 + 0.6 * len(toks), 2.25, 0]), FadeIn(words[-1]), run_time=0.8)
@@ -465,7 +465,7 @@ class Mechanics(TalkSlide):
                 first_layer = 2
             for r in range(first_layer, L):
                 self.play(col_.animate.move_to(layers[r][0].get_center()), layers[r][0].animate.set_fill(OUTPUT, 0.55), run_time=0.12 if fast else 0.25)
-                lines = VGroup(*[Line(col_.get_right(), c.get_left(), color=TEXT, stroke_width=1.2, stroke_opacity=0.6) for c in filled[r]])
+                lines = VGroup(*[Line(col_.get_right(), c.get_left(), color=TEXT, stroke_width=sw(0.48), stroke_opacity=0.6) for c in filled[r]])
                 self.play(Create(lines), LaggedStart(*[c.animate.set_fill(BRIGHT, 1.0) for c in filled[r]], lag_ratio=0.2), cread.to((r + 1) * len(filled[r])), run_time=0.15 if fast else 0.35)
                 newcell = cache_cell(rack[r][len(filled[r])])
                 filled[r].append(newcell)
@@ -474,7 +474,7 @@ class Mechanics(TalkSlide):
             self.remove(col_)
             self.play(Transform(logits, bars(dist())), run_time=0.3)
             top = max(logits, key=lambda b: b.height)
-            newtok = VGroup(Square(0.5, fill_color=OUTPUT, fill_opacity=0.9, stroke_width=0), label(w, 13, "#0f1116")).next_to(top, UP, buff=0.12)
+            newtok = VGroup(Square(0.5, fill_color=OUTPUT, fill_opacity=SOLID, stroke_width=0), label(w, 13, "#0f1116")).next_to(top, UP, buff=0.12)
             words.add(label((" " + w) if w not in ".," else w, 34, OUTPUT).next_to(words[-1], RIGHT, buff=0.12 if w not in ".," else 0.02))
             self.play(FadeIn(newtok, shift=UP * 0.2), reads.to(k_ + 1), produced.to(k_ + 1), run_time=0.3)
             self.play(newtok.animate.move_to([-6.4 + 0.25 + 0.6 * len(toks), 2.25, 0]), FadeIn(words[-1]), run_time=0.25 if fast else 0.4)

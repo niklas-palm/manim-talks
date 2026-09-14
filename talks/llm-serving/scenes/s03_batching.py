@@ -13,7 +13,7 @@ ROWS = [1.05, 0.35, -0.35, -1.05]                    # four requests spread over
 
 def start_batching(scene, add: bool = True) -> dict:
     """The still this scene opens on, and that DecodeCeiling hands over to: the empty timeline for one request."""
-    axis = Arrow([-5.3, 2.35, 0], [4.3, 2.35, 0], color=DIM, stroke_width=2, buff=0, tip_length=0.15)
+    axis = Arrow([-5.3, 2.35, 0], [4.3, 2.35, 0], color=DIM, stroke_width=sw(0.8), buff=0, tip_length=0.15)
     al = label("time, one decode step after another", 14, DIM).next_to(axis, UP, buff=0.05).align_to(axis, LEFT)
     wl = label("weights read", 15, WEIGHTS).move_to([-5.5, 1.75, 0], aligned_edge=RIGHT)
     rl = VGroup(*[label(f"request {i + 1}", 15, DIM).move_to([-5.5, y, 0], aligned_edge=RIGHT) for i, y in enumerate(ROWS)])
@@ -38,8 +38,8 @@ class Batching(TalkSlide):
         cols = []
         for k in range(N):
             x = X0 + k * W1
-            block = Rectangle(width=W1 - 0.1, height=0.4, fill_color=WEIGHTS, fill_opacity=0.75, stroke_width=0).move_to([x, 1.75, 0])
-            tok = Square(0.42, fill_color=OUTPUT, fill_opacity=0.9, stroke_width=0).move_to([x, ROWS[0], 0])
+            block = Rectangle(width=W1 - 0.1, height=0.4, fill_color=WEIGHTS, fill_opacity=SOLID * 0.83, stroke_width=0).move_to([x, 1.75, 0])
+            tok = Square(0.42, fill_color=OUTPUT, fill_opacity=SOLID, stroke_width=0).move_to([x, ROWS[0], 0])
             cols.append(VGroup(block, tok))
             slow = k < 2   # the first two steps slowly, then at speed: the audience has seen the beat
             self.play(FadeIn(block, shift=DOWN * 0.1), run_time=0.4 if slow else 0.12)
@@ -51,7 +51,7 @@ class Batching(TalkSlide):
         added = []
         for k in range(N):
             for r in range(1, 4):
-                added.append(Square(0.42, fill_color=OUTPUT, fill_opacity=0.9, stroke_width=0).move_to([X0 + k * W1, ROWS[r], 0]))
+                added.append(Square(0.42, fill_color=OUTPUT, fill_opacity=SOLID, stroke_width=0).move_to([X0 + k * W1, ROWS[r], 0]))
                 cols[k].add(added[-1])
         self.play(FadeIn(rl[1:]), LaggedStart(*[FadeIn(m, shift=DOWN * 0.1) for m in added], lag_ratio=0.02), per_step.to(4), run_time=1.6)
         cap = swap_caption(self, cap, "Four requests: one read of the weights, four tokens per step")
@@ -84,7 +84,7 @@ class Batching(TalkSlide):
         sl = VGroup(*[label(f"slot {i + 1}", 13, DIM).move_to([-5.15, y, 0], aligned_edge=RIGHT) for i, y in enumerate(ys)])
         wr = label("weights read", 13, WEIGHTS).move_to([-5.15, yw, 0], aligned_edge=RIGHT)
         ql = label("waiting", 13, HOT).move_to([-5.15, yq, 0], aligned_edge=RIGHT)
-        axis2 = Arrow([-5.0, 2.15, 0], [3.5, 2.15, 0], color=DIM, stroke_width=2, buff=0, tip_length=0.15)
+        axis2 = Arrow([-5.0, 2.15, 0], [3.5, 2.15, 0], color=DIM, stroke_width=sw(0.8), buff=0, tip_length=0.15)
         al2 = label("time: one decode step after another, the newest at the right", 13, DIM).next_to(axis2, UP, buff=0.04).align_to(axis2, LEFT)
         legend = VGroup(label("column: one step, width = its time; colour: one request, outlined at prefill", 12, DIM),
                         label("hollow: an idle slot; 8 slots drawn, the engine's limit is max_num_seqs (256)", 12, DIM)).arrange(DOWN, aligned_edge=LEFT, buff=0.05).move_to([-5.0, -2.4, 0], aligned_edge=LEFT)
@@ -129,13 +129,13 @@ class Batching(TalkSlide):
             ms = 1000 / per_request(n)
             w = W1S * ms / (1000 / per_request(1))   # x is time: the column is as wide as the step is long
             xc = X_NEW + w / 2
-            col = VGroup(Rectangle(width=w - 0.05, height=0.24, fill_color=WEIGHTS, fill_opacity=0.75, stroke_width=0).move_to([xc, yw, 0]))
+            col = VGroup(Rectangle(width=w - 0.05, height=0.24, fill_color=WEIGHTS, fill_opacity=SOLID * 0.83, stroke_width=0).move_to([xc, yw, 0]))
             for i, st in enumerate(slots):
                 if st is None:
-                    col.add(Rectangle(width=w - 0.05, height=0.24, stroke_color=DIM, stroke_width=1, fill_opacity=0).move_to([xc, ys[i], 0]))
+                    col.add(Rectangle(width=w - 0.05, height=0.24, stroke_color=DIM, stroke_width=sw(0.4), fill_opacity=0).move_to([xc, ys[i], 0]))
                     continue
                 hue, remaining, first = st
-                col.add(Rectangle(width=w - 0.05, height=0.24, fill_color=hue, fill_opacity=0.95, stroke_color=TEXT if first else hue, stroke_width=1.5 if first else 0).move_to([xc, ys[i], 0]))
+                col.add(Rectangle(width=w - 0.05, height=0.24, fill_color=hue, fill_opacity=0.95, stroke_color=TEXT if first else hue, stroke_width=sw(0.6) if first else 0).move_to([xc, ys[i], 0]))
                 st[1] -= 1; st[2] = False
                 if st[1] == 0:
                     slots[i] = None
@@ -213,7 +213,7 @@ class Batching(TalkSlide):
         for n, per, agg, busy in STEPS[1:]:
             frac_c = min(0.95, n / 140)
             p2, a2 = ax.c2p(n, per * 8), ax.c2p(n, agg)
-            seg_p, seg_a = Line(per_pts[-1], p2, color=OUTPUT, stroke_width=3), Line(agg_pts[-1], a2, color=CACHE, stroke_width=3)
+            seg_p, seg_a = Line(per_pts[-1], p2, color=OUTPUT, stroke_width=sw(1.2)), Line(agg_pts[-1], a2, color=CACHE, stroke_width=sw(1.2))
             curve.add(seg_p, seg_a)
             self.play(inflight.to(n), each.to(per), total.to(agg), gpu.bandwidth.set(busy), gpu.compute.set(frac_c),
                       *gpu.light_cores(frac_c, PROMPT), gpu.set_cache(3 + n * 0.45),

@@ -20,7 +20,7 @@ class Standing(TalkSlide):
         nl = label("13 server names, 12 operators", 16, MUTED).next_to(names, UP, buff=0.15).align_to(names, LEFT)
         import random
         random.seed(3)
-        world = Ellipse(width=8.4, height=4.8, color=DIM, stroke_width=1.5).move_to([2.2, 0.1, 0])
+        world = Ellipse(width=8.4, height=4.8, color=DIM, stroke_width=sw(0.6)).move_to([2.2, 0.1, 0])
         sites = VGroup(*[Dot(radius=0.06, color=ZONE).move_to([2.2 + random.uniform(-3.9, 3.9), 0.1 + random.uniform(-2.1, 2.1), 0]) for _ in range(200)])
         sites = VGroup(*[d for d in sites if ((d.get_x() - 2.2) / 4.2) ** 2 + ((d.get_y() - 0.1) / 2.4) ** 2 < 1])
         sl = label("2,045 anycast instances of those 13 names; one dot per about 12", 15, MUTED).next_to(world, DOWN, buff=0.12)
@@ -33,7 +33,7 @@ class Standing(TalkSlide):
         yl = label("a resolver in Sydney asks a.root-servers.net", 14, NAME).next_to(you, DOWN, buff=0.08)
         nearest = min(sites, key=lambda d: np.linalg.norm(d.get_center() - you.get_center()))
         self.play(FadeIn(you), FadeIn(yl), run_time=0.4)
-        path = Line(you.get_center(), nearest.get_center(), color=NAME, stroke_width=2)
+        path = Line(you.get_center(), nearest.get_center(), color=NAME, stroke_width=sw(0.8))
         self.play(Create(path), nearest.animate.set_color(ADDRESS).scale(2.2), run_time=0.6)
         al = label("one address, announced from many places: the packet reaches the nearest", 16, MUTED).move_to([0, -3.3, 0])
         self.play(FadeIn(al), run_time=0.4)
@@ -45,13 +45,13 @@ class Standing(TalkSlide):
         machines, which is what lets its pointers be cached for days without anyone worrying about load.""")
         # --- the packet
         self.play(FadeOut(VGroup(names, nl, world, sites, sl, you, yl, path, al)), run_time=0.5)
-        pkt = VGroup(Rectangle(width=9.6, height=1.2, stroke_color=NAME, stroke_width=2.4, fill_color=NAME, fill_opacity=0.08),
+        pkt = VGroup(Rectangle(width=9.6, height=1.2, stroke_color=NAME, stroke_width=sw(0.96), fill_color=NAME, fill_opacity=FILL * 0.8),
                      label("header: id, flags (RD, RA, TC), counts", 20, TEXT), label("question: name, type, class", 20, NAME))
         pkt[1].move_to(pkt[0].get_center() + UP * 0.26); pkt[2].move_to(pkt[0].get_center() + DOWN * 0.26)
         pkt.move_to([0, 1.6, 0])
         pl = label("a question: one UDP packet to port 53", 16, MUTED).next_to(pkt, UP, buff=0.15)
         self.play(FadeIn(pkt), FadeIn(pl), run_time=0.6)
-        ans = VGroup(Rectangle(width=9.6, height=1.9, stroke_color=ADDRESS, stroke_width=2.4, fill_color=ADDRESS, fill_opacity=0.08),
+        ans = VGroup(Rectangle(width=9.6, height=1.9, stroke_color=ADDRESS, stroke_width=sw(0.96), fill_color=ADDRESS, fill_opacity=FILL * 0.8),
                      label("answer records", 20, ADDRESS), label("authority records: the NS pointers", 20, ZONE), label("additional records: glue, the servers' addresses", 20, ZONE))
         for i, m in enumerate(ans[1:]):
             m.move_to(ans[0].get_center() + UP * (0.55 - 0.55 * i))

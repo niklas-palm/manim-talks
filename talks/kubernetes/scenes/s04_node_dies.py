@@ -23,11 +23,11 @@ class NodeDies(TalkSlide):
         S.running.tracker.set_value(3)
         kw = [watch(n, NODE) for n in S.nodes]
         for n in S.nodes[:2]:                    # nodes one and two got pods in move three; node three's kubelet has not spoken yet
-            n[5].set_color(TEAL)
+            n[5].set_color(NODE)
         self.add(*S.base(*[S.ctrl[k] for k in ("deploy", "rs", "sched")], *[S.watches[k] for k in ("deploy", "rs", "sched")], *S.cards.values(), *pods.values(), kw[0], kw[1]))
         # --- the title changes as the third node's line joins the other two: no cut
-        hb = label("lease renewed every 10 s", 15, TEAL).move_to([X_NODES_L, Y_LABELS, 0], aligned_edge=LEFT)
-        t = retitle(self, t, "A node dies: the same loops, nothing new", "4  a node dies", extra=[Create(kw[2][0]), S.nodes[2][5].animate.set_color(TEAL), FadeIn(hb)])
+        hb = label("lease renewed every 10 s", 15, NODE).move_to([X_NODES_L, Y_LABELS, 0], aligned_edge=LEFT)
+        t = retitle(self, t, "A node dies: the same loops, nothing new", "4  a node dies", extra=[Create(kw[2][0]), S.nodes[2][5].animate.set_color(NODE), FadeIn(hb)])
         self.next_slide("""The cluster at rest: three Pods running on two nodes, three desired, every loop idle. One thing changed as the
         title did: the third node's kubelet drew its own dashed line up to the API server, like the two that already had pods.
         The label under the nodes says what travels on those lines: a lease, renewed every ten seconds by every kubelet, whether or not it
@@ -74,11 +74,11 @@ class NodeDies(TalkSlide):
         self.play(pd.animate.move_to(door(rsc)), run_time=0.35)
         self.play(pd.animate.scale(1 / 0.7).move_to(S.slots[5]), FadeOut(cmp), run_time=0.4)
         S.cards["d"] = pd
-        ring = SurroundingRectangle(pd, color=CONTROL, buff=0.06, stroke_width=2.2)
+        ring = SurroundingRectangle(pd, color=CONTROL, buff=0.06, stroke_width=sw(0.88))
         self.play(Create(ring), run_time=0.3)
         self.play(n2[0].animate.set_stroke(opacity=0.35), S.nodes[2][0].animate.set_stroke(opacity=0.35), run_time=0.4)   # filtered: NotReady, and no memory
         self.play(S.nodes[0][0].animate.set_stroke(color=CONTROL, width=4), run_time=0.3)
-        set_detail(self, pd, "node 1", TEAL)
+        set_detail(self, pd, "node 1", NODE)
         self.play(FadeOut(ring), S.nodes[0][0].animate.set_stroke(color=NODE, width=2.5), S.nodes[2][0].animate.set_stroke(opacity=1.0), run_time=0.3)
         pulse(self, pd, S.nodes[0][5], color=DESIRED, run_time=0.5)
         p_new = S.place_pod(0, 2)

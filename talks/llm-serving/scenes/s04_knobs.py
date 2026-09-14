@@ -30,7 +30,7 @@ def start_quantisation(scene, add: bool = True) -> dict:
 
 def start_moe(scene, add: bool = True) -> dict:
     """The still MixtureOfExperts opens on: the dense stack, its label and its bytes counter."""
-    dense = VGroup(*[Rectangle(width=3.4, height=0.42, fill_color=WEIGHTS, fill_opacity=0.7, stroke_width=0) for _ in range(6)]).arrange(DOWN, buff=0.14).shift(LEFT * 3.2 + DOWN * 0.1)
+    dense = VGroup(*[Rectangle(width=3.4, height=0.42, fill_color=WEIGHTS, fill_opacity=SOLID * 0.78, stroke_width=0) for _ in range(6)]).arrange(DOWN, buff=0.14).shift(LEFT * 3.2 + DOWN * 0.1)
     dl = label("dense, 32B parameters: every weight read for every token", 16, TEXT, width=4.4).next_to(dense, DOWN, buff=0.65)   # the token leaves the stack to 0.5 below it; the label sits under that
     bytes_d = Counter("bytes read per token", 32, "GB", WEIGHTS).next_to(dense, UP, buff=0.35).align_to(dense, LEFT)
     parts = dict(dense=dense, dl=dl, bytes_d=bytes_d)
@@ -83,7 +83,7 @@ class MixtureOfExperts(TalkSlide):
         t = title_still(self, *TITLE_MOE)
         p = start_moe(self)
         dense, dl, bytes_d = p["dense"], p["dl"], p["bytes_d"]
-        tok = Square(0.42, fill_color=OUTPUT, fill_opacity=0.9, stroke_width=0).next_to(dense, UP, buff=0.08)
+        tok = Square(0.42, fill_color=OUTPUT, fill_opacity=SOLID, stroke_width=0).next_to(dense, UP, buff=0.08)
         self.play(FadeIn(tok, shift=DOWN * 0.2))
         for layer in dense:   # slowly: this is the first time a token passes a layer in this scene
             self.play(layer.animate.set_fill(OUTPUT, 1.0), tok.animate.move_to(layer.get_center()), run_time=0.35)
@@ -94,7 +94,7 @@ class MixtureOfExperts(TalkSlide):
         is read in full. A 32B model in fp8 is 32 GB per token, per decode step, whatever the token is about.""")
         layers = VGroup()
         for _ in range(6):
-            layers.add(VGroup(*[Rectangle(width=0.37, height=0.42, fill_color=WEIGHTS, fill_opacity=0.35, stroke_width=0) for _ in range(8)]).arrange(RIGHT, buff=0.06))
+            layers.add(VGroup(*[Rectangle(width=0.37, height=0.42, fill_color=WEIGHTS, fill_opacity=SOLID * 0.39, stroke_width=0) for _ in range(8)]).arrange(RIGHT, buff=0.06))
         layers.arrange(DOWN, buff=0.14).shift(RIGHT * 3.2 + DOWN * 0.1)
         ml = label("mixture of experts, 30B: 128 experts per layer, 8 chosen (drawn 8, 2 chosen)", 15, TEXT, width=5.6).next_to(layers, DOWN, buff=0.65)
         bytes_m = Counter("bytes read per token", 3, "GB", CACHE).next_to(layers, UP, buff=0.35).align_to(layers, LEFT)
@@ -103,7 +103,7 @@ class MixtureOfExperts(TalkSlide):
         import random
         random.seed(3)
         for _ in range(3):
-            tok = Square(0.42, fill_color=OUTPUT, fill_opacity=0.9, stroke_width=0).next_to(layers, UP, buff=0.08)
+            tok = Square(0.42, fill_color=OUTPUT, fill_opacity=SOLID, stroke_width=0).next_to(layers, UP, buff=0.08)
             self.play(FadeIn(tok, shift=DOWN * 0.2), run_time=0.12)
             for row in layers:
                 picks = random.sample(range(8), 2)
@@ -124,7 +124,7 @@ class MixtureOfExperts(TalkSlide):
         scene. That is why this talk's model is one. Now the catch.""")
         key2 = label("the catch: eight tokens pick seven of eight experts", 17, MUTED).move_to(key)
         self.play(FadeOut(key), FadeIn(key2), run_time=0.5)
-        toks = VGroup(*[Square(0.37, fill_color=OUTPUT, fill_opacity=0.9, stroke_width=0) for _ in range(8)]).arrange(RIGHT, buff=0.06).next_to(layers, UP, buff=0.08)
+        toks = VGroup(*[Square(0.37, fill_color=OUTPUT, fill_opacity=SOLID, stroke_width=0) for _ in range(8)]).arrange(RIGHT, buff=0.06).next_to(layers, UP, buff=0.08)
         self.play(FadeIn(toks, shift=DOWN * 0.2), run_time=0.3)
         for row in layers:
             picks = random.sample(range(8), 7)
@@ -153,7 +153,7 @@ class PrefixCache(TalkSlide):
         t = title_still(self, *TITLE_PREFIX)
         p = start_prefix(self)
         l1, turn1, prefill = p["l1"], p["turn1"], p["prefill"]
-        blocks = VGroup(*[RoundedRectangle(corner_radius=0.06, width=1.7, height=0.5, fill_color=CACHE, fill_opacity=0.85, stroke_width=0) for _ in range(3)]).arrange(RIGHT, buff=0.1).move_to([turn1.get_left()[0], -1.3, 0], aligned_edge=LEFT)   # each block under the three tokens it holds
+        blocks = VGroup(*[RoundedRectangle(corner_radius=rad(0.4), width=1.7, height=0.5, fill_color=CACHE, fill_opacity=SOLID * 0.94, stroke_width=0) for _ in range(3)]).arrange(RIGHT, buff=0.1).move_to([turn1.get_left()[0], -1.3, 0], aligned_edge=LEFT)   # each block under the three tokens it holds
         bl = label("KV cache blocks, one engine", 16, CACHE).next_to(blocks, DOWN, buff=0.12).align_to(blocks, LEFT)
         self.play(TransformFromCopy(turn1, blocks), FadeIn(bl), run_time=0.9)
         self.next_slide("""The first turn of a conversation: six prompt tokens, three answer tokens. Prefill read nine tokens and left
@@ -165,7 +165,7 @@ class PrefixCache(TalkSlide):
         question. Without help, prefill reads all thirteen tokens again. Nine of them the engine has already seen.""")
         pl = label("prefix caching: matching blocks reused, only new tokens prefilled", 16, CACHE).next_to(bl, DOWN, buff=0.1).align_to(blocks, LEFT)
         match = SurroundingRectangle(VGroup(turn2[0], turn2[1]), color=CACHE, buff=0.06)
-        arrows = VGroup(*[Line([b.get_x(), match.get_bottom()[1], 0], b.get_top(), color=CACHE, stroke_width=1.5) for b in blocks])   # straight down, each to its block
+        arrows = VGroup(*[Line([b.get_x(), match.get_bottom()[1], 0], b.get_top(), color=CACHE, stroke_width=sw(0.6)) for b in blocks])   # straight down, each to its block
         self.play(Create(match), Create(arrows), FadeIn(pl))
         self.play(prefill.to(4), Indicate(turn2[2], color=PROMPT))
         self.next_slide("""prefix caching: blocks whose tokens match are reused; only the new tokens are prefilled. Prefix caching hashes the incoming tokens block by block and matches them against blocks already in the
@@ -177,7 +177,7 @@ class PrefixCache(TalkSlide):
         q = label("many engines, each with its own cache: which one gets the next turn?", 17, TEXT).move_to([0, 2.45, 0])
         self.play(FadeIn(q), run_time=0.5)
         engines = VGroup(*[box(1.15, 1.6, f"{i+1}", WEIGHTS, size=18, name_align="left") for i in range(8)]).arrange(RIGHT, buff=0.22).shift(DOWN * 0.6)   # the number sits left, so a request dropping down the middle crosses nothing
-        caches = VGroup(*[Rectangle(width=0.8, height=0.22, stroke_color=DIM, stroke_width=1.5, fill_opacity=0).move_to(e[0].get_bottom() + UP * 0.3) for e in engines])
+        caches = VGroup(*[Rectangle(width=0.8, height=0.22, stroke_color=DIM, stroke_width=sw(0.6), fill_opacity=0).move_to(e[0].get_bottom() + UP * 0.3) for e in engines])
         lb = box(2.8, 0.7, "load balancer", DIM, size=20).shift(UP * 1.3)
         hits = Counter("cache hit rate", 0, "%", CACHE).move_to([3.2, 1.3, 0], aligned_edge=LEFT)
         self.play(FadeIn(engines), FadeIn(caches), FadeIn(lb), FadeIn(hits))
@@ -211,8 +211,8 @@ class PrefixCache(TalkSlide):
         # tiers: a bigger, slower home for evicted blocks, per engine and then shared
         self.play(FadeOut(st), FadeOut(q), run_time=0.3)
         q2 = label("blocks are evicted before a conversation ends: give them a bigger home", 17, TEXT).move_to([0, 2.45, 0])
-        host = VGroup(*[Rectangle(width=0.8, height=0.22, stroke_color=DIM, stroke_width=1.5, fill_opacity=0).move_to(e[0].get_bottom() + DOWN * 0.25) for e in engines])
-        store = Rectangle(width=engines.width, height=0.3, stroke_color=DIM, stroke_width=1.5, fill_opacity=0).move_to([engines.get_x(), -2.2, 0])
+        host = VGroup(*[Rectangle(width=0.8, height=0.22, stroke_color=DIM, stroke_width=sw(0.6), fill_opacity=0).move_to(e[0].get_bottom() + DOWN * 0.25) for e in engines])
+        store = Rectangle(width=engines.width, height=0.3, stroke_color=DIM, stroke_width=sw(0.6), fill_opacity=0).move_to([engines.get_x(), -2.2, 0])
         tiers = VGroup(*[label(s_, 13, DIM).move_to([engines.get_left()[0] - GAP, y_, 0], aligned_edge=RIGHT) for s_, y_ in (("GPU cache\nper engine", caches[0].get_y()), ("host RAM\nper engine", host[0].get_y()), ("shared store\nover the network", store.get_y()))])
         ex = label("shared store (LMCache, Mooncake, Dynamo KVBM): shared documents, agent context between tools", 13, MUTED).next_to(store, DOWN, buff=0.08).align_to(store, LEFT)
         self.play(FadeIn(q2), FadeIn(host), FadeIn(store), FadeIn(tiers), FadeIn(ex), run_time=0.6)
@@ -220,7 +220,7 @@ class PrefixCache(TalkSlide):
         spills = {}
         for e in (home, 1, 4):   # three engines fill up and spill blocks to their own host RAM
             self.play(caches[e].animate.set_fill(HOT, 0.9), run_time=0.25)
-            sp = VGroup(*[Rectangle(width=0.16, height=0.12, fill_color=CACHE, fill_opacity=0.9, stroke_width=0).move_to(caches[e]) for _ in range(3)])
+            sp = VGroup(*[Rectangle(width=0.16, height=0.12, fill_color=CACHE, fill_opacity=SOLID, stroke_width=0).move_to(caches[e]) for _ in range(3)])
             self.play(sp.animate.arrange(RIGHT, buff=0.05).move_to(host[e]), caches[e].animate.set_fill(CACHE, 0.9), run_time=0.5)
             spills[e] = sp
         dot = route(self, lb, caches[home], 0.3)   # a turn comes home: its block comes back from host RAM

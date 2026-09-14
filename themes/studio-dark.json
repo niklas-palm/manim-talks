@@ -1,0 +1,39 @@
+{
+  "mode": "dark",
+  "description": "The house style: near-black blue-grey, six saturated accents, Helvetica and Menlo. Technical, calm, made for a dark room.",
+  "font": "Helvetica",
+  "font_fallbacks": [
+    "Helvetica Neue",
+    "Arial",
+    "Liberation Sans",
+    "DejaVu Sans"
+  ],
+  "code_font": "Menlo",
+  "code_font_fallbacks": [
+    "Monaco",
+    "DejaVu Sans Mono",
+    "Liberation Mono"
+  ],
+  "code_style": "monokai",
+  "bg": "#0F1116",
+  "text": "#E8E8E8",
+  "muted": "#8B93A5",
+  "dim": "#4A4F5C",
+  "caption": "#B9BFCC",
+  "hi": "#F4F6FA",
+  "panel": "#171A21",
+  "accents": {
+    "a1": "#58C4DD",
+    "a2": "#FFD166",
+    "a3": "#9A86C8",
+    "a4": "#2EC4B6",
+    "a5": "#8BD17C",
+    "a6": "#F4845F",
+    "alert": "#FF5D5D"
+  },
+  "radius": 0.15,
+  "stroke": 2.5,
+  "fill": 0.1,
+  "solid": 0.9,
+  "title_case": "none"
+}

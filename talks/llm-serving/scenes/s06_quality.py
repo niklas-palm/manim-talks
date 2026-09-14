@@ -26,11 +26,11 @@ def reset(scene, grid, idx):
 def levels_row(x0: float, length: float, y: float, n: int, name: str) -> VGroup:
     """The values a weight can take between 0 and 1 at one precision: n tick marks along a line, or a solid band when
     there are too many to draw."""
-    line = Line([x0, y, 0], [x0 + length, y, 0], color=DIM, stroke_width=1.5)
+    line = Line([x0, y, 0], [x0 + length, y, 0], color=DIM, stroke_width=sw(0.6))
     if n > 512:
-        ticks = Rectangle(width=length, height=0.16, fill_color=WEIGHTS, fill_opacity=0.55, stroke_width=0).move_to(line)
+        ticks = Rectangle(width=length, height=0.16, fill_color=WEIGHTS, fill_opacity=SOLID * 0.61, stroke_width=0).move_to(line)
     else:
-        ticks = VGroup(*[Line([x0 + length * i / n, y - 0.08, 0], [x0 + length * i / n, y + 0.08, 0], color=WEIGHTS, stroke_width=1.6 if n <= 16 else 1.0) for i in range(n + 1)])
+        ticks = VGroup(*[Line([x0 + length * i / n, y - 0.08, 0], [x0 + length * i / n, y + 0.08, 0], color=WEIGHTS, stroke_width=sw(0.64) if n <= 16 else 1.0) for i in range(n + 1)])
     lab = label(name, 15, DIM).next_to(line, UP, buff=0.08).align_to(line, LEFT)
     return VGroup(line, ticks, lab)
 
@@ -39,7 +39,7 @@ def bars(heights, x: float, y: float, color: str = OUTPUT, op: float = 0.9, outl
     g = VGroup()
     for h in heights:
         if outline:
-            g.add(Rectangle(width=0.28, height=max(0.03, h), stroke_color=TEXT, stroke_width=1.5, fill_opacity=0))
+            g.add(Rectangle(width=0.28, height=max(0.03, h), stroke_color=TEXT, stroke_width=sw(0.6), fill_opacity=0))
         else:
             g.add(Rectangle(width=0.28, height=max(0.03, h), fill_color=color, fill_opacity=op, stroke_width=0))
     return g.arrange(RIGHT, buff=0.08, aligned_edge=DOWN).move_to([x, y, 0], aligned_edge=DOWN)
@@ -56,7 +56,7 @@ TITLE_PRECISION = ("What each precision costs, against its own bf16", "5  what p
 
 
 def start_rounding(scene, add: bool = True) -> dict:
-    mat = VGroup(*[Square(0.3, fill_color=WEIGHTS, fill_opacity=0.6, stroke_width=0) for _ in range(64)]).arrange_in_grid(rows=8, cols=8, buff=0.04).move_to([-4.7, 1.4, 0])
+    mat = VGroup(*[Square(0.3, fill_color=WEIGHTS, fill_opacity=SOLID * 0.67, stroke_width=0) for _ in range(64)]).arrange_in_grid(rows=8, cols=8, buff=0.04).move_to([-4.7, 1.4, 0])
     ml = label("a weight matrix: numbers, stored in 16 bits each", 15, DIM).next_to(mat, DOWN, buff=0.12)
     parts = dict(mat=mat, ml=ml); parts["shown"] = [mat, ml]
     if add:
@@ -108,7 +108,7 @@ class Rounding(TalkSlide):
             dot = Dot([wx, y, 0], color=OUTPUT, radius=0.07)
             self.play(FadeIn(row), FadeIn(dot), run_time=0.5)
             snapped = x0 + length * round(W_VALUE * n) / n
-            seg = Line([wx, y, 0], [snapped, y, 0], color=HOT, stroke_width=4)
+            seg = Line([wx, y, 0], [snapped, y, 0], color=HOT, stroke_width=sw(1.6))
             el = label(f"error {err:.4f}", 16, HOT if err > 0.001 else DIM).move_to([5.9, y, 0])
             self.play(dot.animate.move_to([snapped, y, 0]), Create(seg), FadeIn(el), run_time=0.6)
             levels.add(row, dot, seg, el)

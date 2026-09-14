@@ -32,7 +32,7 @@ class Delegation(TalkSlide):
         boxes = VGroup()
         for text, a, b in reversed(parts):
             sub = VGroup(*name[a:b])
-            br = SurroundingRectangle(sub, color=ZONE, buff=0.06, stroke_width=1.5)
+            br = SurroundingRectangle(sub, color=ZONE, buff=0.06, stroke_width=sw(0.6))
             boxes.add(br)
             self.play(Create(br), run_time=0.3)
         dot_note = label("read from the right: the last dot is the root", 20, MUTED).next_to(name, DOWN, buff=GAP_WIDE)

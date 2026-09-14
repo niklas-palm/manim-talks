@@ -15,7 +15,7 @@ class Sequential(TalkSlide):
         t = title(self, "The idea: read every token at once", "1  the parallel idea")
         toks = big_tokens(1.3)
         self.play(LaggedStart(*[FadeIn(g, shift=DOWN * 0.15) for g in toks], lag_ratio=0.1), run_time=1.0)
-        steps = Counter("sequential steps to read the sentence", 0, "", RED, size=30).move_to([COLS[0], ROWS[4], 0], aligned_edge=LEFT)
+        steps = Counter("sequential steps to read the sentence", 0, "", MASK, size=30).move_to([COLS[0], ROWS[4], 0], aligned_edge=LEFT)
         self.play(FadeIn(steps))
         self.next_slide("""This is for engineers who use language models and have never seen the computation inside one. The spine is one
         sentence: a transformer is a stack of identical layers; in each layer every token gathers what it needs from every
@@ -26,14 +26,14 @@ class Sequential(TalkSlide):
         the answer was a recurrent network, and it had one property that shaped everything: it read the tokens in order, one
         at a time.""")
         # --- the recurrent crawl: a running state moves token by token
-        h = VGroup(RoundedRectangle(corner_radius=0.12, width=1.6, height=1.6, stroke_color=ATTN, stroke_width=3, fill_color=ATTN, fill_opacity=0.15),
+        h = VGroup(RoundedRectangle(corner_radius=rad(0.8), width=1.6, height=1.6, stroke_color=ATTN, stroke_width=sw(1.2), fill_color=ATTN, fill_opacity=FILL * 1.5),
                    label("state", 22, ATTN))
         h[1].move_to(h[0])
         h.move_to([XS[0], ROWS[3] + 0.3, 0])
         self.play(FadeIn(h))
         for k in range(N):
             self.play(h.animate.move_to([XS[k], ROWS[3] + 0.3, 0]), run_time=0.35)
-            line = Line(toks[k][0].get_bottom(), h[0].get_top(), color=ATTN, stroke_width=3)
+            line = Line(toks[k][0].get_bottom(), h[0].get_top(), color=ATTN, stroke_width=sw(1.2))
             self.play(Create(line), toks[k][0].animate.set_fill(ATTN, 0.85), steps.to(k + 1), run_time=0.3)
             self.play(FadeOut(line), toks[k][0].animate.set_fill(TOKEN, 0.85), run_time=0.15)
         self.next_slide("""The recurrent network carries a running state and updates it with one token at a time, left to right. Token six

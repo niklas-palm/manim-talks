@@ -36,7 +36,7 @@ class SchedulerKubelet(TalkSlide):
         their gap is closed. A third loop has appeared beside them, the scheduler, watching the API server like the others. The
         nodes at the bottom right are still empty. Nothing moves until the next click.""")
         pa = S.cards["a"]
-        ring = SurroundingRectangle(pa, color=CONTROL, buff=0.06, stroke_width=2.2)
+        ring = SurroundingRectangle(pa, color=CONTROL, buff=0.06, stroke_width=sw(0.88))
         pulse(self, pa, sc[2], color=HOT, run_time=0.6)
         self.play(Create(ring), run_time=0.4)
         self.next_slide("""The scheduler is another loop, and its trigger is the red line on those cards: a Pod record with no node. It
@@ -45,7 +45,7 @@ class SchedulerKubelet(TalkSlide):
         # --- zoom into the nodes: filtering
         wide = VGroup(t, S.client, S.api, S.store, S.desired, S.running, sc, ws, *[S.ctrl[k] for k in ("deploy", "rs")], *[S.watches[k] for k in ("deploy", "rs")], *S.cards.values(), ring)
         self.play(frame.animate.scale(ZN).move_to([NODE_XS[1], Y_NODE, 0]), FadeOut(wide), run_time=1.0)
-        need = VGroup(*[Rectangle(width=0.2, height=0.14, stroke_color=DESIRED, stroke_width=1.6, fill_opacity=0).next_to(n[4], RIGHT, buff=0).set_y(n[3].get_y()) for n in S.nodes])
+        need = VGroup(*[Rectangle(width=0.2, height=0.14, stroke_color=DESIRED, stroke_width=sw(0.64), fill_opacity=0).next_to(n[4], RIGHT, buff=0).set_y(n[3].get_y()) for n in S.nodes])
         nl = label("the Pod's request", 15, DESIRED).scale(ZN).next_to(S.nodes[0][3], DOWN, buff=0.06).align_to(S.nodes[0][3], LEFT)
         self.play(FadeIn(need), FadeIn(nl), run_time=0.5)
         n3 = S.nodes[2]
@@ -65,7 +65,7 @@ class SchedulerKubelet(TalkSlide):
         self.play(frame.animate.scale(1 / ZN).move_to(ORIGIN), FadeIn(wide), run_time=1.0)
         pulse(self, sc[2], S.api[0], color=CONTROL, run_time=0.4)
         pulse(self, S.api[0], pa, color=CONTROL, run_time=0.4)
-        set_detail(self, pa, "node 1", TEAL)
+        set_detail(self, pa, "node 1", NODE)
         self.play(FadeOut(ring), S.nodes[0][0].animate.set_stroke(color=NODE, width=2.5), run_time=0.4)
         self.next_slide("""Second, scoring: the feasible nodes are ranked. One common rule prefers the node with the most free resources
         left, so the load spreads; others prefer spreading replicas across zones, or packing. Node one scores highest.
@@ -75,11 +75,11 @@ class SchedulerKubelet(TalkSlide):
         # --- zoom into node 1: the kubelet
         n1 = S.nodes[0]
         wk = watch(n1, NODE)
-        self.play(Create(wk), n1[5].animate.set_color(TEAL), run_time=0.5)
+        self.play(Create(wk), n1[5].animate.set_color(NODE), run_time=0.5)
         pulse(self, pa, n1[5], color=DESIRED, run_time=0.6)
         wide2 = VGroup(t, S.client, S.api, S.store, S.desired, S.running, S.nodes[1], S.nodes[2], *S.ctrl.values(), *S.watches.values(), *S.cards.values(), wk)
         self.play(frame.animate.scale(ZK).move_to(n1.get_center()), FadeOut(wide2), run_time=1.0)
-        bar = Rectangle(width=0.01, height=0.06, fill_color=ACTUAL, fill_opacity=0.9, stroke_width=0).next_to(n1[2][0], DOWN, buff=0.05).align_to(n1[2][0], LEFT)
+        bar = Rectangle(width=0.01, height=0.06, fill_color=ACTUAL, fill_opacity=SOLID, stroke_width=0).next_to(n1[2][0], DOWN, buff=0.05).align_to(n1[2][0], LEFT)
         bl = label("pull image", 18, MUTED).scale(ZK).next_to(bar, DOWN, buff=0.04).align_to(n1[2][0], LEFT)   # under the slot, inside the node
         self.add(bar)
         self.play(bar.animate.stretch_to_fit_width(n1[2][0].width).align_to(n1[2][0], LEFT), FadeIn(bl), run_time=1.0)
@@ -102,11 +102,11 @@ class SchedulerKubelet(TalkSlide):
         for nm, ni, si, used in (("b", 1, 0, 0.8), ("c", 0, 1, 0.8)):
             pc, nd = S.cards[nm], S.nodes[ni]
             self.play(nd[0].animate.set_stroke(color=CONTROL, width=4), run_time=0.2)
-            set_detail(self, pc, f"node {ni + 1}", TEAL, run_time=0.2)
+            set_detail(self, pc, f"node {ni + 1}", NODE, run_time=0.2)
             self.play(nd[0].animate.set_stroke(color=NODE, width=2.5), run_time=0.15)
             if ni != 0:
                 wkn = watch(nd, NODE)
-                self.play(Create(wkn), nd[5].animate.set_color(TEAL), run_time=0.3)
+                self.play(Create(wkn), nd[5].animate.set_color(NODE), run_time=0.3)
             pp = S.place_pod(ni, si)
             self.play(FadeIn(pp, scale=0.5), mem(nd, used), run_time=0.3)
             self.play(pc[0].animate.set_stroke(color=ACTUAL), S.running.to(int(S.running.tracker.get_value()) + 1), run_time=0.3)

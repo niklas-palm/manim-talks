@@ -1,0 +1,28 @@
+{
+  "mode": "dark",
+  "description": "Terminal: monospace everywhere, near-black green ground, square corners, thin strokes, uppercase titles.",
+  "font": "Menlo",
+  "font_fallbacks": ["Monaco", "DejaVu Sans Mono"],
+  "code_style": "native",
+  "bg": "#050A07",
+  "text": "#CDF3D4",
+  "muted": "#7FAE89",
+  "dim": "#2E4A36",
+  "caption": "#AEE0B8",
+  "hi": "#EAFFEE",
+  "panel": "#0A130C",
+  "accents": {
+    "a1": "#3FD9E0",
+    "a2": "#E8D44A",
+    "a3": "#B48CFF",
+    "a4": "#3FD66E",
+    "a5": "#9BDC4A",
+    "a6": "#F0913C",
+    "alert": "#FF4D4D"
+  },
+  "radius": 0.0,
+  "stroke": 1.6,
+  "fill": 0.06,
+  "solid": 0.90,
+  "title_case": "upper"
+}

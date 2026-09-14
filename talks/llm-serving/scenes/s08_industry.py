@@ -13,7 +13,7 @@ def two_phases() -> VGroup:
     pre = box(3.0, 1.3, "prefill", PROMPT, size=24).shift(LEFT * 2.8 + UP * 1.2)
     dec = box(3.0, 1.3, "decode", OUTPUT, size=24).shift(RIGHT * 2.8 + UP * 1.2)
     arrow = Arrow(pre[0].get_right(), dec[0].get_left(), buff=0.05, color=DIM)
-    loop = CurvedArrow(dec[0].get_center() + RIGHT * 0.6, dec[0].get_center() + LEFT * 0.6, angle=-TAU / 3, color=OUTPUT, stroke_width=2, tip_length=0.15)   # the loop inside its box, under the name
+    loop = CurvedArrow(dec[0].get_center() + RIGHT * 0.6, dec[0].get_center() + LEFT * 0.6, angle=-TAU / 3, color=OUTPUT, stroke_width=sw(0.8), tip_length=0.15)   # the loop inside its box, under the name
     return VGroup(pre, dec, arrow, loop)
 
 

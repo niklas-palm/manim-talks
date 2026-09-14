@@ -55,7 +55,7 @@ class Predict(TalkSlide):
         Take the highest and the output is predictable; sample with some randomness and it is more varied. That choice is
         the "temperature" setting people tune.""")
         top = dist[7]
-        picked = VGroup(Square(0.8, fill_color=ATTN, fill_opacity=0.9, stroke_width=0), label("mat", 24, "#0f1116"))
+        picked = VGroup(Square(0.8, fill_color=ATTN, fill_opacity=SOLID, stroke_width=0), label("mat", 24, "#0f1116"))
         picked[1].move_to(picked[0])
         picked.next_to(top, UP, buff=0.2)
         self.play(FadeOut(dl), Indicate(top, color=ATTN, scale_factor=1.1), FadeIn(picked, shift=UP * 0.2), run_time=0.8)
@@ -67,7 +67,7 @@ class Predict(TalkSlide):
         back[1].next_to(back[0], UP, buff=GAP_TIGHT)
         self.play(FadeOut(VGroup(vec, vll, scores, scl)), picked.animate.scale(0.3).move_to(back[0].get_center()), run_time=0.7)
         self.play(FadeOut(picked), FadeIn(back), run_time=0.4)
-        loop = CurvedArrow(back[0].get_bottom() + DOWN * 0.25, vecs[0].get_bottom() + DOWN * 0.25, color=MUTED, stroke_width=3.5, angle=-PI / 4)
+        loop = CurvedArrow(back[0].get_bottom() + DOWN * 0.25, vecs[0].get_bottom() + DOWN * 0.25, color=MUTED, stroke_width=sw(1.4), angle=-PI / 4)
         loopl = label("append, then run the whole model again", 20, MUTED).next_to(loop, DOWN, buff=GAP_TIGHT)
         self.play(Create(loop), FadeIn(loopl), run_time=0.9)
         self.next_slide("""Then the sampled word is appended: "mat" takes its place at the end of the row, in the colour of something the

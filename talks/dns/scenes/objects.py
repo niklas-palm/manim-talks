@@ -12,7 +12,7 @@ the address. Sizes are for a projector: rows at 16 pt, boxes that span the frame
 """
 from lib.palette import *
 
-NAME, ADDRESS, ZONE, REMEMBERED, HOT = BLUE, YELLOW, VIOLET, TEAL, RED
+NAME, ADDRESS, ZONE, REMEMBERED, HOT = A1, A2, A3, A4, ALERT
 set_thread({"name": NAME, "names": NAME, "address": ADDRESS, "addresses": ADDRESS, "zone": ZONE, "zones": ZONE,
             "pointer": ZONE, "pointers": ZONE, "remembers": REMEMBERED, "cache": REMEMBERED, "cached": REMEMBERED,
             "caches": REMEMBERED, "ttl": REMEMBERED})
@@ -36,7 +36,7 @@ def record(owner: str, rtype: str, value: str, ttl: str = "", color: str = ZONE,
     """One resource record as a row: owner, TYPE, value, and the TTL at the right. The type is the colour of what the
     record gives you: a pointer (NS, violet) or an address (A, yellow). rec[0] is the background strip; rec[1..3] the
     owner, type and value; rec[4] the TTL text when given."""
-    bg = Rectangle(width=width, height=ROW_H, fill_color=color, fill_opacity=0.12, stroke_width=0)
+    bg = Rectangle(width=width, height=ROW_H, fill_color=color, fill_opacity=FILL * 1.2, stroke_width=0)
     parts = VGroup(label(owner, size, TEXT), label(rtype, size, color), label(value, size, TEXT if rtype != "A" else ADDRESS))
     parts[0].move_to(bg.get_left() + RIGHT * 0.12, aligned_edge=LEFT)
     parts[1].move_to(bg.get_left() + RIGHT * (width * COL_TYPE), aligned_edge=LEFT)
@@ -54,7 +54,7 @@ def record(owner: str, rtype: str, value: str, ttl: str = "", color: str = ZONE,
 def zone_box(name: str, sub: str, y: float, w: float = W_TREE, h: float = H_ZONE, x: float = X_TREE) -> VGroup:
     """A zone: who is authoritative for one level of the name, with room for the record it holds. zb[0] box,
     zb[1] name, zb[2] subtitle."""
-    r = RoundedRectangle(corner_radius=0.12, width=w, height=h, stroke_color=ZONE, stroke_width=2.4, fill_color=ZONE, fill_opacity=0.08).move_to([x, y, 0])
+    r = RoundedRectangle(corner_radius=rad(0.8), width=w, height=h, stroke_color=ZONE, stroke_width=sw(0.96), fill_color=ZONE, fill_opacity=FILL * 0.8).move_to([x, y, 0])
     n = label(name, 20, ZONE).move_to(r.get_corner(UL) + RIGHT * 0.2 + DOWN * 0.2, aligned_edge=UL)
     s = label(sub, 15, MUTED).next_to(n, DOWN, buff=0.04).align_to(n, LEFT)
     return VGroup(r, n, s)
@@ -63,7 +63,7 @@ def zone_box(name: str, sub: str, y: float, w: float = W_TREE, h: float = H_ZONE
 def resolver_box(y: float = Y_RESOLVER) -> VGroup:
     """The recursive resolver: a box spanning the tree's height, with a cache area inside. rb[0] box, rb[1] name,
     rb[2] the 'cache' label; cached rows go at CACHE_Y[i]."""
-    r = RoundedRectangle(corner_radius=0.15, width=W_RESOLVER, height=H_RESOLVER, stroke_color=ZONE, stroke_width=2.6, fill_color=ZONE, fill_opacity=0.06).move_to([X_RESOLVER, y, 0])
+    r = RoundedRectangle(corner_radius=rad(), width=W_RESOLVER, height=H_RESOLVER, stroke_color=ZONE, stroke_width=sw(1.04), fill_color=ZONE, fill_opacity=FILL * 0.6).move_to([X_RESOLVER, y, 0])
     n = label("recursive resolver", 20, TEXT).move_to(r.get_corner(UL) + RIGHT * 0.2 + DOWN * 0.2, aligned_edge=UL)
     c = label("cache", 15, REMEMBERED).next_to(n, DOWN, buff=0.04).align_to(n, LEFT)
     return VGroup(r, n, c)
@@ -117,7 +117,7 @@ def fuse(row: VGroup, fraction: float = 1.0) -> Rectangle:
     """The time a cached row may still be kept, as a teal bar under it; Transform it to a shorter one to show time
     passing, to zero when it expires."""
     w = row[0].width * fraction
-    return Rectangle(width=max(0.01, w), height=0.07, fill_color=REMEMBERED, fill_opacity=0.9, stroke_width=0).move_to(row[0].get_bottom() + DOWN * 0.05, aligned_edge=LEFT).align_to(row[0], LEFT)
+    return Rectangle(width=max(0.01, w), height=0.07, fill_color=REMEMBERED, fill_opacity=SOLID, stroke_width=0).move_to(row[0].get_bottom() + DOWN * 0.05, aligned_edge=LEFT).align_to(row[0], LEFT)
 
 
 def tree():
@@ -151,11 +151,16 @@ def hosts_list(rows, x: float, y: float, width: float = 6.2, size: float = 16) -
 
 
 def fade_below(rows: VGroup, y0: float = -2.2, span: float = 1.0):
-    """A list that continues past the frame fades towards the edge instead of being cut."""
+    """A list that continues past the frame fades towards the edge instead of being cut. Each member's own opacity is
+    scaled, not replaced: set_opacity on a group would give a 7 per cent strip the same 70 per cent as its text, which
+    on a light theme turns a faint row into a dark bar (and on a dark one into a glaring white one)."""
     for r in rows:
         y = r.get_y()
         if y < y0:
-            r.set_opacity(max(0.0, 1 - (y0 - y) / span))
+            k = max(0.0, 1 - (y0 - y) / span)
+            for m in r.family_members_with_points():
+                m.set_fill(opacity=m.get_fill_opacity() * k)
+                m.set_stroke(opacity=m.get_stroke_opacity() * k)
 
 
 def list_end_state() -> dict:
@@ -184,7 +189,7 @@ def delegation_pointers(recs: VGroup, boxes: VGroup) -> VGroup:
     crosses is the border of the box it leaves, and the audience sees why."""
     def down(rec, box):
         x = rec[2].get_center()[0]
-        return Arrow([x, rec[0].get_bottom()[1] - 0.02, 0], [x, box[0].get_top()[1] + 0.02, 0], color=ZONE, stroke_width=2, buff=0, tip_length=0.15, max_tip_length_to_length_ratio=0.5)
+        return Arrow([x, rec[0].get_bottom()[1] - 0.02, 0], [x, box[0].get_top()[1] + 0.02, 0], color=ZONE, stroke_width=sw(0.8), buff=0, tip_length=0.15, max_tip_length_to_length_ratio=0.5)
     return VGroup(down(recs[0], boxes[1]), down(recs[1], boxes[2]))
 
 
@@ -193,7 +198,7 @@ def client_link(client: VGroup, res: VGroup) -> VGroup:
     edge at the laptop's height. The library's arrow() aims at the far box's extreme boundary point, which for a box as
     tall as the resolver is its top corner, so the line came out skewed."""
     y = client.get_center()[1]
-    return VGroup(Arrow([client[0].get_right()[0] + GAP_TIGHT, y, 0], [res[0].get_left()[0] - GAP_TIGHT, y, 0], buff=0, color=MUTED, stroke_width=2.2, tip_length=0.18))
+    return VGroup(Arrow([client[0].get_right()[0] + GAP_TIGHT, y, 0], [res[0].get_left()[0] - GAP_TIGHT, y, 0], buff=0, color=MUTED, stroke_width=sw(0.88), tip_length=0.18))
 
 
 def delegation_end_state() -> dict:
@@ -220,7 +225,7 @@ def caching_end_state() -> dict:
     hops = Counter("hops into the tree", 1, "", ZONE, size=24).move_to([-MARGIN, -2.4, 0], aligned_edge=LEFT)
     stack = VGroup(label("browser cache", 15, REMEMBERED), label("OS cache", 15, REMEMBERED)).arrange(DOWN, aligned_edge=LEFT, buff=0.1)
     stack.next_to(d["client"], UP, buff=0.3).align_to(d["client"], LEFT)
-    marks = VGroup(*[Rectangle(width=0.1, height=0.2, fill_color=REMEMBERED, fill_opacity=0.9, stroke_width=0).next_to(s_, LEFT, buff=0.1) for s_ in stack])
+    marks = VGroup(*[Rectangle(width=0.1, height=0.2, fill_color=REMEMBERED, fill_opacity=SOLID, stroke_width=0).next_to(s_, LEFT, buff=0.1) for s_ in stack])
     cd = label("the same TTL counts down in every cache: 300 s, then 281 s", 16, MUTED).move_to([0, -3.3, 0])
     d.update({"c4": c4, "c5": c5, "fuses": fuses, "client2": client2, "far": far, "hops": hops, "stack": stack, "marks": marks, "cd": cd})
     return d

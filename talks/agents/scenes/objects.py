@@ -12,7 +12,7 @@ Layout (scene units; frame 14.22 by 8, content band y 2.6 to -2.3):
 """
 from lib.palette import *
 
-USER, MODEL, TOOL, RESULT, PROBLEM = BLUE, VIOLET, YELLOW, TEAL, RED
+USER, MODEL, TOOL, RESULT, PROBLEM = A1, A3, A2, A4, ALERT
 SYSTEM = MUTED
 set_thread({"user": USER, "model": MODEL, "tool": TOOL, "tools": TOOL, "result": RESULT, "results": RESULT, "api": TOOL})
 
@@ -31,12 +31,12 @@ def user_node() -> VGroup:
 
 
 def app_box() -> VGroup:
-    g = box(APP_X1 - APP_X0, APP_Y1 - APP_Y0, "application", MUTED, size=18, fill=0.04, name_align="left")
+    g = box(APP_X1 - APP_X0, APP_Y1 - APP_Y0, "application", MUTED, size=18, fill=FILL * 0.4, name_align="left")
     return g.move_to([(APP_X0 + APP_X1) / 2, (APP_Y0 + APP_Y1) / 2, 0])
 
 
 def model_box() -> VGroup:
-    return box(MODEL_W, MODEL_H, "model", MODEL, size=22, fill=0.10).move_to(MODEL_C)
+    return box(MODEL_W, MODEL_H, "model", MODEL, size=22, fill=FILL).move_to(MODEL_C)
 
 
 def message(kind: str, text: str) -> VGroup:
@@ -52,8 +52,8 @@ def call_arrows(app: VGroup, model: VGroup) -> VGroup:
     """The two arrows between the application and the model, with what travels on each: the call carries the system
     prompt, the tools and every message; one reply comes back. Returns VGroup(call, reply)."""
     y_call, y_reply = 2.05, 1.35
-    call = Arrow([APP_X1 + 0.08, y_call, 0], [MODEL_C[0] - MODEL_W / 2 - 0.08, y_call, 0], buff=0, color=MUTED, stroke_width=2.2, tip_length=0.18)
-    reply = Arrow([MODEL_C[0] - MODEL_W / 2 - 0.08, y_reply, 0], [APP_X1 + 0.08, y_reply, 0], buff=0, color=MODEL, stroke_width=2.2, tip_length=0.18)
+    call = Arrow([APP_X1 + 0.08, y_call, 0], [MODEL_C[0] - MODEL_W / 2 - 0.08, y_call, 0], buff=0, color=MUTED, stroke_width=sw(0.88), tip_length=0.18)
+    reply = Arrow([MODEL_C[0] - MODEL_W / 2 - 0.08, y_reply, 0], [APP_X1 + 0.08, y_reply, 0], buff=0, color=MODEL, stroke_width=sw(0.88), tip_length=0.18)
     cl = label("system prompt +\ntools + messages", 13, MUTED).next_to(call, UP, buff=0.05)   # two lines: it must fit between the boxes
     rl = label("one reply", 13, MODEL).next_to(reply, DOWN, buff=0.05)
     return VGroup(VGroup(call, cl), VGroup(reply, rl))
@@ -63,7 +63,7 @@ def device_link(device: VGroup, text: str = "the application's\ncode calls it") 
     """A horizontal dashed line from the application's right edge to a device, labelled underneath: the application's
     own code reaches this thing. Horizontal on purpose, so it never crosses the arrows to the model."""
     y = device.get_center()[1]
-    ln = DashedLine([APP_X1 + 0.08, y, 0], [device.get_left()[0] - 0.08, y, 0], color=MUTED, stroke_width=1.6, dash_length=0.1, stroke_opacity=0.7)
+    ln = DashedLine([APP_X1 + 0.08, y, 0], [device.get_left()[0] - 0.08, y, 0], color=MUTED, stroke_width=sw(0.64), dash_length=0.1, stroke_opacity=0.7)
     return VGroup(ln, label(text, 13, MUTED).next_to(ln, DOWN, buff=0.05))
 
 
@@ -76,7 +76,7 @@ def device_box(name: str, y: float) -> VGroup:
 def tool_card(name: str, desc: str, schema: str, device: str, y: float) -> VGroup:
     """A tool definition as the model receives it: name, description, input schema; the device it reaches as a tag
     top-right. card[0] frame, [1] name, [2] description, [3] schema, [4] device tag."""
-    r = RoundedRectangle(corner_radius=0.08, width=CARD_W, height=CARD_H, fill_color=TOOL, fill_opacity=0.10, stroke_color=TOOL, stroke_width=1.6).move_to([MODEL_C[0], y, 0])
+    r = RoundedRectangle(corner_radius=rad(0.53), width=CARD_W, height=CARD_H, fill_color=TOOL, fill_opacity=FILL, stroke_color=TOOL, stroke_width=sw(0.64)).move_to([MODEL_C[0], y, 0])
     x0 = r.get_left()[0] + 0.15
     n = label(name, 17, TOOL).move_to([x0, y + 0.29, 0], aligned_edge=LEFT)
     d = label(desc, 14, TEXT).move_to([x0, y, 0], aligned_edge=LEFT)
@@ -190,7 +190,7 @@ def context_window() -> VGroup:
     centred on the top edge over a background, so it reads across the application box's border and clear of the arrow
     labels. window[0] frame, [1] label."""
     h = WINDOW * (BH + BGAP)
-    frame = DashedVMobject(RoundedRectangle(corner_radius=0.08, width=BW + 0.3, height=h + 0.1, stroke_color=PROBLEM, stroke_width=1.6, fill_opacity=0), num_dashes=60)
+    frame = DashedVMobject(RoundedRectangle(corner_radius=rad(0.53), width=BW + 0.3, height=h + 0.1, stroke_color=PROBLEM, stroke_width=sw(0.64), fill_opacity=0), num_dashes=60)
     frame.move_to([LIST_X, LIST_TOP - h / 2 + BGAP / 2, 0])
     lbl = label("context window", 14, PROBLEM).next_to(frame, UP, buff=GAP_TIGHT)
     return VGroup(frame, VGroup(BackgroundRectangle(lbl, color=BG, fill_opacity=1, buff=0.05), lbl))
@@ -214,9 +214,9 @@ def app_code():
 
 def mini_stage(kinds) -> tuple:
     """The small model, list and cards that stand for the stage beside the code. kinds: the list's message kinds."""
-    model = box(2.6, 0.8, "model", MODEL, size=16, fill=0.10).move_to([MINI_X, 2.1, 0])
+    model = box(2.6, 0.8, "model", MODEL, size=16, fill=FILL).move_to([MINI_X, 2.1, 0])
     lst = Stack(MINI_X, MINI_TOP, h=MINI_H, gap=MINI_GAP)
     for k in kinds:
         b = block("", KIND[k], w=2.6, h=MINI_H, bare=True).move_to(lst.slot(len(lst.blocks))); lst.blocks.append(b); lst.add(b)
-    cards = VGroup(*[Rectangle(width=1.0, height=0.26, fill_color=TOOL, fill_opacity=0.12, stroke_color=TOOL, stroke_width=1.2).move_to([-3.1, 1.3 - 0.36 * i, 0]) for i in range(3)])
+    cards = VGroup(*[Rectangle(width=1.0, height=0.26, fill_color=TOOL, fill_opacity=FILL * 1.2, stroke_color=TOOL, stroke_width=sw(0.48)).move_to([-3.1, 1.3 - 0.36 * i, 0]) for i in range(3)])
     return model, lst, cards

@@ -93,7 +93,7 @@ class Caching(TalkSlide):
         # --- caches at every level
         stack = VGroup(label("browser cache", 15, REMEMBERED), label("OS cache", 15, REMEMBERED)).arrange(DOWN, aligned_edge=LEFT, buff=0.1)
         stack.next_to(client, UP, buff=0.3).align_to(client, LEFT)
-        marks = VGroup(*[Rectangle(width=0.1, height=0.2, fill_color=REMEMBERED, fill_opacity=0.9, stroke_width=0).next_to(s_, LEFT, buff=0.1) for s_ in stack])
+        marks = VGroup(*[Rectangle(width=0.1, height=0.2, fill_color=REMEMBERED, fill_opacity=SOLID, stroke_width=0).next_to(s_, LEFT, buff=0.1) for s_ in stack])
         self.play(FadeIn(stack, lag_ratio=0.2), FadeIn(marks, lag_ratio=0.2), run_time=0.8)
         cd = label("the same TTL counts down in every cache: 300 s, then 281 s", 16, MUTED).move_to([0, -3.3, 0])
         self.play(FadeOut(cost), FadeIn(cd), run_time=0.4)

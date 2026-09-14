@@ -20,7 +20,7 @@ class MaskAndHeads(TalkSlide):
         self.add(row, tri, bars, wlabels, bl, qbig, qbl, out, outl)
         # --- the attention grid under the row: rows are the querying token, columns the attended token
         cell = 0.45   # 6 cells and the label above fit between the token row and the content bottom
-        gridg = VGroup(*[Square(cell, fill_color=ATTN, fill_opacity=0.5, stroke_color=BG, stroke_width=2) for _ in range(N * N)]).arrange_in_grid(rows=N, cols=N, buff=0.02)
+        gridg = VGroup(*[Square(cell, fill_color=ATTN, fill_opacity=SOLID * 0.56, stroke_color=BG, stroke_width=sw(0.8)) for _ in range(N * N)]).arrange_in_grid(rows=N, cols=N, buff=0.02)
         gridg.move_to([0.2, -0.9, 0])   # top at 0.5; the label above clears the token row
         rowl = VGroup(*[label(w, 17, TOKEN).next_to(gridg[i * N], LEFT, buff=GAP) for i, w in enumerate(WORDS)])
         for lab in rowl:

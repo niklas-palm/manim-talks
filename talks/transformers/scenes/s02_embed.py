@@ -39,7 +39,7 @@ class Embedding(TalkSlide):
         anything about them beyond a number.""")
         # --- the embedding table: id selects a row -> a vector
         self.play(FadeOut(bpe))
-        table = VGroup(*[Rectangle(width=0.8, height=0.2, stroke_color=DIM, stroke_width=1, fill_color=VIOLET, fill_opacity=0.25) for _ in range(12)]).arrange(DOWN, buff=0.04)
+        table = VGroup(*[Rectangle(width=0.8, height=0.2, stroke_color=DIM, stroke_width=sw(0.4), fill_color=WEIGHTS, fill_opacity=SOLID * 0.28) for _ in range(12)]).arrange(DOWN, buff=0.04)
         table.move_to([-6.3, -1.3, 0], aligned_edge=LEFT)
         tl = label("table\n50,257 rows", 15, WEIGHTS).next_to(table, UP, buff=GAP_TIGHT)
         self.play(FadeIn(table), FadeIn(tl))
@@ -61,7 +61,7 @@ class Embedding(TalkSlide):
         self.play(FadeOut(table), FadeOut(tl), FadeOut(vl), run_time=0.4)
         self.play(Indicate(vecs[0], color=TOKEN, scale_factor=1.15), Indicate(vecs[4], color=TOKEN, scale_factor=1.15), run_time=1.0)
         same = label('both "the" tokens: same id, same vector', 18, MUTED).move_to([0, ROWS[4] - 0.25, 0])
-        order = label("no order: attention sees a set", 18, RED).next_to(same, DOWN, buff=GAP_TIGHT)
+        order = label("no order: attention sees a set", 18, MASK).next_to(same, DOWN, buff=GAP_TIGHT)
         self.play(FadeIn(same), FadeIn(order))
         self.next_slide("""One problem, and it is the reason for the next step. The attention we are about to build looks at these vectors as
         an unordered set: "the cat sat" and "sat the cat" would come out the same, because nothing in a vector says where it

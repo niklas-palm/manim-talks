@@ -14,7 +14,13 @@ Requires python-pptx (pip install python-pptx) and ffmpeg (poster frames)."""
 import glob, json, os, re, subprocess, sys, tempfile
 from lxml import etree
 from pptx import Presentation
+from pptx.dml.color import RGBColor
 from pptx.util import Inches
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from lib import theme as _theme
+
+BG_HEX = _theme.load()["bg"].lstrip("#")
 
 CLICK = "--click" in sys.argv
 sys.argv = [a for a in sys.argv if a != "--click"]
@@ -64,6 +70,11 @@ for f in sorted(glob.glob(f"{root}/scenes/s*.py")):
             png = f"{tmp}/{scene}-{k}.png"
             poster(clip, png)
             slide = prs.slides.add_slide(blank)
+            try:                                     # the clip is letterboxed on a 16:9 slide; the margins must not flash white
+                slide.background.fill.solid()
+                slide.background.fill.fore_color.rgb = RGBColor.from_string(BG_HEX)
+            except Exception:                        # an older python-pptx cannot set a slide background; the clip still fills it
+                pass
             movie = slide.shapes.add_movie(clip, 0, 0, prs.slide_width, prs.slide_height, poster_frame_image=png, mime_type="video/mp4")
             spid = movie.shape_id
             if not CLICK:

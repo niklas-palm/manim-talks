@@ -5,7 +5,7 @@ from objects import *
 
 
 def gpu_row(n: int, w: float = 1.15, h: float = 1.35, buff: float = 0.22) -> VGroup:
-    return VGroup(*[RoundedRectangle(corner_radius=0.12, width=w, height=h, stroke_color=WEIGHTS, stroke_width=2.5, fill_color=WEIGHTS, fill_opacity=0.08) for _ in range(n)]).arrange(RIGHT, buff=buff)
+    return VGroup(*[RoundedRectangle(corner_radius=rad(0.8), width=w, height=h, stroke_color=WEIGHTS, stroke_width=sw(), fill_color=WEIGHTS, fill_opacity=FILL * 0.8) for _ in range(n)]).arrange(RIGHT, buff=buff)
 
 
 def layer_stack(n: int, width: float, color: str = WEIGHTS, op: float = 0.7, h: float = 0.15, buff: float = 0.06) -> VGroup:
@@ -17,7 +17,7 @@ def timeline(segments, unit: float, y: float, x0: float = -6.4):
     bars = VGroup(); x = x0
     for kind, length in segments:
         w = unit * length
-        bars.add(Rectangle(width=w, height=0.28, fill_color=PROMPT if kind == "c" else HOT, fill_opacity=0.9, stroke_width=0).move_to([x + w / 2, y, 0]))
+        bars.add(Rectangle(width=w, height=0.28, fill_color=PROMPT if kind == "c" else HOT, fill_opacity=SOLID, stroke_width=0).move_to([x + w / 2, y, 0]))
         x += w + 0.02
     return bars, x - x0
 
@@ -63,7 +63,7 @@ class Parallelism(TalkSlide):
             self.play(*[m.animate.set_fill(WEIGHTS, 0.6) for row in rows for m in row], *[c.animate.set_fill(PROMPT, 0.9) for cp in copies for c in cp], run_time=0.05)
         pl = label("each GPU now holds a quarter of the answer: partial sums for every output", 14, OUTPUT).next_to(g, DOWN, buff=0.15)
         self.play(FadeIn(pl), run_time=0.4)
-        sync = VGroup(*[DoubleArrow(g[i].get_right(), g[i + 1].get_left(), buff=0.04, color=HOT, stroke_width=4, tip_length=0.16) for i in range(3)])
+        sync = VGroup(*[DoubleArrow(g[i].get_right(), g[i + 1].get_left(), buff=0.04, color=HOT, stroke_width=sw(1.6), tip_length=0.16) for i in range(3)])
         sl2 = label("all-reduce: partial sums exchanged; every GPU now holds the full output", 14, HOT).move_to(pl)
         self.play(FadeIn(sync), FadeOut(pl), FadeIn(sl2), run_time=0.4)
         # the exchange runs over the links drawn: each GPU hands its partial sums to its neighbours, edge to edge across the
@@ -106,7 +106,7 @@ class Parallelism(TalkSlide):
         # EP
         cap = swap_caption(self, cap, "Expert parallelism: whole experts on each GPU, tokens travel to them")
         self.play(FadeOut(tp_bits))
-        experts = VGroup(*[VGroup(*[Square(0.4, fill_color=CACHE, fill_opacity=0.75, stroke_width=0) for _ in range(6)]).arrange_in_grid(rows=3, cols=2, buff=0.1).move_to(b) for b in g])
+        experts = VGroup(*[VGroup(*[Square(0.4, fill_color=CACHE, fill_opacity=SOLID * 0.83, stroke_width=0) for _ in range(6)]).arrange_in_grid(rows=3, cols=2, buff=0.1).move_to(b) for b in g])
         self.play(FadeIn(experts))
         import random
         random.seed(5)

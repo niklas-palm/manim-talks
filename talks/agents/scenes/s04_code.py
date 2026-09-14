@@ -146,10 +146,10 @@ class TheCode(TalkSlide):
         dots, names = VGroup(), VGroup()
         for i, name, dy in HOOKS:
             y = cd.lines[i].get_center()[1] + dy
-            d = Dot(color=TEAL, radius=0.06).move_to([cd.panel.get_left()[0] - 0.2, y, 0])
-            n = label(name, 13, TEAL).next_to(d, LEFT, buff=0.1)
+            d = Dot(color=RESULT, radius=0.06).move_to([cd.panel.get_left()[0] - 0.2, y, 0])
+            n = label(name, 13, RESULT).next_to(d, LEFT, buff=0.1)
             dots.add(d); names.add(n)
-        hl = label("Strands hooks: an event at each place the loop has", 14, TEAL).move_to(cl, aligned_edge=LEFT)
+        hl = label("Strands hooks: an event at each place the loop has", 14, RESULT).move_to(cl, aligned_edge=LEFT)
         self.play(FadeOut(bar), FadeOut(pic_l), FadeOut(cl), FadeIn(hl), LaggedStart(*[FadeIn(VGroup(d, n)) for d, n in zip(dots, names)], lag_ratio=0.15), run_time=1.2)
         self.next_slide("""Because the framework owns the loop, it can let you in at every place the loop has. Strands calls these hooks, and
         names an event for each: before and after the whole invocation, before and after each model call, before and after

@@ -8,8 +8,8 @@
 """
 from lib.palette import *
 
-KEY_A, KEY_B, KEY_C = BLUE, YELLOW, ORANGE
-LOGC, READER, SYNC, FAIL = VIOLET, TEAL, GREEN, RED
+KEY_A, KEY_B, KEY_C = A1, A2, A6
+LOGC, READER, SYNC, FAIL = A3, A4, A5, ALERT
 KEYS = [KEY_A, KEY_B, KEY_C]
 set_thread({"log": LOGC, "logs": LOGC, "partition": LOGC, "partitions": LOGC, "segment": LOGC, "segments": LOGC,
             "offset": READER, "offsets": READER, "consumer": READER, "consumers": READER,
@@ -35,7 +35,7 @@ def harrow(a, b, text: str, color: str = MUTED) -> VGroup:
     """A horizontal arrow from a's right edge to b's left edge at a's height, its label above the middle. The library's
     arrow() aims at a box's boundary point, which for a rounded box is a corner: skewed. Keep a and b at one y."""
     y = a.get_center()[1]
-    ar = Arrow([a.get_right()[0] + 0.1, y, 0], [b.get_left()[0] - 0.1, y, 0], buff=0, color=color, stroke_width=2.2, tip_length=0.18)
+    ar = Arrow([a.get_right()[0] + 0.1, y, 0], [b.get_left()[0] - 0.1, y, 0], buff=0, color=color, stroke_width=sw(0.88), tip_length=0.18)
     return VGroup(ar, label(text, 14, color).next_to(ar, UP, buff=0.05))
 
 
@@ -61,7 +61,7 @@ class Isr(VGroup):
 
     def __init__(self, n: int = 3, **kw):
         super().__init__(**kw)
-        self.marks = VGroup(*[VGroup(Square(0.3, fill_color=SYNC, fill_opacity=0.9, stroke_width=0), label(str(i + 1), 14, BG)) for i in range(n)]).arrange(RIGHT, buff=0.06)
+        self.marks = VGroup(*[VGroup(Square(0.3, fill_color=SYNC, fill_opacity=SOLID, stroke_width=0), label(str(i + 1), 14, BG)) for i in range(n)]).arrange(RIGHT, buff=0.06)
         self.name = label("in-sync", 15, SYNC).next_to(self.marks, DOWN, buff=0.05).align_to(self.marks, RIGHT)   # under the marks: the HWM label rides at the marks' height
         self.add(self.name, self.marks)
 
@@ -90,7 +90,7 @@ NAMES = {KEY_A: "alice", KEY_B: "bob", KEY_C: "carol"}
 
 
 def legend() -> VGroup:
-    return VGroup(*[VGroup(Square(0.22, fill_color=c, fill_opacity=0.9, stroke_width=0), label(f"key {NAMES[c]}", 15, MUTED)).arrange(RIGHT, buff=GAP_TIGHT)
+    return VGroup(*[VGroup(Square(0.22, fill_color=c, fill_opacity=SOLID, stroke_width=0), label(f"key {NAMES[c]}", 15, MUTED)).arrange(RIGHT, buff=GAP_TIGHT)
                     for c in KEYS]).arrange(RIGHT, buff=GAP)
 
 
@@ -142,11 +142,11 @@ def partitions_end() -> dict:
     for log, fill in zip(d["logs"], P_FILL):
         for c in fill:
             log.put(c)
-    d["load"].fill.become(Rectangle(width=0.30, height=d["load"].h * 0.35, fill_color=FAIL, fill_opacity=0.9, stroke_width=0).move_to(d["load"].frame.get_bottom() + UP * 0.03, aligned_edge=DOWN))
+    d["load"].fill.become(Rectangle(width=0.30, height=d["load"].h * 0.35, fill_color=FAIL, fill_opacity=SOLID, stroke_width=0).move_to(d["load"].frame.get_bottom() + UP * 0.03, aligned_edge=DOWN))
     d["hashc"] = code("partition = hash(key) % 3", "python", 16).next_to(d["prod"], RIGHT, buff=GAP_WIDE)
     cons = [consumer(f"consumer {i + 1}").move_to([x, P_CY, 0]) for i, x in enumerate(P_XS)]
     d["cons"] = cons
-    d["grp"] = SurroundingRectangle(VGroup(*cons), color=READER, buff=GAP, corner_radius=0.1, stroke_width=1.5)
+    d["grp"] = SurroundingRectangle(VGroup(*cons), color=READER, buff=GAP, corner_radius=rad(0.67), stroke_width=sw(0.6))
     d["gl"] = label("consumer group: one partition per member", 16, READER).next_to(d["grp"], DOWN, buff=GAP_TIGHT).align_to(d["grp"], LEFT)
     d["ptrs"] = [Pointer(n, READER).place(d["logs"][i], min(6, len(d["logs"][i].cells)), dy=1.05) for i, n in enumerate(("c1", "c2", "c2"))]   # six read rounds happened; clear of the box edge
     olog = Log(0.6, -2.75, capacity=9, name="__consumer_offsets: the group's committed positions", gap=GAP)
@@ -184,7 +184,7 @@ def isr_pos(b):
 
 
 def hwm_marker() -> VGroup:
-    hwm = VGroup(Line(UP * 0.29, DOWN * 0.29, color=SYNC, stroke_width=3), label("HWM", 15, SYNC))   # the rail's height
+    hwm = VGroup(Line(UP * 0.29, DOWN * 0.29, color=SYNC, stroke_width=sw(1.2)), label("HWM", 15, SYNC))   # the rail's height
     hwm[1].next_to(hwm[0], UP, buff=0.04)
     return hwm
 
