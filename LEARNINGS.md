@@ -88,6 +88,7 @@ Kafka:
 - Budget 0.45 units under the offsets for a pointer and its tag, 1.4 units between stacked logs.
 - `group.animate.set_opacity` fills a stroke-only member; dim cells and labels separately (docs/manim.md).
 - Ghost copies (`copy().set_opacity(0.25)`) are the cheapest picture of a machine that exists but is idle.
+- A gauge in the margin needs a short two-line name ("write\nload"); a long name clips at the frame edge.
 
 Transformers:
 - Show the sum, not the label: value copies flying into the new vector scaled by their weights, filling it cumulatively.
@@ -104,3 +105,5 @@ Agents:
 - Menlo at 18 pt is about 0.13 units per character; shorten identifiers before shrinking the font.
 - A member change and a group move in one play lose the member (docs/manim.md).
 - Two-line labels beat wrapping beside a box.
+- Switching a deck from its own helpers to the library versions is cheap to verify: compare the end frames of every
+  step before and after (mean pixel difference), not the code. Kafka's migration measured under 2/255 everywhere.

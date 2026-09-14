@@ -18,7 +18,10 @@ scene. They are short and every rule in them was paid for.
 
 Then study `talks/llm-serving`, the reference deck: 76 steps, 14 scenes, every pattern in the library in use.
 Read a scene file next to its shots (`talks/llm-serving/media/shots/<Scene>.png` after rendering) to see how
-code becomes picture. The other talks under `talks/` are shorter examples built with the same rules.
+code becomes picture. The other talks under `talks/` are shorter examples built with the same rules: `dns` (a
+name becomes an address), `kubernetes` (desired state and the loops that chase it), `kafka` (a log you can replay),
+`transformers` (every token learns from every other), `agents` (a model, a list of messages, and a loop). Each has a
+`script.md` with its spine, moves and sources, and a `README.md`.
 
 ## What you are making
 

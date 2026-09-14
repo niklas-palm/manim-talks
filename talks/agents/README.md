@@ -21,3 +21,9 @@ bin/serve.sh agents          # presenter and audience windows
 
 Sources and simplifications are in `script.md`; speaker notes live next to the steps in `scenes/`. The example
 (a home surveillance assistant) follows the author's earlier slide deck on agents; every drawing is new.
+
+## Decisions
+
+Tool cards carry three lines (name 15 pt, description 13 pt, schema 12 pt) in a 2.2 by 0.8 card, below the 15 pt
+guideline on purpose: larger text does not fit three lines beside the message list, the name is the line the audience
+must read, and the description is read aloud in the note.

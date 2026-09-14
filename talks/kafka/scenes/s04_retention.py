@@ -27,7 +27,7 @@ class Retention(TalkSlide):
         self.play(FadeIn(segs), *[FadeIn(l) for l in logs], FadeIn(pl), FadeIn(active), run_time=0.7)
         ptr = Pointer("consumer, slow", READER).place(logs[0], 3, dy=0.95)
         self.play(FadeIn(ptr), run_time=0.3)
-        l1 = label("segment files named by first offset; a new one at 1 GiB or 168 h", 17, LOGC).move_to([-6.7, -0.5, 0], aligned_edge=LEFT)
+        l1 = label("segments named by first offset, rolled at 1 GiB or 168 h", 17, LOGC).move_to([-6.7, -0.5, 0], aligned_edge=LEFT)
         self.play(FadeIn(l1), run_time=0.4)
         self.next_slide("""Zoom in on one partition's directory. The log is not one file but a sequence of segment files, each named by the
         offset of the first record it holds, so finding offset twelve is a binary search over file names and then an index
