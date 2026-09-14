@@ -32,9 +32,12 @@ class SchedulerKubelet(TalkSlide):
         # --- the scheduler picks a pod with no node
         sc, ws = S.ctrl["sched"], S.watches["sched"]
         self.play(FadeIn(sc), Create(ws[0]), run_time=0.7)
+        self.next_slide("""Three Pod records in etcd, each with a red line: no node. The two controllers from the last scene are idle;
+        their gap is closed. A third loop has appeared under them, the scheduler, watching the API server like the others. The
+        nodes on the right are still empty. Nothing moves until the next click.""")
         pa = S.cards["a"]
         ring = SurroundingRectangle(pa, color=CONTROL, buff=0.06, stroke_width=2.2)
-        pulse(self, pa.get_right(), sc[2], color=HOT)
+        pulse(self, pa.get_right(), sc[2], color=HOT, run_time=0.6)
         self.play(Create(ring), run_time=0.4)
         self.next_slide("""The scheduler is another loop, and its trigger is the red line on those cards: a Pod record with no node. It
         watches for exactly those, takes one, and answers one question: which node? It does not start anything either.

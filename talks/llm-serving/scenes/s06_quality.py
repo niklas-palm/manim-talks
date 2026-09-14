@@ -56,6 +56,8 @@ class Rounding(TalkSlide):
         mat = VGroup(*[Square(0.3, fill_color=WEIGHTS, fill_opacity=0.6, stroke_width=0) for _ in range(64)]).arrange_in_grid(rows=8, cols=8, buff=0.04).move_to([-4.7, 1.4, 0])
         ml = label("a weight matrix: numbers, stored in 16 bits each", 15, DIM).next_to(mat, DOWN, buff=0.12)
         self.play(FadeIn(mat), FadeIn(ml))
+        self.next_slide("""The still picture: a weight matrix, sixty-four cells here where a real one has millions, each cell a number
+        stored in sixteen bits. Move one made these smaller. The next click picks one cell out.""")
         one = mat[3 * 8 + 5]
         x0, length = -2.4, 7.0
         wx = x0 + length * W_VALUE
@@ -136,6 +138,8 @@ class PrecisionCost(TalkSlide):
         grid = dot_grid(100, 20).shift(UP * 0.3)
         gl = label("the same 100 questions; a coloured dot is an answer that changed", 18, DIM).next_to(grid, UP, buff=0.25)
         self.play(FadeIn(grid, lag_ratio=0.01), FadeIn(gl))
+        self.next_slide("""The still picture: the same hundred questions as the last scene, every dot grey, no answer changed yet. Each
+        click from here compares one precision against the same model in bf16.""")
         cap = caption(self, "fp8 against bf16: 4 of 100 change, 2 each way: the noise floor")
         idx = flip(self, grid, 2, 2, seed=2)
         self.next_slide("""fp8 against bf16. Across three model families and several thousand items per task, about 4 percent of items

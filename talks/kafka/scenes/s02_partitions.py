@@ -26,11 +26,15 @@ class Partitions(TalkSlide):
         load = Gauge("write\nload", FAIL, 1.8).move_to([-6.55, BY, 0])
         self.play(FadeIn(prod), FadeIn(brokers[0]), FadeIn(logs[0]), FadeIn(load), *[FadeIn(b.copy().set_opacity(0.25)) for b in brokers[1:]], run_time=0.6)
         ghosts = [m for m in self.mobjects if isinstance(m, VGroup) and m not in (prod, brokers[0], logs[0], load, t)]
+        cl = claim(self, None, "one producer, one broker, one partition", LOGC)
+        self.next_slide("""The picture from the last scene, arranged for what comes next: the producer at the top, one broker holding the
+        only partition, a write-load gauge at the left, and two more brokers drawn faintly because they exist in the cluster
+        but hold nothing yet. Nothing has been written.""")
         rnd = random.Random(2)
         seq = [rnd.choice(KEYS) for _ in range(4)]
         for k, c in enumerate(seq):
-            logs[0].append(self, c, source=prod, rt=0.2, extra=[load.set(0.25 + 0.24 * k)])
-        cl = claim(self, None, "one partition: one disk, one ordering", LOGC)
+            logs[0].append(self, c, source=prod, rt=0.45 if k == 0 else 0.2, extra=[load.set(0.25 + 0.24 * k)])
+        cl = claim(self, cl, "one partition: one disk, one ordering", LOGC)
         self.next_slide("""One partition means one file on one broker, and one ordering. Every record of the topic lands on the same disk
         and goes out through the same network card, and the write load gauge of that broker climbs with the traffic while
         the two brokers beside it sit idle. The topic's throughput is capped by one machine. The fix is the second word of
@@ -56,10 +60,11 @@ class Partitions(TalkSlide):
         ptrs = [Pointer(f"c{i + 1}", READER).place(logs[i], 0) for i in range(3)]
         self.play(FadeIn(VGroup(*cons)), Create(grp), FadeIn(gl), *[FadeIn(p) for p in ptrs], run_time=0.6)
         for step in range(3):
+            rt = 0.35 if step == 0 else 0.15   # the first round of reads slowly, one partition to one consumer
             for i in range(3):
                 if step < len(logs[i].cells):
-                    travel(self, logs[i].cells[step], cons[i], run_time=0.15, carry=logs[i].cells[step])
-            self.play(*[ptrs[i].to(logs[i], min(step + 1, len(logs[i].cells))) for i in range(3)], run_time=0.2)
+                    travel(self, logs[i].cells[step], cons[i], run_time=rt, carry=logs[i].cells[step])
+            self.play(*[ptrs[i].to(logs[i], min(step + 1, len(logs[i].cells))) for i in range(3)], run_time=rt)
         cl = claim(self, cl, "a group shares the partitions, one reader each", READER)
         self.next_slide("""Now the readers. A consumer group is a set of consumers that share the work of a topic: each partition is read by
         exactly one member of the group, and each member reads its partitions in order from its own offsets. Three

@@ -44,6 +44,13 @@ scenes/s00 .. s08    one file per move; scenes are presented in file order
 script.md            the spine, the moves, the sources
 ```
 
+## Pacing
+
+Every scene opens on a still picture: the first click shows the title and the furniture with nothing moving, so the
+speaker can name what is on screen; the mechanism starts on the next click. The first time something happens it is
+slow enough to follow; repetitions (the decode loop, layer two, later tokens) play at speed inside one click. 82 steps
+in 14 scenes.
+
 ## Style rules
 
 Colours carry meaning across the whole talk and are never reused for something else: prompt blue, output

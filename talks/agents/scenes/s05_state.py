@@ -1,98 +1,78 @@
-"""Move 5: the list is the only state. The full picture again; the list column is framed as the context window, and the
-list grows turn by turn until it no longer fits. Two remedies, drawn on the list itself.
-
-  Clicks: 1 every call sends the whole list; one more turn and the window is nearly full  2 a long result overflows it,
-  the call is refused  3 sliding window: the oldest messages go, a call and its result together  4 summarisation: the
-  oldest messages become one block.
-"""
+"""Move 5: the list is the only state. The list from move three, framed as the context window; every call sends all
+of it; one long tool result overflows the window and the call is refused; then the two remedies, a sliding window and
+summarisation."""
 from lib.palette import *
 from objects import *
 
-CAP = 8   # the window drawn as room for this many messages
+HISTORY = [("system", "system · home surveillance assistant …"), ("user", "user · warm enough to open the door?"),
+           ("tool_use", "assistant · tool_use: query_temperature()"), ("tool_result", "user · tool_result: 19 °C"),
+           ("assistant", "assistant · 19 °C: yes, open it"), ("user", "user · anyone in the backyard?"),
+           ("tool_use", 'assistant · tool_use: query_camera(2, "anyone there?")'), ("tool_result", "user · tool_result: a person by the shed"),
+           ("assistant", "assistant · yes, one person by the shed")]
+WINDOW = 9   # messages the drawn window holds; a real window is counted in tokens (the note says so)
 
 
 class TheState(TalkSlide):
     def construct(self):
         t = title(self, "The list is the only state", "5  the list is the only state")
-        user, app, model, req, rep, rep_l = furniture()
-        req_l = req_label("system prompt + tools\n+ messages")
-        calls, tcalls, sent = counters(with_sent=True)
-        msgs = Stack(LIST_X, LIST_TOP, h=BH, gap=BGAP)
-        sysb = msg("system", "system · home surveillance assistant …").move_to([LIST_X, SYS_Y, 0])
-        preload(msgs, [("user", "user · anyone in the backyard?"), ("tool_use", "assistant · tool_use query_camera(2, …)"),
-                       ("tool_result", "user · tool_result: a person by the shed"), ("assistant", "assistant · yes, one person by the shed")])
-        cards = VGroup(*[tool_card(*spec, row=k) for k, spec in enumerate(TOOLS)])
-        devs = VGroup(*[device(n, k) for k, n in enumerate(DEVICES)])
-        calls.tracker.set_value(2); tcalls.tracker.set_value(1); sent.tracker.set_value(5)
-        self.add(user, app, model, req, rep, req_l, rep_l, calls, tcalls, sent, msgs, sysb, cards, devs)
-        # --- 1 the window, and one more turn
-        top = SYS_Y + BH / 2 + 0.06
-        bottom = msgs.slot(CAP - 1)[1] - BH / 2 - 0.06
-        win = DashedVMobject(RoundedRectangle(corner_radius=0.08, width=BW + 0.3, height=top - bottom, stroke_color=RESULT, stroke_width=1.6, fill_opacity=0)
-                             .move_to([LIST_X, (top + bottom) / 2, 0]), num_dashes=60)
-        wl = label("context window:\ndrawn as room for 8 messages", 13, RESULT).move_to([CARD_X - CARD_W / 2, -2.0, 0], aligned_edge=LEFT)
-        self.play(Create(win), FadeIn(wl), run_time=0.7)
-        call_model(self, msgs, model, run_time=0.7, extra=[sysb, cards])
-        self.play(calls.to(3), run_time=0.2)
-        msgs.append(self, msg("user", "user · warm enough to open the door?"), frm=user, run_time=0.3)
-        call_model(self, msgs, model, run_time=0.35, extra=[sysb, cards]); self.play(calls.to(4), sent.to(len(msgs.blocks) + 1), run_time=0.2)
-        reply(self, msgs, model, "tool_use", "assistant · tool_use query_temperature()", run_time=0.3)
-        travel(self, cards[1], devs[1], TOOL, edges=True, run_time=0.3, flash=RESULT)
-        msgs.append(self, msg("tool_result", "user · tool_result: 19 °C"), frm=cards[1], run_time=0.3); self.play(tcalls.to(2), run_time=0.15)
-        call_model(self, msgs, model, run_time=0.35, extra=[sysb, cards]); self.play(calls.to(5), sent.to(len(msgs.blocks) + 1), run_time=0.2)
-        reply(self, msgs, model, "assistant", "assistant · 19 °C: yes, open it", run_time=0.3)
-        self.wait(0.3)
-        self.next_slide("""One thing carries over from call to call, and it is the list. The model keeps nothing; every call sends the system
-        prompt, the tools and every message so far, and the third counter says how many. That list has to fit the model's
-        context window, drawn here as room for eight messages; a real window is 200,000 tokens on Claude Haiku 4.5 and a
-        million on Claude Opus 5, but a tool result can be a whole document and an agent can run for hundreds of turns, so the window fills faster than it sounds.
-        Watch one more question go round: four more messages, and the window is full.""")
-        # --- 2 overflow
-        over = []
-        msgs.append(self, msg("user", "user · who was here yesterday afternoon?"), frm=user, run_time=0.3)
-        call_model(self, msgs, model, run_time=0.35, extra=[sysb, cards]); self.play(calls.to(6), sent.to(len(msgs.blocks) + 1), run_time=0.2)
-        over.append(reply(self, msgs, model, "tool_use", "assistant · tool_use camera_history(1, …)", run_time=0.3))
-        travel(self, cards[2], devs[2], TOOL, edges=True, run_time=0.3, flash=RESULT)
-        over.append(msgs.append(self, msg("tool_result", "user · tool_result: 3 recordings, 14 min …"), frm=cards[2], run_time=0.3))
-        self.play(tcalls.to(3), run_time=0.15)
-        ghost = VGroup(msgs.copy(), sysb.copy(), cards.copy()).set_opacity(0.55)
-        self.play(ghost.animate.scale(0.22).move_to(model[0].get_center()), run_time=0.6)
-        ol = label("more than the window holds: the call is refused", 14, PROBLEM).move_to(STOP_AT)
-        self.play(FadeOut(ghost), win.animate.set_stroke(PROBLEM), *[b[0].animate.set_stroke(PROBLEM) for b in over], FadeIn(ol), calls.to(7), sent.to(len(msgs.blocks) + 1), run_time=0.6)
-        self.next_slide("""A question about yesterday brings in the archive, and the archive's answer is long. The list now has more than
-        the window holds, and the next call is refused: the model cannot be sent more than it can read. This is the wall every
-        long-running agent hits, and it is not the model's problem to solve, because the model never saw the list grow. The
-        application owns the list, so the application has to make it shorter, and there are two honest ways.""")
-        # --- 3 sliding window: the oldest messages go, a tool call and its result together
-        drop = msgs.blocks[:4]
-        keep = msgs.blocks[4:]
-        self.play(*[FadeOut(b, shift=LEFT * 0.4) for b in drop], run_time=0.5)
+        st = stage()
+        user, app, model, arrows, calls, tools = st["user"], st["app"], st["model"], st["arrows"], st["calls"], st["tools"]
+        cards = tool_cards()
+        msgs = messages()
+        for kind, text in HISTORY:
+            b = message(kind, text).move_to(msgs.slot(len(msgs.blocks))); msgs.blocks.append(b); msgs.add(b)
+        window = DashedVMobject(RoundedRectangle(corner_radius=0.08, width=BW + 0.3, height=WINDOW * (BH + BGAP) + 0.1, stroke_color=PROBLEM, stroke_width=1.6, fill_opacity=0), num_dashes=60)
+        window.move_to([LIST_X, LIST_TOP - (WINDOW * (BH + BGAP)) / 2 + BGAP / 2, 0])
+        wl = label("context window: drawn as 9 messages, counted in tokens", 14, PROBLEM).next_to(window, UP, buff=GAP_TIGHT).align_to(window, RIGHT)
+        self.add(user, app, model, arrows, calls, tools, cards, msgs)
+        calls.tracker.set_value(4); tools.tracker.set_value(2)
+        self.play(FadeIn(window), FadeIn(wl), run_time=0.6)
+        self.next_slide("""The list as move three left it, nine messages, and around it a dashed frame: the context window, the most the
+        model can take in one call. Drawn here as nine messages; a real window is counted in tokens, a few hundred thousand
+        for current models, and a long tool result or a large document eats it fast. The list is the only state the loop
+        has, and this is its limit.""")
+        # --- every call sends the whole list; one long result overflows it
+        call_model(self, msgs, model, extra=cards, run_time=0.6)
+        self.play(calls.to(5), run_time=0.2)
+        big = block("user · tool_result: camera_history, 40,000 tokens of detections", RESULT, w=BW, h=BH * 2.2, size=16)
+        msgs.append(self, big, frm=cards[2], run_time=0.7)
+        refused = stop_label("context window exceeded: the call is refused", model, PROBLEM)
+        self.play(big[0].animate.set_stroke(PROBLEM, 2.0), big[1].animate.set_fill(PROBLEM, 0.95), FadeIn(refused), run_time=0.6)
+        self.play(tools.to(3), run_time=0.2)
+        self.next_slide("""Every call sends the whole list, so the list is also what every call costs. Then one tool result arrives that is
+        far larger than the others: the camera archive returns forty thousand tokens of detections. It does not fit under
+        the window, and the next call is refused; the model never sees it. Nothing in the loop protects against this,
+        because the loop only appends. Something has to shorten the list, and there are two honest ways.""")
+        # --- sliding window: the oldest exchange leaves, as a unit
+        gone = msgs.blocks[1:5]
+        keep = [msgs.blocks[0]] + msgs.blocks[5:]
+        self.play(*[b.animate.set_opacity(0.25) for b in gone], run_time=0.4)
+        self.play(*[FadeOut(b, shift=LEFT * 0.4) for b in gone], run_time=0.5)
+        for b in gone:
+            msgs.remove(b)
         msgs.blocks = keep
-        msgs.remove(*drop)
-        self.play(win.animate.set_stroke(RESULT), *[b[0].animate.set_stroke(KIND[k]) for b, k in zip(over, ("tool_use", "tool_result"))], FadeOut(ol), run_time=0.3)   # members first, on their own
-        self.play(*[b.animate.move_to(msgs.slot(i)) for i, b in enumerate(keep)], sent.to(len(keep) + 1), run_time=0.7)
-        sl = label("sliding window: the oldest messages leave;\na tool call and its result leave together", 13, RESULT).move_to(STOP_AT).align_to(model[0], LEFT)
-        self.play(FadeIn(sl), run_time=0.3)
-        self.next_slide("""The first way is a sliding window: keep the last so many messages and let the oldest fall off, the system prompt
-        excepted. One rule makes it safe: a tool request and its result are one unit, because a result whose request is gone,
-        or a request whose result is gone, is a malformed conversation and the model will refuse it; so the window drops them
-        together. The list fits again. The price is memory: the first question and its answer are gone, and the model will
-        not know they happened.""")
-        # --- 4 summarisation: the oldest become one block
-        old = msgs.blocks[:3]
-        rest = msgs.blocks[3:]
-        summ = msg("summary", "assistant · summary of the door question").move_to(msgs.slot(0))
-        summ[0].set_stroke(MODEL).set_fill(MODEL, 0.28)
-        self.play(ReplacementTransform(VGroup(*old), summ), run_time=0.7)
-        msgs.blocks = [summ, *rest]
-        msgs.remove(*old); msgs.add(summ)
-        self.play(*[b.animate.move_to(msgs.slot(i + 1)) for i, b in enumerate(rest)], sent.to(len(msgs.blocks) + 1), run_time=0.6)
-        sl2 = label("summarisation: the oldest messages become one;\nthe most recent stay as they were", 13, MODEL).move_to(sl, aligned_edge=LEFT)
-        self.play(FadeOut(sl), FadeIn(sl2), run_time=0.3)
-        self.finish("""The second way keeps the memory and pays in precision: ask the model, in a separate call, to summarise the oldest
-        part of the list into one message, and put that in their place; the most recent messages stay as they were. One
-        framework's defaults are a good picture of the trade: summarise the oldest thirty percent, always keep the ten most
-        recent. So the list is the agent's whole state, it is resent on every call, and managing its length is the
-        application's job, not the model's. Save the list per user and you have a session; put facts somewhere the loop can
-        fetch them with a tool and you have memory. Both are the next talk. This one ends where it began: an application, an
-        API that became a tool, a model, a list of messages, and a loop.""")
+        self.play(big[0].animate.set_stroke(RESULT, 1.4), big[1].animate.set_fill(RESULT, 0.95), FadeOut(refused), run_time=0.3)   # members first, the group move after: never both in one play
+        self.play(*[b.animate.move_to(msgs.slot(i) if b is not big else [LIST_X, msgs.slot(i)[1] - (BH * 2.2 - BH) / 2, 0]) for i, b in enumerate(keep)], run_time=0.8)
+        sw = label("sliding window: the oldest exchange leaves, a tool call and its result together", 14, MUTED).next_to(app[0], DOWN, buff=GAP_TIGHT).align_to(app[0], LEFT)
+        self.play(FadeIn(sw), run_time=0.4)
+        self.next_slide("""The first remedy: a sliding window. The oldest messages leave, and they leave in pairs: a tool call and its result
+        go together, because a result without its call, or a call without its result, is a malformed conversation that
+        the model will reject. Now the big result fits. The price is that the model has forgotten the door was opened.""")
+        # --- summarisation: the oldest become one message
+        old = msgs.blocks[1:4]
+        summary = message("summary", "summary · door opened at 19 °C; one person by the shed").move_to(msgs.slot(1))
+        self.play(ReplacementTransform(VGroup(*old), summary), run_time=0.9)
+        for b in old:
+            if b in msgs.submobjects:
+                msgs.remove(b)
+        msgs.blocks = [msgs.blocks[0], summary] + msgs.blocks[4:]
+        msgs.add(summary)
+        self.play(*[b.animate.move_to(msgs.slot(i) if b is not big else [LIST_X, msgs.slot(i)[1] - (BH * 2.2 - BH) / 2, 0]) for i, b in enumerate(msgs.blocks)], run_time=0.7)
+        sm = label("summarisation: the oldest messages become one; the most recent stay verbatim", 14, MUTED).move_to(sw, aligned_edge=LEFT)
+        self.play(FadeOut(sw), FadeIn(sm), run_time=0.4)
+        self.finish("""The second remedy: summarisation. The oldest messages are replaced by one message that says what happened in
+        them, written by a model call of its own, and the most recent messages stay word for word because that is where
+        the model needs detail. The list is shorter and the door is still remembered, at the cost of a call and of whatever
+        the summary left out. Everything beyond this point, sessions, memory stores, retrieval, is a way of deciding what
+        goes into this list. That is the next talk. This one ends where it started: a model, a list of messages, and a
+        loop.""")

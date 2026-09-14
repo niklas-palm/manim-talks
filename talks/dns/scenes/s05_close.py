@@ -23,6 +23,9 @@ class Standing(TalkSlide):
         sites = VGroup(*[d for d in sites if ((d.get_x() - 2.2) / 4.2) ** 2 + ((d.get_y() - 0.1) / 2.4) ** 2 < 1])
         sl = label("2,045 anycast instances of those 13 names; one dot per about 12", 15, MUTED).next_to(world, DOWN, buff=0.12)
         self.play(FadeIn(world), FadeIn(sites, lag_ratio=0.005), FadeIn(sl), run_time=1.4)
+        self.next_slide("""The root of the tree, still: thirteen server names on the left, and on the right the world with the places those
+        thirteen names are actually answered from, two thousand and forty-five of them, one dot per dozen. Nothing moves
+        until a resolver asks.""")
         you = Dot(radius=0.12, color=NAME).move_to([4.6, -1.7, 0])
         yl = label("a resolver in Sydney asks a.root-servers.net", 14, NAME).next_to(you, DOWN, buff=0.08)
         nearest = min(sites, key=lambda d: np.linalg.norm(d.get_center() - you.get_center()))

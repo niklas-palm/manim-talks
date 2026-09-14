@@ -27,11 +27,14 @@ class Price(TalkSlide):
         auth = zone_box("example.com.", "the owner's zone", CONTENT_TOP - 0.825, w=6.6, h=1.65, x=0.0)
         r_auth = record("www.example.com.", "A", "104.20.23.154", "5 min", ADDRESS).move_to([0.0, 1.72, 0])
         self.play(FadeIn(auth), FadeIn(r_auth), run_time=0.5)
-        rs = VGroup(*[resolver_small(x, -0.35, n) for x, n in zip(RES_X, ("Stockholm", "Dublin", "Virginia", "Tokyo"))])
+        rs = VGroup(*[resolver_small(x, -1.0, n) for x, n in zip(RES_X, ("Stockholm", "Dublin", "Virginia", "Tokyo"))])
         rl = label("resolvers around the world, each with its own copy", 16, MUTED).next_to(rs, UP, buff=GAP_TIGHT).align_to(rs, LEFT)
         copies = VGroup(*[record("www", "", "104.20.23.154", "", ADDRESS, width=2.7, size=15).move_to(r[0].get_center() + DOWN * 0.18) for r in rs])
         fuses = VGroup(*[fuse(c, f) for c, f in zip(copies, (0.9, 0.3, 0.6, 0.15))])
         self.play(FadeIn(rl), FadeIn(rs), FadeIn(copies), FadeIn(fuses), run_time=0.7)
+        self.next_slide("""Still: the owner's zone at the top with the one record that matters, five minutes to live, and four resolvers
+        around the world, each holding its own copy with its own bar of time left, all different because each fetched the
+        record at a different moment. Nothing has changed yet.""")
         # --- the change
         new_val = label("104.20.24.1", 16, HOT).move_to(r_auth[3], aligned_edge=LEFT)
         self.play(Transform(r_auth[3], new_val), r_auth[0].animate.set_fill(HOT, 0.25), run_time=0.6)
@@ -93,7 +96,7 @@ class Price(TalkSlide):
         created can take half an hour to exist for someone who asked for it a minute too early.""")
         # --- an alias
         self.play(FadeOut(neg), FadeOut(nf), FadeOut(nl), run_time=0.3)
-        cname = record("www.example.com.", "CNAME", "edge.cdn.example.net.", "1 h", ZONE).move_to([0.0, 1.72, 0])
+        cname = record("www.example.com.", "CNAME", "cdn.example.net.", "1 h", ZONE).move_to([0.0, 1.72, 0])
         self.play(Transform(r_auth, cname), run_time=0.6)
         question(self, client, res, "www.example.com?")
         question(self, res, auth, "www.example.com?")

@@ -33,9 +33,14 @@ class TheLog(TalkSlide):
         ar = Arrow(prod.get_right() + RIGHT * 0.1, [brk[0].get_left()[0] - 0.1, LOG_Y, 0], buff=0, color=MUTED, stroke_width=2.2, tip_length=0.18)
         al = label("append", 14, MUTED).next_to(ar, UP, buff=0.05)
         self.play(Create(ar), FadeIn(al), run_time=0.4)
-        for c in SEQ:
-            log.append(self, c, source=prod, rt=0.3)
-        cl = claim(self, None, "append-only: the next offset, never moved", LOGC)
+        cl = claim(self, None, "one topic, one partition, nothing written yet", LOGC)
+        self.next_slide("""The starting picture, nothing moving yet. A producer on the left. A broker, one machine, holding one topic with a
+        single partition: the empty rail is where records will land, and the numbers that will appear under them are offsets.
+        The legend says what the colours mean: each record is drawn in the colour of its key, alice, bob, carol. Everything
+        in this talk happens to this row of cells.""")
+        for k, c in enumerate(SEQ):
+            log.append(self, c, source=prod, rt=0.55 if k < 2 else 0.3)   # the first two slowly, then at speed
+        cl = claim(self, cl, "append-only: the next offset, never moved", LOGC)
         self.next_slide("""Start with one producer, one broker and one topic with a single partition. A record is a key, a value and a
         timestamp; here the colour is the key: alice, bob, carol. Each record the producer sends lands at the end of the
         partition and gets the next offset, a number that counts from zero and never changes for as long as the record
@@ -47,8 +52,9 @@ class TheLog(TalkSlide):
         pos = Counter("consumer 1: offset of the next record", 0, "", READER, size=26).move_to([3.2, ROW_C, 0], aligned_edge=LEFT)
         self.play(FadeIn(c1), FadeIn(p1), FadeIn(pos), run_time=0.5)
         for i in range(4):
-            travel(self, log.cells[i], c1, run_time=0.25, carry=log.cells[i])
-            self.play(p1.to(log, i + 1, dy=0.95), pos.to(i + 1), run_time=0.25)
+            rt = 0.5 if i == 0 else 0.25   # the first read slowly: record to consumer, then the pointer moves
+            travel(self, log.cells[i], c1, run_time=rt, carry=log.cells[i])
+            self.play(p1.to(log, i + 1, dy=0.95), pos.to(i + 1), run_time=rt)
         cl = claim(self, cl, "pull: the consumer owns its offset", READER)
         self.next_slide("""A consumer reads by pulling: it asks the broker for records starting at an offset, gets a batch, and moves its own
         pointer forward. Its whole position in the partition is one integer, the offset of the next record it wants. The

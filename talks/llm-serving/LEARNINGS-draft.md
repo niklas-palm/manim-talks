@@ -17,3 +17,11 @@ Lessons:
   grid in the upper half), Opening and Close (text only). A redesign would move the main object down and enlarge it;
   left for a picture pass, since this pass changed positions only.
 - The Mechanics scene keeps its own coordinate system (the zoom choreography depends on it); only its counters moved.
+
+## Pacing pass (2026-09-14)
+- Six scenes opened already animating (DecodeCeiling's division, Batching's first columns, the MoE token, PrefixCache's
+  blocks, Rounding's weight pick, PrecisionCost's flips). Each got a still first click whose note names what is on
+  screen; the deck went from 76 to 82 steps. Cost: one click each; benefit: the speaker can set the scene before it moves.
+- First beats slowed where the scene's first occurrence ran at repetition speed: Batching's first two steps 0.4/0.3 s
+  (then 0.12), the dense token's first descent 0.35 s per layer (the later MoE tokens keep 0.14).
+- AGENTS.md says "76 steps" for the reference deck; it is outside this pass's scope and should read 82.

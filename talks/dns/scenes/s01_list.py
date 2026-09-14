@@ -27,7 +27,10 @@ class OneList(TalkSlide):
         lst = hosts_list(HOSTS, -0.9, 0.4)
         ll = label("a list every machine holds: name, address", 16, MUTED).next_to(lst, UP, buff=GAP_TIGHT).align_to(lst, LEFT)
         self.play(FadeIn(client), FadeIn(lst), FadeIn(ll), run_time=0.6)
-        question(self, client, lst, "www.example.com?")
+        self.next_slide("""The starting picture, nothing moving yet. On the left, your laptop: the program that has a name and needs an
+        address. In the middle, the oldest idea on the internet: one list that every machine holds, a name on the left and
+        its address on the right, a hosts file. Everything in this talk is what happened to that list.""")
+        question(self, client, lst, "www.example.com?", run_time=0.6)
         self.play(lst[0][0].animate.set_fill(ADDRESS, 0.4), run_time=0.3)
         answer(self, lst, client, ADDRESS, "104.20.23.154")
         self.play(lst[0][0].animate.set_fill(TEXT, 0.07), run_time=0.3)

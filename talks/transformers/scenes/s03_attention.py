@@ -29,7 +29,7 @@ class Attention(TalkSlide):
         ql = VGroup(*[label(s, 22, c).move_to([4.5, col.get_y(), 0], aligned_edge=LEFT) for s, col, c in zip(("query", "key", "value"), (q, k, v), (QUERY, KEY, VALUE))])
         self.play(TransformFromCopy(vecs[FOCUS], src), run_time=0.7)
         self.play(FadeIn(W), FadeIn(wl), FadeIn(q), FadeIn(k), FadeIn(v))
-        dot_product(self, src, TOKEN, W[0], 0, q[0], QUERY)
+        dot_product(self, src, TOKEN, W[0], 0, q[0], QUERY, beat=0.3)   # the first time, slow enough to follow each pair
         self.next_slide("""Take the last token, "mat", and bring its vector down. Three matrices, learned in training, and here is the
         arithmetic once, slowly. One output number is one row of a matrix times the vector: each number in the row multiplies
         the number beside it in the token's vector, and the products are summed into one cell. This is the operation every

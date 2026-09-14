@@ -28,6 +28,9 @@ class NodeDies(TalkSlide):
         # --- heartbeats
         hb = label("lease renewed every 10 s", 15, TEAL).move_to([COLS[3], Y_LABELS, 0], aligned_edge=LEFT)
         self.play(FadeIn(hb), run_time=0.3)
+        self.next_slide("""The cluster at rest: three Pods running on two nodes, three desired, every loop idle, and one detail that
+        was not drawn before: each node has its own dashed line to the API server. The label says what travels on it: a lease,
+        renewed every ten seconds by the kubelet. Watch it on the next click.""")
         for _ in range(2):
             dots = [Dot(color=TEAL, radius=0.07).move_to(n[5].get_center()) for n in S.nodes]
             self.add(*dots)

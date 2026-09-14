@@ -25,8 +25,11 @@ class Caching(TalkSlide):
         fuses = VGroup(*[fuse(r) for r in rows])
         hops = Counter("hops into the tree", 3, "", ZONE, size=24).move_to([-MARGIN, -2.4, 0], aligned_edge=LEFT)
         self.play(FadeIn(root), FadeIn(tld), FadeIn(auth), FadeIn(r_root), FadeIn(r_tld), FadeIn(r_auth), FadeIn(client), FadeIn(res), FadeIn(rows), FadeIn(fuses), FadeIn(hops), run_time=0.8)
+        self.next_slide("""The picture the last move left behind, still. The three zones on the right, the resolver in the middle with
+        three records in its cache, each with its time to live on a shrinking bar, the laptop on the left, and the hop
+        counter at three: what the first walk cost. Watch what the second question costs.""")
         # --- the same name again: one hop
-        question(self, client, res, "www.example.com?")
+        question(self, client, res, "www.example.com?", run_time=0.6)
         self.play(rows[2][0].animate.set_fill(REMEMBERED, 0.45), hops.to(0), run_time=0.3)
         answer(self, res, client, ADDRESS, "104.20.23.154")
         self.play(rows[2][0].animate.set_fill(REMEMBERED, 0.14), run_time=0.2)

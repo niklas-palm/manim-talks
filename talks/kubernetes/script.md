@@ -4,12 +4,12 @@ Spine: you write the state you want into one database; independent loops each wa
 forever. Everything Kubernetes does is one of those loops closing a gap between desired and actual.
 Audience: engineers who use kubectl daily and have not watched the machinery. Afterwards they can explain what happens
 between `kubectl apply` and a running container, why a lost node heals itself, and why a Service address is stable.
-Length: about 15 minutes, 22 clicks, 6 scenes.
+Length: about 15 minutes, 27 clicks, 6 scenes. Every scene opens on a still picture; the mechanism starts on the second click.
 
 Colours: blue = records, the state you asked for; yellow = what actually runs and the status it reports; violet = the
 control plane and its loops; teal = the machines (nodes, kubelet, kube-proxy, and etcd's members); red = failure or a gap.
 
-## 1. A record, not a process (3 min) — `ApplyRequest`, 4 clicks
+## 1. A record, not a process (3 min) — `ApplyRequest`, 5 clicks
 - The request is a description of state, not a command. It reaches the API server, the only door.
 - Zoom into the API server. Three gates in order: authentication (401 on failure), authorisation (403), admission (may modify or reject; writes
   only); then validation and a write to etcd; "201 created".
@@ -17,7 +17,7 @@ control plane and its loops; teal = the machines (nodes, kubelet, kube-proxy, an
   durable part.
 - The nodes appear, empty: 3 desired, 0 running. The API server did not talk to a node.
 
-## 2. Loops that chase the gap (3 min) — `Controllers`, 3 clicks
+## 2. Loops that chase the gap (3 min) — `Controllers`, 4 clicks
 - A controller is observe, compare, act; it acts by writing records through the API server. The Deployment controller
   wants one ReplicaSet with this template, has none, creates it; then has nothing to do.
 - The ReplicaSet controller, opened under a zoom: wants 3, has 0, gap 3, acts three times: three Pod records with no
@@ -25,7 +25,7 @@ control plane and its loops; teal = the machines (nodes, kubelet, kube-proxy, an
 - Every line points at the API server: components never talk to each other; the database is the coordination, which is
   why each loop can be simple and can fail and restart.
 
-## 3. From record to process (3 min) — `SchedulerKubelet`, 5 clicks
+## 3. From record to process (3 min) — `SchedulerKubelet`, 6 clicks
 - The scheduler's trigger: a Pod record with no node.
 - Zoom into the node column. Filtering: feasible nodes, e.g. enough memory; node 3 is out. No feasible node means the Pod stays pending.
 - Scoring: rank feasible nodes (least allocated here); ties broken at random; binding writes the node name into the
@@ -34,14 +34,14 @@ control plane and its loops; teal = the machines (nodes, kubelet, kube-proxy, an
   same record. The first process of the talk.
 - The other two at speed; desired 3 = running 3; every loop finds no gap and waits.
 
-## 4. A node dies (3 min) — `NodeDies`, 3 clicks
+## 4. A node dies (3 min) — `NodeDies`, 4 clicks
 - Heartbeats: each kubelet renews a Lease every 10 s; the node controller watches.
 - Node 2 goes silent. After 40 s (node-monitor-grace-period) it is NotReady and tainted; pods tolerate the taint for
   300 s by default; at 340 s the pod is evicted: a record goes away, the count drops to 2.
 - The same loops close the gap: ReplicaSet controller creates one Pod record, scheduler filters (NotReady, memory) and
   binds to node 1, kubelet runs it. Self-healing is not a feature; it is what loops do when the gap reopens.
 
-## 5. A stable address, and change (3 min) — `ServiceRollout`, 6 clicks
+## 5. A stable address, and change (3 min) — `ServiceRollout`, 7 clicks
 - Problem: pods have their own IPs and the set changes with every replacement.
 - A Service record: selector and a cluster IP that never changes; the EndpointSlice controller derives the list of
   ready pod addresses, rewritten whenever pods change.

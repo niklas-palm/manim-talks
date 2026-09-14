@@ -32,3 +32,15 @@
   -3.2 / 3.2 lines: three 3.8-unit boxes do not fit on those lines with a gap, and symmetry read better than the grid.
 - Steps 1 and 2 of the partitions and retention scenes use the upper two thirds of the band; the lower third fills when
   the consumer group and the compacted log arrive. Growing pictures start emptier than they end.
+
+## Pacing pass (2026-09-14)
+
+- Three scenes opened already appending (TheLog, Partitions, Replication); each now has a still first click with a claim
+  naming the picture, and the first append, first read and first replication run at 0.45 to 0.55 s per beat before the
+  repeats at 0.15 to 0.3. Deck is 25 clicks. Retention and Controller already opened still.
+- The still first step needs its own claim line, otherwise the caption band is empty on the first frame and the eye has
+  no anchor; "one topic, one partition, nothing written yet" reads as the invitation to describe the picture.
+- `GUIDES=1 bin/render.sh kafka ql Partitions` rendered with no visible grid in the shot at 480p; either the lines are too
+  faint at that size or setup() does not run before construct. Worth a look in `lib/` (out of scope here).
+- Still imperfect, unchanged from before: Retention's first two steps use only the upper third until the compacted log
+  arrives below.

@@ -61,12 +61,18 @@ class Replication(TalkSlide):
                 self.play(FadeOut(d), Flash(prod, color=SYNC, flash_radius=0.9, num_lines=8), run_time=0.25)
             return cell
 
-        for c in (KEY_A, KEY_B, KEY_C):
-            replicate(c)
+        cl = claim(self, None, "one partition, three copies: a leader and two followers", LOGC)
+        self.next_slide("""The still picture: the same partition, now on three brokers. Broker one leads; brokers two and three are followers
+        with empty copies. The producer writes to the leader with acks=all, the consumer fetches from the leader, the
+        in-sync markers at the top right say which copies are current, and the green line is the high-water mark, the
+        offset up to which everything is committed. Nothing has been written yet.""")
+        for k, c in enumerate((KEY_A, KEY_B, KEY_C)):
+            replicate(c, rt=(0.55, 0.3, 0.25)[k])   # the first record slowly: append, copy to the followers, acknowledge
         for i in range(3):
-            travel(self, logs[0].cells[i], cons, run_time=0.18, carry=logs[0].cells[i])
-            self.play(ptr.to(logs[0], i + 1, dy=0.55), run_time=0.15)
-        cl = claim(self, None, "committed: on every in-sync replica, below the HWM", SYNC)
+            rt = 0.4 if i == 0 else 0.18
+            travel(self, logs[0].cells[i], cons, run_time=rt, carry=logs[0].cells[i])
+            self.play(ptr.to(logs[0], i + 1, dy=0.55), run_time=rt)
+        cl = claim(self, cl, "committed: on every in-sync replica, below the HWM", SYNC)
         self.next_slide("""One partition, three copies. The broker that leads takes the writes; the two followers fetch from the leader
         exactly as a consumer would and append the same records at the same offsets. With acks=all, the default since
         Kafka 3.0, the producer is not told that a record is written until every replica in the in-sync set has it. The

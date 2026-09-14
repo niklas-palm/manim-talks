@@ -11,13 +11,13 @@ forever.
 | Move | Scene | Clicks | Minutes |
 |---|---|---|---|
 | 0. Opening | `Opening` | 1 | 1 |
-| 1. A record, not a process | `ApplyRequest` | 4 | 3 |
-| 2. Loops that chase the gap | `Controllers` | 3 | 3 |
-| 3. From record to process | `SchedulerKubelet` | 5 | 3 |
-| 4. A node dies | `NodeDies` | 3 | 3 |
-| 5. A stable address, and change | `ServiceRollout` | 6 | 3 |
+| 1. A record, not a process | `ApplyRequest` | 5 | 3 |
+| 2. Loops that chase the gap | `Controllers` | 4 | 3 |
+| 3. From record to process | `SchedulerKubelet` | 6 | 3 |
+| 4. A node dies | `NodeDies` | 4 | 3 |
+| 5. A stable address, and change | `ServiceRollout` | 7 | 3 |
 
-One picture for the whole talk: kubectl at the left, the API server with its three gates, etcd under it holding the
+Every scene opens on a still picture and the mechanism starts on the second click; 27 clicks in all. One picture for the whole talk: kubectl at the left, the API server with its three gates, etcd under it holding the
 records, a column of control loops, three nodes at the right, and two counters, pods desired and pods running. Blue
 is a record, yellow is what runs, violet is a loop, teal is a machine, red is a gap.
 

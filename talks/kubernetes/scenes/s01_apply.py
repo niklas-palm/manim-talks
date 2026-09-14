@@ -31,6 +31,9 @@ class ApplyRequest(TalkSlide):
         manifest = code(MANIFEST, "yaml", 17).move_to([COLS[3], 2.3, 0], aligned_edge=UL)   # what the user typed, in the node column until the nodes take it
         ml = label("what kubectl apply sends", 15, MUTED).move_to([COLS[3], Y_LABELS, 0], aligned_edge=LEFT)
         self.play(FadeIn(manifest), FadeIn(ml), run_time=0.5)
+        self.next_slide("""The picture before anything happens. Left, kubectl on a laptop. Centre, the API server, the front door of
+        the cluster, and under it etcd, the database that holds every record. Right, the manifest the user is about to apply:
+        a Deployment, three replicas of one image. Nothing has been sent yet.""")
         req = card("Deployment", "3 replicas, v1").next_to(S.client, DOWN, buff=GAP_WIDE)
         self.play(TransformFromCopy(manifest.panel, req[0]), FadeIn(req[1]), FadeIn(req[2]), run_time=0.7)
         self.next_slide("""Start with the command everyone has typed: kubectl apply of a Deployment, three replicas of an image. Look at

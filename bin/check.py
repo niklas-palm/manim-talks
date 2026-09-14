@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Structural checks for a talk, the things a review should not have to find by eye. Usage: bin/check.py <talk> [ql|qm|qh]
 Reports, per talk: the files a talk must have, that objects.py declares its colours with set_thread, that every scene
-class has as many notes as steps (once rendered), text sizes below 12 outside small(), on-screen strings that look like
-sentences (more than 12 words in a label), and captions swapped more than once in a step. Exit code 1 if anything is
+class wrote as many notes as it rendered steps, text sizes below 12, on-screen strings that look like sentences (more
+than 14 words in a label), captions swapped more than once in a step, and a group animated together with one of its
+members in one play (the trap that leaves the member behind). Exit code 1 if anything is
 flagged. It is a checklist helper, not a judge: docs/review.md is the review."""
 import glob, json, os, re, sys
 
@@ -42,6 +43,14 @@ for f in sorted(glob.glob(f"{root}/scenes/s*.py")):
             steps, notes = len(json.load(open(idx[0]))), len(json.load(open(notes_file)))
             if steps != notes:
                 flags.append(f"{name}: {c.group(1)} rendered {steps} steps but wrote {notes} notes")
+        # a group and one of its members animated in the same play: the member's target is taken before the group moves
+        for m in re.finditer(r"self\.play\((.*?)\)\s*\n", body, re.S):
+            call = m.group(1)
+            groups = set(re.findall(r"(?<![\w.\]])([A-Za-z_]\w*)\.animate", call))
+            members = set(re.findall(r"([A-Za-z_]\w*)(?:\[[^\]]+\]|\.[a-z_]\w*)\.animate", call))
+            both = sorted(groups & members)
+            if both:
+                flags.append(f"{name}: {c.group(1)} animates {', '.join(both)} and one of its members in the same play (see docs/manim.md); do the member change in its own play first")
         for step in re.split(r"self\.next_slide\(", body)[:-1]:
             if len(re.findall(r"(?<!swap_)caption\(self", step)) + step.count("swap_caption(") > 1:
                 flags.append(f"{name}: {c.group(1)} changes the caption more than once inside one step")

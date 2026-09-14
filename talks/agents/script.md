@@ -5,47 +5,48 @@ to run a tool instead of an answer, and the application runs the tool, appends t
 Audience: engineers who have used chat assistants and want to see what an agent actually is; no prior agent framework
 knowledge. Afterwards they should be able to turn one of their own API calls into a tool, read any agent framework's
 loop, say where guardrails attach, and explain why long agent conversations need managing.
-Length: 13 minutes, 20 clicks, 6 scenes.
+Length: 13 minutes, 21 clicks, 6 scenes. Every scene opens on a still picture and the mechanism starts on the next click.
 
-One picture throughout, on the library grid: the user at the left column line; the application, a box holding the
-list of messages and, in a second column, the functions it can run; the model, a box top right that the list goes into
-and one reply comes out of; the devices at the right margin, each on the row of the function that reaches it. Colours:
-user blue, model violet, tool yellow, what came back from the world teal, red for a wall.
+One picture throughout, on the library grid: the user at the left margin; the application as a box holding the list of
+messages, which grows downward and is the only state; the model top right, which the list goes into and one reply
+comes out of; the tools in a column under the model, each card carrying the device it reaches; two counters at the
+bottom, model calls and tool calls. Colours: user blue, model violet, tools yellow, what came back from the world teal,
+red for a wall.
 
-## 1. An application, an API, and one model call (3 clicks, 2 min)
-- **TheApi.** A user asks whether anyone is in the backyard. The application's own function calls the camera API
-  (GET /cameras/2/frame), the frame and the question go into the prompt after a system prompt, the model answers in words.
-  -> A different question (warm enough to open the door?): the same code fetches the same frame, the model cannot read a
-  temperature from it; a thermometer exists and no code path reaches it: the code decides what to fetch, not the model.
-  -> What a call carries: system prompt plus every message so far, resent in full; the model has no memory; the only
-  place to change the answer is inside the call.
+## 1. An application, an API, and one model call (TheApi, 4 clicks, 2.5 min)
+- Still: user, application with an empty list, model, a camera API the application's own code calls (dashed link).
+- A question: it becomes the first message; the code calls the camera API, the frame joins the list, the whole list goes
+  to the model, one reply in words. Model calls: 1. This is how applications used models before agents.
+- A second question the code cannot serve: the code fetches a frame again, the model cannot read a temperature from it;
+  a thermometer exists with no code path to it. The wall: the code decided what to fetch, not the model.
+- What every call carries: the whole list, again; the list is the only memory.
 
-## 2. From an API to a tool (3 clicks, 2 min)
-- **ToolFromApi.** The function the application already has, three lines, as highlighted code; a request travels to the
-  camera API and a frame comes back as the bar walks the lines. -> Two additions, a decorator and a docstring; the tool
-  definition fills in from the code: name from the function name, description from the first paragraph of the docstring,
-  input schema from the type hints and the Args section. -> Three functions become three tool cards, each facing its
-  device; what crosses to the model is the cards, what stays is the code, the API and the credentials.
+## 2. From an API to a tool (ToolFromApi, 3 clicks, 2.5 min)
+- Still: the same picture, and inside the application the three-line function that called the camera API, as code.
+- A decorator and a docstring are added; a highlight walks the code while the tool card fills in beside the model:
+  name from the function name, description from the docstring, input schema from the signature; the camera API box
+  becomes the card's device tag.
+- Two more functions become two more cards. What crosses to the model: name, description, schema. What stays: code,
+  API, credentials. The model never executes anything.
 
-## 3. The loop (5 clicks, 3 min)
-- **TheLoop.** The cards take the plain function's place, each on the row of its device, and join the call next to the
-  system prompt and the messages. -> The reply is a tool call: a structured request naming query_temperature, stop reason
-  tool_use; the model chose from the descriptions. -> The application runs the function against the real thermometer and
-  appends the result as a message in the user's role. -> Called again with the longer list, the model answers in words,
-  stop reason end_turn, and the loop ends; the same question that failed in move one now succeeds. -> The loop drawn; the
-  backyard question from move one runs through it at speed.
+## 3. The loop (TheLoop, 5 clicks, 3 min)
+- Still: three cards in place, empty list; the arrow into the model reads system prompt + tools + messages.
+- The question that failed: the reply is a tool call (stop_reason tool_use), chosen from the descriptions.
+- The application runs it against the thermometer and appends the result as a message in the user's role.
+- Called again with the longer list: the answer in words, stop_reason end_turn. Two model calls, one tool call.
+- The backyard question runs through the same loop at speed; the code no longer decides what to look at.
 
-## 4. The same loop as code, and where to intercept it (4 clicks, 3 min)
-- **TheCode.** The loop as eight highlighted lines. -> It runs against the picture: a bar walks the lines while the
-  picture does each step, two passes. -> The hook points marked on the lines: before/after invocation, before/after model
-  call, before/after tool call, message added; inspect, modify, cancel. -> A before-tool-call hook refuses a deletion;
-  the refusal becomes the tool result and the model tells the user.
+## 4. The same loop as code, and where to intercept it (TheCode, 4 clicks, 3 min)
+- Still: the loop as eight highlighted lines, right; a reminder picture (model, list, tools), left.
+- It runs against the picture: a bar walks the lines, slowly once, then fast, then the return.
+- The eight hook points as dots on the lines: before/after invocation, model call, tool call; message added.
+- A before-tool-call hook refuses a deletion; the refusal becomes the tool result.
 
-## 5. The list is the only state (4 clicks, 3 min)
-- **TheState.** Every call sends the whole list; the list column framed as the context window; one more turn fills it.
-  -> A long tool result overflows the window; the next call is refused. -> Sliding window: the oldest messages leave, a
-  tool call and its result together. -> Summarisation: the oldest messages become one summary message, the most recent
-  stay. Sessions and memory named in the note as the next talk.
+## 5. The list is the only state (TheState, 4 clicks, 2 min)
+- Still: the nine messages from move three inside a dashed frame, the context window (drawn as messages, counted in tokens).
+- Every call sends the whole list; a 40,000-token tool result overflows the window and the call is refused.
+- Sliding window: the oldest exchange leaves, a tool call and its result together.
+- Summarisation: the oldest messages become one; the most recent stay verbatim. Sessions and memory are the next talk.
 
 ## Sources (read 2026-09-14)
 - Anthropic, "Building effective agents": agents versus workflows; the augmented LLM (retrieval, tools, memory); agents

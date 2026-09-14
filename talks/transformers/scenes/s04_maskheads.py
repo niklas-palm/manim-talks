@@ -15,7 +15,7 @@ class MaskAndHeads(TalkSlide):
         # --- the attention grid: rows are the querying token, columns the attended token
         cell = 0.62
         gridg = VGroup(*[Square(cell, fill_color=ATTN, fill_opacity=0.5, stroke_color=BG, stroke_width=2) for _ in range(N * N)]).arrange_in_grid(rows=N, cols=N, buff=0.02)
-        gridg.move_to([-0.6, -0.35, 0])
+        gridg.move_to([0.2, -0.35, 0])   # centred; the mask label sits in the right column
         rowl = VGroup(*[label(w, 18, TOKEN).next_to(gridg[i * N], LEFT, buff=GAP) for i, w in enumerate(WORDS)])
         for lab in rowl:
             lab.align_to(rowl[0], RIGHT)
@@ -23,13 +23,12 @@ class MaskAndHeads(TalkSlide):
         rk = label("querying token", 18, TOKEN).rotate(PI / 2).next_to(rowl, LEFT, buff=GAP)
         ck = label("attended token, through its key", 18, KEY).next_to(coll, UP, buff=GAP_TIGHT)
         self.play(FadeIn(gridg), FadeIn(rowl), FadeIn(coll), FadeIn(rk), FadeIn(ck))
-        self.play(*[gridg[N * (N - 1) + j].animate.set_fill(ATTN, 0.95) for j in range(N)], run_time=0.5)
-        self.play(*[gridg[N * (N - 1) + j].animate.set_fill(ATTN, 0.5) for j in range(N)], run_time=0.5)
-        self.next_slide("""Every cell here is one attention weight: the row is the token doing the looking, the column is the token being
-        looked at. The last scene filled one row, "mat" attending to all six; it flashes here. Filled in full, this is every
-        token attending to every token, the parallel read drawn as a grid. For a model that understands a whole sentence at
-        once, that is what you want.""")
-        # --- the causal mask
+        self.next_slide("""The still picture first. Every cell here is one attention weight: the row is the token doing the looking, the
+        column is the token being looked at. Filled in full, this is every token attending to every token, the parallel read
+        drawn as a grid. For a model that understands a whole sentence at once, that is what you want.""")
+        # --- the row the last scene filled, then the causal mask
+        self.play(*[gridg[N * (N - 1) + j].animate.set_fill(ATTN, 0.95) for j in range(N)], run_time=0.6)
+        self.play(*[gridg[N * (N - 1) + j].animate.set_fill(ATTN, 0.5) for j in range(N)], run_time=0.6)
         blocked = VGroup(*[gridg[i * N + j] for i in range(N) for j in range(N) if j > i])
         self.play(*[c.animate.set_fill(MASK, 0.75) for c in blocked], run_time=0.8)
         self.play(*[c.animate.set_fill(BG, 1.0) for c in blocked], run_time=0.6)
@@ -55,7 +54,7 @@ class MaskAndHeads(TalkSlide):
             heads.add(tile)
         heads.arrange(RIGHT, buff=0.4).move_to([0, ROWS[1] + 0.1, 0])
         self.play(LaggedStart(*[FadeIn(h, shift=UP * 0.1) for h in heads], lag_ratio=0.12), run_time=1.0)
-        self.next_slide("""And one point of view is not enough. A single query, key and value can track one kind of relationship, say the
+        self.next_slide("""The last scene filled one row, "mat" attending to all six; it flashes first. And one point of view is not enough. A single query, key and value can track one kind of relationship, say the
         subject of a verb. So attention runs several times in parallel, each with its own three matrices: the heads. The
         original transformer used eight, drawn here as three. Each head does the whole read we just built and produces its
         own short output vector for the token, capturing a different relationship.""")

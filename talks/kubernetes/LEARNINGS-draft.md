@@ -20,3 +20,11 @@
   inside the box, in the bottom padding, left-aligned.
 - Card text at 15 in a 1.6-wide card: about 15 characters. "node 1, Running" is the longest line in this deck.
 - Stretch the stage to the whole band: nodes and etcd now end on the -2.3 line, counters sit under it at -2.75, cards are 0.8 tall with 16/15 text and slots 0.5; the taller boxes paid for the larger words.
+
+## Pacing pass (2026-09-14)
+- Every scene now opens on a still: the stage as the scene begins plus the one new object (a controller box, a label,
+  a frontend pod) fading in, then a click. Splitting cost one line per scene and one note each; the notes for the
+  stills are the easiest to write, because they only name what is on screen.
+- The first observe pulse in Controllers and the scheduler's first pulse were slowed to 0.6 s; the second and third
+  pods, the rolling update and the eviction replay already ran at speed, so the slow-then-fast shape needed no more.
+- 22 clicks became 27. The still steps double as the presenter's "where am I" frames between scenes.

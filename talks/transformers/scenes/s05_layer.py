@@ -65,7 +65,7 @@ class Layer(TalkSlide):
         for i in range(D):
             piece = upd[i].copy()
             new_op = min(1.0, max(0.25, res[i].get_fill_opacity() + rnd.uniform(-0.3, 0.3)))
-            self.play(piece.animate.move_to(res[i]), run_time=0.22)
+            self.play(piece.animate.move_to(res[i]), run_time=0.35 if i < 3 else 0.15)   # first landings slow, the rest at speed
             self.play(FadeOut(piece), res[i].animate.set_fill(TOKEN, new_op), Flash(res[i], color=ATTN, flash_radius=0.28, num_lines=6), run_time=0.22)
         self.next_slide("""Now the piece that makes deep stacks trainable at all. The update is not the new vector; it is added to the vector
         that came in, number by number, and each cell of the token shifts a little. The token's own representation flows

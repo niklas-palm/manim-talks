@@ -17,7 +17,9 @@ class Delegation(TalkSlide):
         t = title(self, "Delegation: the name is a path", "2  delegation: the name is a path")
         # --- the name, split into labels right to left
         name = label("www.example.com.", 60, NAME).move_to([0, 1.1, 0])
-        self.play(Write(name), run_time=0.8)
+        self.play(FadeIn(name), run_time=0.6)
+        self.next_slide("""One name, large, with the dot at the end that is usually invisible. Nothing else yet. Look at the name itself
+        before the machinery: it is not one word, it is a path, and the next click reads it the way DNS does.""")
         parts = [("www", 0, 3), ("example", 4, 11), ("com", 12, 15), (".", 15, 16)]
         boxes = VGroup()
         for text, a, b in reversed(parts):

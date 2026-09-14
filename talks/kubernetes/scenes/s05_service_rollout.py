@@ -28,6 +28,9 @@ class ServiceRollout(TalkSlide):
         front = pod(DESIRED).move_to(S.nodes[1][2][0])
         fl = label("frontend", 15, DESIRED).next_to(front, DOWN, buff=0.06)
         self.play(FadeIn(front), FadeIn(fl), run_time=0.4)
+        self.next_slide("""Node two is back and empty, and a new pod has landed on it: a frontend, drawn in blue because it is
+        something the user asked for. The three web pods run on nodes one and three. The frontend needs to reach them, and
+        that is the question of this scene.""")
         qs = VGroup(*[DashedLine(front.get_top(), p.get_bottom(), color=HOT, stroke_width=1.6, dash_length=0.08) for p in pods.values()])
         q = label("which address?", 16, HOT).move_to([COLS[3], Y_LABELS, 0], aligned_edge=LEFT)
         self.play(Create(qs), FadeIn(q), run_time=0.7)

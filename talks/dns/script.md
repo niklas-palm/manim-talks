@@ -9,16 +9,16 @@ Audience: engineers at a large company who use DNS every day and have never watc
 can read a trace (`dig +trace`), explain why a change takes as long as its TTL to land, choose a TTL, and say what
 negative caching and a CNAME do.
 
-Length: 12 to 15 minutes, 21 clicks, 6 scenes. One picture from move two on: the laptop on the left, the recursive
+Length: 12 to 15 minutes, 26 clicks, 6 scenes. Every scene opens on its still picture (one click) before anything moves. One picture from move two on: the laptop on the left, the recursive
 resolver with its cache in the middle, the tree of zones on the right; questions travel right, answers left.
 
-## 1. One list for the whole internet (2 min) — `OneList`, 3 clicks
+## 1. One list for the whole internet (2 min) — `OneList`, 4 clicks
 - One laptop, one list of name and address rows, a lookup succeeds: the job, and the design the early internet ran on.
 - The list grows to the size of the internet; every machine needs all of it. Failure one: size.
 - Copies everywhere; the owner changes an address; two copies are stale. Failure two: change. The two rules are the
   two fixes.
 
-## 2. Delegation: the name is a path (4 min) — `Delegation`, 6 clicks
+## 2. Delegation: the name is a path (4 min) — `Delegation`, 7 clicks
 - The name read from the right: the final dot is the root, then com, example, www. A name is a path.
 - Each level is a zone with an owner (root: 13 server names, 12 operators, 2,045 anycast instances; com: a registry
   among 1,393 TLDs; example.com: the owner). Each zone holds only pointers (NS records, with TTLs) to the zones below;
@@ -29,7 +29,7 @@ resolver with its cache in the middle, the tree of zones on the right; questions
 - Hop three: example.com answers with the address; kept; sent home. Delegation solved size and made every lookup
   three round trips; rule two fixes that.
 
-## 3. Caching: remember what you were told (4 min) — `Caching`, 4 clicks
+## 3. Caching: remember what you were told (4 min) — `Caching`, 5 clicks
 - The same name again: answered from the cache, zero hops into the tree.
 - A different name under com: the root is skipped because its pointer is cached. The TTLs the zones chose: root
   pointers 6 days, com pointers 2 days, the address 5 minutes; the expensive part of the walk is cached longest.
@@ -38,7 +38,7 @@ resolver with its cache in the middle, the tree of zones on the right; questions
 - Caches at every level (browser, OS, resolver), the same TTL counting down in each: 300 s leaves the resolver, 281 s
   arrives in the browser.
 
-## 4. The price of remembering (3 min) — `Price`, 4 clicks
+## 4. The price of remembering (3 min) — `Price`, 5 clicks
 - The owner changes the address; five resolvers around the world keep the old copy until each expires. Propagation
   time is the TTL as seen from the slowest cache; there is no push.
 - The trick: lower the TTL to 60 s, wait one old TTL, change, raise it again.
@@ -47,7 +47,7 @@ resolver with its cache in the middle, the tree of zones on the right; questions
 - An alias (CNAME) is a pointer to another name; the resolver restarts the walk there. A name with a CNAME holds
   nothing else.
 
-## 5. What keeps it standing (2 min) — `Standing`, 3 clicks
+## 5. What keeps it standing (2 min) — `Standing`, 4 clicks
 - 13 root server names, 12 operators, 2,045 anycast instances: routing delivers a packet to the nearest.
 - The packet: one UDP question to port 53; answer, authority (the NS pointers) and additional (glue) sections; 512 bytes
   classic, TC flag, TCP fallback.

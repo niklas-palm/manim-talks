@@ -53,11 +53,14 @@ class MixtureOfExperts(TalkSlide):
         dl = label("dense, 32B parameters: every weight read for every token", 16, TEXT, width=4.4).next_to(dense, DOWN, buff=0.6)
         bytes_d = Counter("bytes read per token", 32, "GB", WEIGHTS).next_to(dense, UP, buff=0.55).align_to(dense, LEFT)
         self.play(FadeIn(dense), FadeIn(dl), FadeIn(bytes_d))
+        self.next_slide("""The still picture: a dense model as a stack of six layers, each layer one solid block of weights, and a counter
+        for the bytes a token reads on its way down: 32 GB, all of it. Nothing moves yet; the next click sends one token
+        through.""")
         tok = Square(0.3, fill_color=OUTPUT, fill_opacity=0.9, stroke_width=0).next_to(dense, UP, buff=0.08)
         self.play(FadeIn(tok, shift=DOWN * 0.2))
-        for layer in dense:
-            self.play(layer.animate.set_fill(OUTPUT, 1.0), tok.animate.move_to(layer.get_center()), run_time=0.14)
-            self.play(layer.animate.set_fill(WEIGHTS, 0.7), run_time=0.08)
+        for layer in dense:   # slowly: this is the first time a token passes a layer in this scene
+            self.play(layer.animate.set_fill(OUTPUT, 1.0), tok.animate.move_to(layer.get_center()), run_time=0.35)
+            self.play(layer.animate.set_fill(WEIGHTS, 0.7), run_time=0.15)
         self.play(tok.animate.next_to(dense, DOWN, buff=0.08), run_time=0.2)
         self.play(FadeOut(tok), run_time=0.15)
         self.next_slide("""A dense model reads all of itself for every token: the token passes down through every layer and every layer
@@ -118,7 +121,9 @@ class PrefixCache(TalkSlide):
         bl = label("KV cache blocks, one engine", 16, CACHE).next_to(blocks, DOWN, buff=0.12)
         prefill = Counter("tokens prefilled", 9, "", PROMPT).move_to([3.2, 1.9, 0], aligned_edge=LEFT)
         self.play(FadeIn(prefill))
-        self.play(TransformFromCopy(turn1, blocks), FadeIn(bl))
+        self.next_slide("""The still picture: the first turn of a conversation, six prompt tokens in blue and three answer tokens in yellow,
+        and a counter of tokens prefilled, nine. Where the attention state of those nine tokens went is the next click.""")
+        self.play(TransformFromCopy(turn1, blocks), FadeIn(bl), run_time=0.9)
         self.next_slide("""The first turn of a conversation: six prompt tokens, three answer tokens. Prefill read nine tokens and left
         their attention state in the cache, stored in fixed-size blocks and tagged by the tokens they hold.""")
         turn2 = VGroup(tokens(6, PROMPT), tokens(3, OUTPUT), tokens(4, PROMPT)).arrange(RIGHT, buff=0.08).next_to(turn1, DOWN, buff=0.45).align_to(turn1, LEFT)

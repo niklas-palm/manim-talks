@@ -19,5 +19,5 @@ bin/render.sh kafka ql      # preview; qh for the talk itself
 bin/serve.sh kafka          # presenter and audience windows
 ```
 
-Sources and simplifications are in `script.md`; the speaker notes live next to the steps in `scenes/`. Defaults quoted
+Every scene opens on a still picture and the mechanism starts on the next click; first occurrences are slow, repeats fast. Sources and simplifications are in `script.md`; the speaker notes live next to the steps in `scenes/`. Defaults quoted
 on screen are from the Apache Kafka 4.3 configuration reference.

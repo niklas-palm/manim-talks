@@ -14,7 +14,7 @@ Length: about 16 minutes, 32 clicks, 7 scene files across 5 moves plus the openi
 
 ## 3. Attention (6 min)
 - **Attention.** Three matrices turn each vector into a query, key, value (the sweep, slow then fast) -> one token's query scored against every key (the fan, one dot product slow) -> softmax makes weights that sum to 1 (the bars) -> weighted sum of values is the token's new vector. Every token at once.
-- **MaskAndHeads.** The full attention grid (who attends to whom) -> the causal mask blocks the future (lower triangle only), because a language model predicts the next word -> one view is not enough: several heads in parallel, each own q/k/v -> concatenate and project back to model size.
+- **MaskAndHeads.** The full attention grid, still (who attends to whom) -> "mat"'s row flashes and the causal mask blocks the future (lower triangle only), because a language model predicts the next word -> one view is not enough: several heads in parallel, each own q/k/v -> concatenate and project back to model size.
 
 ## 4. The token thinks alone, many times (3 min)
 - **Layer.** Feed-forward on each token alone: expand (512->2048), ReLU nonlinearity, contract -> the residual connection adds the update instead of replacing (LayerNorm as a note) -> the layer (attention + feed-forward) stacked N times (6 in the paper, 30-100 today).

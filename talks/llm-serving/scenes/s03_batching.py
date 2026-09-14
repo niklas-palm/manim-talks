@@ -21,14 +21,18 @@ class Batching(TalkSlide):
         steplen = label("step time: the weights read, plus a little arithmetic per request", 14, DIM).move_to([0.0, -1.3, 0], aligned_edge=LEFT)
         self.play(Create(axis), FadeIn(al), FadeIn(wl), FadeIn(rl[0]), FadeIn(reads), FadeIn(per_step))
         cap = caption(self, "One request: every step reads all the weights and produces one token")
+        self.next_slide("""The still picture: a time axis, one decode step after another from left to right; a row for the weights read
+        and a row for one request; two counters, weights read per step and tokens produced per step, both at one. Nothing
+        has happened yet. The next click runs the first steps.""")
         cols = []
         for k in range(N):
             x = X0 + k * W1
             block = Rectangle(width=W1 - 0.1, height=0.32, fill_color=WEIGHTS, fill_opacity=0.75, stroke_width=0).move_to([x, 1.55, 0])
             tok = Square(0.3, fill_color=OUTPUT, fill_opacity=0.9, stroke_width=0).move_to([x, ROWS[0], 0])
             cols.append(VGroup(block, tok))
-            self.play(FadeIn(block, shift=DOWN * 0.1), run_time=0.12)
-            self.play(FadeIn(tok, shift=DOWN * 0.1), run_time=0.1)
+            slow = k < 2   # the first two steps slowly, then at speed: the audience has seen the beat
+            self.play(FadeIn(block, shift=DOWN * 0.1), run_time=0.4 if slow else 0.12)
+            self.play(FadeIn(tok, shift=DOWN * 0.1), run_time=0.3 if slow else 0.1)
         self.next_slide("""Here is decode as a timeline. Each violet block is one step: all the weights come in from memory. Each step
         hands the request one token. The step is as long as the weights read, so this request gets a token every eight
         milliseconds or so, and the bus is busy for a fraction of that: the rest is the launches and bookkeeping from the

@@ -20,6 +20,10 @@ class DecodeCeiling(TalkSlide):
         mname = label("dense, 32B parameters, fp8: one byte per weight", 17, TEXT).move_to([XR, 2.0, 0], aligned_edge=LEFT)
         by = Counter("bytes read per token", 32, "GB", WEIGHTS).move_to([XR, 1.3, 0], aligned_edge=LEFT)
         self.play(FadeIn(gpu), FadeIn(card), gpu.bandwidth.set(0.97), FadeIn(bw), FadeIn(mk), FadeIn(mname), FadeIn(by), run_time=0.8)
+        self.next_slide("""The still picture first. Left, one GPU: the RTX PRO 6000 Blackwell Server Edition, the card in a g7e instance,
+        96 GB of memory, and its bus gauge pegged because we are about to ask what the bus can do at most. Right, the model,
+        named: a dense 32B in fp8, one byte per weight, so every token reads all 32 GB. Two numbers from two spec sheets, the
+        card's bandwidth and the model's bytes per token. The next click divides one by the other.""")
         # --- the division
         bar = Line(LEFT * 1.3, RIGHT * 1.3, color=TEXT).move_to([1.3, 0.0, 0])
         num = label("1.6 TB/s", 24, OUTPUT).next_to(bar, UP, buff=0.1)

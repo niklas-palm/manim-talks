@@ -21,7 +21,10 @@ class Controllers(TalkSlide):
         # --- the Deployment controller
         c1, w1 = S.ctrl["deploy"], S.watches["deploy"]
         self.play(FadeIn(c1), Create(w1[0]), FadeIn(w1[1]), run_time=0.7)
-        pulse(self, S.cards["deploy"].get_right(), c1[2])                          # observe
+        self.next_slide("""Where the last scene ended: the Deployment record sits in etcd, the nodes are empty, three desired and
+        none running. One new thing on screen, and it is not moving yet: the Deployment controller, a box with a loop drawn in
+        it, connected to the API server by a dashed line labelled watch. It has not done anything. Next click, it does.""")
+        pulse(self, S.cards["deploy"].get_right(), c1[2], run_time=0.6)            # observe, slowly the first time
         cmp = label("wants 1, has 0", 15, TEXT).next_to(c1, DOWN, buff=GAP_TIGHT).align_to(c1, LEFT)
         self.play(FadeIn(cmp), run_time=0.3)
         rs = card("ReplicaSet", "3 replicas, v1").scale(0.7).move_to(c1[2].get_center())
