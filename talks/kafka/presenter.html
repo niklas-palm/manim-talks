@@ -29,17 +29,20 @@ function load(v,si){if(v.dataset.si!==String(si)){v.dataset.si=si;v.src=S[si].sr
 function show(k){                     // play from the start of step k to its end, then hold the frame
   if(k<0||k>=ST.length)return;const st=ST[k],sc=S[st.si],prev=i>=0?ST[i]:null;i=k;
   const start=st.k?sc.ends[st.k-1]:0,end=sc.ends[st.k];
-  if(!prev||prev.si!==st.si){            // new scene: bring up the preloaded element
-    if(vids[other()].dataset.si!==String(st.si))load(vids[other()],st.si);
-    const v=vids[other()];v.currentTime=start;cur=other();
-    vids[cur].style.zIndex=2;vids[1-cur].style.zIndex=1;
-    v.play().catch(()=>{});if(ST[k+1]&&ST[k+1].si!==st.si)load(vids[1-cur],ST[k+1].si);
-    if(S[st.si+1])load(vids[1-cur],st.si+1);
-  }else{const v=vids[cur];if(Math.abs(v.currentTime-start)>0.25)v.currentTime=start;v.play().catch(()=>{});}
-  hold(vids[cur],end);onstep&&onstep(k);
+  if(!prev||prev.si!==st.si){            // new scene: bring up the preloaded element, but only once it shows the right frame
+    const v=vids[other()];if(v.dataset.si!==String(st.si))load(v,st.si);
+    let done=false;const go=()=>{if(done)return;done=true;cur=1-cur;vids[cur].style.zIndex=2;vids[1-cur].style.zIndex=1;
+      v.play().catch(()=>{});hold(v,end);if(S[st.si+1])load(vids[1-cur],st.si+1);};
+    if(v.readyState>=2&&Math.abs(v.currentTime-start)<0.04)go();
+    else{v.addEventListener('seeked',go,{once:true});v.currentTime=start;setTimeout(go,600);}   // a swap before the seek lands would flash the element's old frame
+  }else{const v=vids[cur];if(Math.abs(v.currentTime-start)>0.25)v.currentTime=start;v.play().catch(()=>{});hold(v,end);}
+  onstep&&onstep(k);
 }
 let holdId=0;
-function hold(v,end){cancelAnimationFrame(holdId);const tick=()=>{if(v.currentTime>=end-0.03){v.pause();v.currentTime=end-0.001;return;}holdId=requestAnimationFrame(tick);};holdId=requestAnimationFrame(tick);}
+// Stop a few frames before the boundary: the check runs once per animation frame, so playback can overshoot into the
+// next step's first frame by the time it is seen, and a seek to end-0.001 can snap onto that frame too. Steps end on a
+// settled picture, so 0.06 s (four frames at 60 fps) before the boundary is the same picture.
+function hold(v,end){cancelAnimationFrame(holdId);const tick=()=>{if(v.currentTime>=end-0.1){v.pause();v.currentTime=Math.max(0,end-0.06);return;}holdId=requestAnimationFrame(tick);};holdId=requestAnimationFrame(tick);}
 function next(){show(i+1)} function prev(){show(i-1)}
 
 load(vids[0],0);if(S[1])load(vids[1],1);

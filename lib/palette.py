@@ -554,12 +554,13 @@ class Stack(VGroup):
 
 
 def code(source, language: str = "python", size: float = 18, width: float = 0.0) -> VGroup:
-    """Syntax-highlighted code as a block: a dark panel with the lines highlighted by Pygments (one-dark style), no
+    """Syntax-highlighted code as a block: a dark panel with the lines highlighted by Pygments (monokai: plain names stay
+    white, keywords, function names and strings each take one colour; one-dark painted every identifier red), no
     line numbers, laid out at BASE_SIZE and scaled to `size` so the spacing is exact. `source` is a string or a list
     of lines. The block's lines are `block.lines` (a VGroup, one per line) for walking through with highlight_line();
     the panel is `block.panel`. `width` scales the block to that many units if given. Indentation is kept."""
     text = source if isinstance(source, str) else "\n".join(source)
-    c = Code(code_string=text, language=language, formatter_style="one-dark", add_line_numbers=False, background="rectangle",
+    c = Code(code_string=text, language=language, formatter_style="monokai", add_line_numbers=False, background="rectangle",
              background_config={"fill_color": "#171A21", "fill_opacity": 1.0, "stroke_color": DIM, "stroke_width": 1.2, "corner_radius": 0.12, "buff": 0.45},
              paragraph_config={"font": CODE_FONT, "font_size": BASE_SIZE, "line_spacing": 0.6, "disable_ligatures": True})
     c.scale(size / BASE_SIZE)

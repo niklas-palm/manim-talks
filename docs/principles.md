@@ -119,13 +119,25 @@ the layer box stretches and the three matrices, the attention read and the feed-
 text in a zoom is rendered large and scaled down (`small()`). Everything drawn in the zoom goes into one group that
 fades on the way out, and the box shrinks back so the wide view is untouched.
 
-## 11. Fill the frame
+## 11. Use the frame well
 
 The content band is about 14 by 5 scene units and the audience sits far from it. The main object of a scene should
 span at least half the band; cells in an unzoomed grid or vector are 0.14 to 0.25 units, never 0.08; labels are
 size 15 or larger. A small drawing surrounded by empty canvas reads as a diagram in a paper, not as a picture that
 teaches. If the mechanism needs small parts, zoom the camera into the part (rule 10) rather than drawing it small.
-Check the shots at half size: if you have to lean in, the audience cannot see it.
+Check the shots at half size: if you have to lean in, the audience cannot see it. Using the frame well is not the same
+as covering it: fewer, larger, well-placed objects with clear space between them beat a frame packed to the edges, and
+a picture that will grow needs room left for the growth. Spend the estate on what teaches.
+
+## 11b. Inside its box, and no crossings
+
+Everything drawn inside a container stays inside it with padding: a loop arrow inside its controller box, a memory
+bar inside its node, a card inside its store, a pull or a start landing inside the box it belongs to and not on its
+border. Anything that would overflow is made smaller, shortened, or the container is made larger; never left
+hanging over an edge. Connections do not cross other objects: route an arrow around, move the endpoints to facing
+edges, or rearrange the layout so related things are adjacent; a dashed relation is straight and horizontal or
+vertical, never skewed across the picture. When a crossing is unavoidable, it is the only one in the frame and the
+audience can see why it is there.
 
 ## 12. Aligned and organised
 

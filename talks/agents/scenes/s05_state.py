@@ -46,7 +46,7 @@ class TheState(TalkSlide):
         # --- every call sends the whole list; one long result overflows it
         call_model(self, msgs, model, extra=cards, run_time=0.6)
         self.play(calls.to(5), run_time=0.2)
-        big = block("user · tool_result: camera_history, 40,000 tokens of detections", RESULT, w=BW, h=BH * 2.2, size=16)
+        big = message("tool_result", "user · tool_result: camera_history, 40,000 tokens of detections")   # the same shape as every message; its size is in its words, its problem is where it lands
         msgs.append(self, big, frm=cards[2], run_time=0.7)
         refused = stop_label("context window exceeded: the call is refused", model, PROBLEM)
         self.play(big[0].animate.set_stroke(PROBLEM, 2.0), big[1].animate.set_fill(PROBLEM, 0.95), FadeIn(refused), run_time=0.6)
@@ -64,7 +64,7 @@ class TheState(TalkSlide):
             msgs.remove(b)
         msgs.blocks = keep
         self.play(big[0].animate.set_stroke(RESULT, 1.4), big[1].animate.set_fill(RESULT, 0.95), FadeOut(refused), run_time=0.3)   # members first, the group move after: never both in one play
-        self.play(*[b.animate.move_to(msgs.slot(i) if b is not big else [LIST_X, msgs.slot(i)[1] - (BH * 2.2 - BH) / 2, 0]) for i, b in enumerate(keep)], run_time=0.8)
+        self.play(*[b.animate.move_to(msgs.slot(i)) for i, b in enumerate(keep)], run_time=0.8)
         sw = label("sliding window: the oldest exchange leaves, a tool call and its result together", 14, MUTED).next_to(app[0], DOWN, buff=GAP_TIGHT).align_to(app[0], LEFT)
         self.play(FadeIn(sw), run_time=0.4)
         self.next_slide("""The first remedy: a sliding window. The oldest messages leave, and they leave in pairs: a tool call and its result
@@ -79,7 +79,7 @@ class TheState(TalkSlide):
                 msgs.remove(b)
         msgs.blocks = [summary] + msgs.blocks[3:]
         msgs.add(summary)
-        self.play(*[b.animate.move_to(msgs.slot(i) if b is not big else [LIST_X, msgs.slot(i)[1] - (BH * 2.2 - BH) / 2, 0]) for i, b in enumerate(msgs.blocks)], run_time=0.7)
+        self.play(*[b.animate.move_to(msgs.slot(i)) for i, b in enumerate(msgs.blocks)], run_time=0.7)
         sm = label("summarisation: the oldest messages become one; the most recent stay verbatim", 14, MUTED).move_to(sw, aligned_edge=LEFT)
         self.play(FadeOut(sw), FadeIn(sm), run_time=0.4)
         self.finish("""The second remedy: summarisation. The oldest messages are replaced by one message that says what happened in

@@ -31,6 +31,11 @@ experiences a deck: what they see first, then how it moves, then the words, then
 - [ ] Every label is attached to its object (left edges aligned or centred on it); numbers in a column share a right
       edge; counters that belong together sit in one row at one y. Nothing floats.
 - [ ] Nothing within 0.3 units of the frame edge; nothing clipped; nothing overlapping unless the overlap is the point.
+- [ ] Everything inside a container is inside it with padding: loops inside their boxes, bars inside their nodes,
+      cards inside their stores, arrivals landing inside the box, never on its border.
+- [ ] No connection crosses another object; dashed relations are straight and axis-aligned, not skewed; at most one
+      unavoidable crossing per frame, and the layout was tried first.
+- [ ] Code is highlighted in the library's scheme for its language (Pygments knows it); plain names read white, not red.
 - [ ] Flow runs left to right (source on the left, result on the right); standing relations (a watch, a call path) are
       dashed and horizontal so they never cross the flow arrows.
 

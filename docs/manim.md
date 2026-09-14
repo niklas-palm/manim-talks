@@ -102,6 +102,15 @@ Manim Community Edition 0.21, Python 3.12, macOS, ffmpeg 7, no LaTeX. Each entry
 - **`Counter(decimals=1)`** when a value like 1.8 must not round to 2. Show "1.60" rather than switch decimals
   mid-deck.
 
+## The web player
+
+- **Hold a few frames before a step boundary.** The player's hold loop checks the video time once per animation frame, so
+  playback overshoots the boundary by up to a frame before it pauses, showing the next step's first frame for an
+  instant; a seek to `end - 0.001` can snap onto that frame too. The player pauses at `end - 0.1` and seeks to
+  `end - 0.06`; steps end on a settled picture, so the frame is the same.
+- **Swap to a new scene's video only after it has decoded the target frame** (on `seeked`, with a timeout fallback).
+  Swapping first shows whatever frame that element last displayed, which is the flash of an old scene.
+
 ## Rendering and review
 
 - **Preview at `ql` (480p15)** while building: seconds to a couple of minutes per scene. **`qh` (1080p60)** for the

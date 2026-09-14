@@ -115,7 +115,7 @@ Three decks independently drew state as a list that only grows; these are the sh
 | `Pointer(name, color)` | a reader's position under a Log; `place(log, i)`, `to(log, i)` returns the Transform. Replay is the pointer moving back |
 | `block(text, color, w, h, size, bare)` | one item of a Stack: a coloured block with a bar and one line of text; `"role · text"` colours the role |
 | `Stack(x, top, h, gap)` | a list of blocks growing downward; `append(scene, block, frm)` flies a block in from what produced it; the whole list is one VGroup so a copy can travel as one thing |
-| `code(source, language, size, width)` | syntax-highlighted code (Pygments one-dark) on a dark panel, laid out large and scaled so spacing is exact; `block.lines[i]` per line, `block.panel` |
+| `code(source, language, size, width)` | syntax-highlighted code (Pygments monokai, any language Pygments knows) on a dark panel, laid out large and scaled so spacing is exact; `block.lines[i]` per line, `block.panel` |
 | `highlight_line(block, i)` | a translucent bar behind line i; add it after the code and move it down the lines while the picture does each step |
 
 Budget 0.45 units under a Log's offsets for a pointer and its tag, and 1.4 units between stacked logs that each carry
