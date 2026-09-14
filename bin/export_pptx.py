@@ -20,13 +20,11 @@ from pptx.util import Inches
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib import theme as _theme
-from lib.talks import dir_of, quality, read_index, read_json, rendered_or_exit, report_unrendered, title_of
+from lib.talks import from_argv, read_index, read_json, rendered_or_exit, report_unrendered, title_of
 
 CLICK = "--click" in sys.argv
 sys.argv = [a for a in sys.argv if a != "--click"]
-talk = sys.argv[1] if len(sys.argv) > 1 else sys.exit(__doc__)
-root = dir_of(talk)
-Q = quality(sys.argv[2] if len(sys.argv) > 2 else None, root)
+talk, root, Q = from_argv(__doc__)
 out = sys.argv[3] if len(sys.argv) > 3 else f"{root}/{talk}.pptx"
 if os.path.isdir(out) or os.path.islink(out) or not os.path.isdir(os.path.dirname(os.path.abspath(out))):
     sys.exit(f"cannot write {out}: give a file path, not a folder or a symlink, in a folder that exists")

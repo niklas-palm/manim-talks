@@ -1,6 +1,6 @@
 # Review checklist: what "done" means
 
-Run `bin/check.py <talk> qh` first; it catches the mechanical part. Then go through this list with the shot sheets
+Run `.venv/bin/python bin/check.py <talk> qh` first; it catches the mechanical part. Then go through this list with the shot sheets
 (`media/shots/<Scene>.png`, viewed at half size), the contact sheets (`bin/review.sh`), one render with `GUIDES=1`,
 and finally the presenter in a browser. Every line is a yes or the deck is not done. The list is in the order a viewer
 experiences a deck: what they see first, then how it moves, then the words, then the details.
@@ -95,7 +95,7 @@ experiences a deck: what they see first, then how it moves, then the words, then
 
 ## 7. Build and presenter
 
-- [ ] `bin/render.sh <talk> qh` completed with no `Traceback`; `bin/check.py <talk> qh` reports ok; `bin/build.py`
+- [ ] `bin/render.sh <talk> qh` completed with no `Traceback`; `.venv/bin/python bin/check.py <talk> qh` reports ok; `bin/build.py`
       reports 0 steps without a note.
 - [ ] In a browser via `bin/serve.sh`: the presenter steps through every click, the audience window follows, each step
       holds on its end frame, the next-step preview shows where the next click lands, back and Home work.

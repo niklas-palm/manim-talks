@@ -9,11 +9,9 @@ import os, subprocess, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib import theme as _theme
-from lib.talks import dir_of, duration, quality, rendered_or_exit, report_unrendered, scenes_of
+from lib.talks import duration, from_argv, rendered_or_exit, report_unrendered, scenes_of
 
-talk = sys.argv[1] if len(sys.argv) > 1 else sys.exit(__doc__)
-root = dir_of(talk)
-Q = quality(sys.argv[2] if len(sys.argv) > 2 else None, root)
+talk, root, Q = from_argv(__doc__)
 PAD = _theme.sheet_rgb(root)
 out_dir = f"{root}/media/seams"   # its own folder: bin/shots.py clears media/shots before writing
 os.makedirs(out_dir, exist_ok=True)

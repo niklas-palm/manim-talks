@@ -12,11 +12,9 @@ import glob, os, re, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib import theme as _theme
-from lib.talks import RES, SCENE_RE, dir_of, quality, qualities_present, read_json, rendered, scenes_of
+from lib.talks import RES, SCENE_RE, from_argv, qualities_present, read_index, read_json, rendered, scenes_of
 
-talk = sys.argv[1] if len(sys.argv) > 1 else sys.exit(__doc__)
-root = dir_of(talk)
-Q = quality(sys.argv[2] if len(sys.argv) > 2 else None, root)
+talk, root, Q = from_argv(__doc__)
 flags = []
 
 # The look this talk presents in, and whether it is fit to present: contrast against the background, accents that can
@@ -34,11 +32,14 @@ else:
 
 # A colour a scene names itself is a colour that will not follow the theme: objects.py maps the talk's nouns onto the
 # accent slots, and every scene uses those names. objects.py is checked too, because that is where the mapping lives.
-for _f in sorted(glob.glob(f"{root}/scenes/*.py")):
-    _src, _n = open(_f).read(), os.path.basename(_f)
-    for _hue in set(re.findall(r"\b(BLUE|YELLOW|VIOLET|TEAL|GREEN|ORANGE|RED)\b", _src)):
+# The names are the ones lib/palette.py deletes from its own namespace, so this stays the friendly sentence before the
+# NameError rather than a shorter list that drifts from it.
+_HUES = r"\b(BLUE|YELLOW|VIOLET|TEAL|GREEN|ORANGE|RED|PURPLE|PINK|GOLD|MAROON|WHITE|BLACK|GREY|GRAY)\b"
+_sources = {os.path.basename(f): open(f).read() for f in sorted(glob.glob(f"{root}/scenes/*.py"))}
+for _n, _src in _sources.items():
+    for _hue in sorted(set(re.findall(_HUES, _src))):
         flags.append(f"{_n} names the colour {_hue}: use the meaning from objects.py, or a slot (A1..A6, ALERT)")
-    for _hex in set(re.findall(r"[\"']#[0-9A-Fa-f]{3,6}[\"']", _src)):
+    for _hex in sorted(set(re.findall(r"[\"']#[0-9A-Fa-f]{3,6}[\"']", _src))):
         flags.append(f"{_n} draws with the literal colour {_hex}: it cannot follow the theme (use a slot, BG, HI, ...)")
 
 # Two scenes with one class name: bin/render.sh renders neither, and they would overwrite each other's notes.
@@ -49,11 +50,11 @@ for _stem, _scene in scenes_of(root):
     _seen[_scene] = _stem
 
 # A scene in a file the tools do not look at renders nowhere and is reported by nothing else.
-for _f in sorted(glob.glob(f"{root}/scenes/*.py")):
-    if os.path.basename(_f).startswith("s"):
+for _n, _src in _sources.items():
+    if _n.startswith("s"):
         continue
-    for _c in re.findall(SCENE_RE, open(_f).read(), re.M):
-        flags.append(f"{os.path.basename(_f)} defines the scene {_c}, but only scenes/s*.py is presented: rename the file")
+    for _c in re.findall(SCENE_RE, _src, re.M):
+        flags.append(f"{_n} defines the scene {_c}, but only scenes/s*.py is presented: rename the file")
 
 for f, what in [("script.md", "the spine, moves and sources"), ("README.md", "what the talk is"), ("scenes/objects.py", "the talk's colours and shared drawings")]:
     if not os.path.exists(f"{root}/{f}"):
@@ -83,7 +84,7 @@ for f in sorted(glob.glob(f"{root}/scenes/s*.py")):
             flags.append(f"{name}: {c.group(1)} has no finish(): the last step has no note")
         idx, notes_file = _done.get(c.group(1), (None, None))
         if idx and os.path.exists(notes_file):   # both written by the render, so loops and branches are counted right
-            steps, notes = len(read_json(idx)), len(read_json(notes_file))
+            steps, notes = len(read_index(idx)), len(read_json(notes_file))
             if steps != notes:
                 flags.append(f"{name}: {c.group(1)} rendered {steps} steps but wrote {notes} notes")
         # a group and one of its members animated in the same play: the member's target is taken before the group moves

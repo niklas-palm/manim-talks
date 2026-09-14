@@ -11,11 +11,9 @@ import html, json, os, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib import theme as _theme
-from lib.talks import dir_of, quality, read_index, read_json, rendered_or_exit, report_unrendered, title_of
+from lib.talks import from_argv, read_index, read_json, rendered_or_exit, report_unrendered, title_of
 
-talk = sys.argv[1] if len(sys.argv) > 1 else sys.exit(__doc__)
-root = dir_of(talk)
-Q = quality(sys.argv[2] if len(sys.argv) > 2 else None, root)
+talk, root, Q = from_argv(__doc__)
 
 # The pages are dressed in the talk's own style, resolved the same way the render resolves it, so rebuilding the pages
 # without re-rendering cannot put dark chrome around a bright deck.
@@ -34,7 +32,7 @@ for stem, scene, video, index, notes_path in items:
     ends, t = [], 0.0
     for sec in read_index(index):
         t += float(sec["duration"]); ends.append(round(t, 3))
-    scenes.append({"name": scene, "src": f"media/videos/{stem}/{Q}/{scene}.mp4", "ends": ends,   # relative to the talk folder, where the pages live
+    scenes.append({"name": scene, "src": os.path.relpath(video, root), "ends": ends,   # relative to the talk folder, where the pages live
                    "notes": [notes[i] if i < len(notes) else "" for i in range(len(ends))]})
 steps = [{"scene": s["name"], "si": i, "k": k, "note": s["notes"][k]} for i, s in enumerate(scenes) for k in range(len(s["ends"]))]
 # Two escapes, not one: "</" would close the element, and "<!--" followed by "<script" puts the HTML tokenizer into its
@@ -118,10 +116,17 @@ document.addEventListener('keydown',e=>{{if(e.key==='ArrowRight'||e.key===' ')se
 setInterval(()=>{{const s=Math.floor((Date.now()-t0[0])/1000);document.getElementById('clock').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}},500);
 show(0);tell({{hello:1}});
 </script>"""
-for _name, _page in (("present.html", present), ("presenter.html", presenter)):   # both pages or neither: a failure
-    with open(f"{root}/{_name}.tmp", "w") as _f:                                    # halfway used to leave two decks
-        _f.write(_page)
-for _name in ("present.html", "presenter.html"):
-    os.replace(f"{root}/{_name}.tmp", f"{root}/{_name}")
+# Both pages or neither: a failure halfway used to leave two pages describing different decks. Written beside their
+# targets first, then swapped in; whatever happens, no half-written file survives to be mistaken for one.
+try:
+    for _name, _page in (("present.html", present), ("presenter.html", presenter)):
+        with open(f"{root}/{_name}.tmp", "w") as _f:
+            _f.write(_page)
+    for _name in ("present.html", "presenter.html"):
+        os.replace(f"{root}/{_name}.tmp", f"{root}/{_name}")
+finally:
+    for _name in ("present.html", "presenter.html"):
+        if os.path.exists(f"{root}/{_name}.tmp"):
+            os.remove(f"{root}/{_name}.tmp")
 missing = sum(1 for s in steps if not s["note"])
 print(f"{talk}: {len(steps)} steps in {len(scenes)} scenes -> {root}/present.html, presenter.html ({missing} steps without a note)")

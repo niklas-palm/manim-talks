@@ -17,25 +17,29 @@ export PYTHONPATH=".:$DIR/scenes"
 THEME=$(.venv/bin/python -c "import sys; sys.path.insert(0,'.'); from lib import theme; print(theme.active_name(sys.argv[1]))" "$DIR")
 export THEME
 echo "theme: $THEME"
-SCENES=("$@")
-if [[ ${#SCENES[@]} -eq 0 ]]; then
-  # The same reader the Python tools use, so the set that renders is the set they report on.
-  while IFS= read -r s; do SCENES+=("$s"); done < <(.venv/bin/python -c \
-    "import sys; sys.path.insert(0,'.'); from lib.talks import scenes_of; print('\n'.join(c for _, c in scenes_of(sys.argv[1])))" "$DIR")
-fi
-for s in "${SCENES[@]}"; do
-  # Which file defines this scene, asked of the library: a name typed by hand is not a grep pattern, and the tools must
-  # agree on what a scene is. It prints nothing and fails if the name is unknown or defined twice.
-  f=$(.venv/bin/python -c "
+# One call for the whole list: which scenes this talk has, and which file defines each. The library answers, so the set
+# that renders is the set the Python tools report on, and a name typed by hand is never treated as a pattern. Given
+# scene names it returns just those, and fails if one is unknown or defined in two files.
+PAIRS=()
+while IFS= read -r line; do PAIRS+=("$line"); done < <(.venv/bin/python -c "
 import sys; sys.path.insert(0,'.')
 from lib.talks import scenes_of
-root, want = sys.argv[1], sys.argv[2]
-files = [stem for stem, scene in scenes_of(root) if scene == want]
-if not files:
-    raise SystemExit(f'no scene {want} in {root}/scenes')
-if len(files) > 1:
-    raise SystemExit(f'scene {want} is defined in more than one file: ' + ', '.join(files))
-print(f'{root}/scenes/{files[0]}.py')" "$DIR" "$s")
-  .venv/bin/manim -$Q --save_sections --disable_caching --media_dir "$DIR/media" "$f" "$s"
+root, want = sys.argv[1], sys.argv[2:]
+have = scenes_of(root)
+if not have:
+    raise SystemExit(f'no TalkSlide classes in {root}/scenes')
+for name in want:
+    files = [stem for stem, scene in have if scene == name]
+    if not files:
+        raise SystemExit(f'no scene {name} in {root}/scenes')
+    if len(files) > 1:
+        raise SystemExit(f'scene {name} is defined in more than one file: ' + ', '.join(files))
+for stem, scene in have:
+    if not want or scene in want:
+        print(f'{stem}\t{scene}')" "$DIR" "$@")
+[[ ${#PAIRS[@]} -gt 0 ]] || exit 1                 # the Python already said why
+for line in "${PAIRS[@]}"; do
+  IFS=$'\t' read -r stem scene <<< "$line"
+  .venv/bin/manim -$Q --save_sections --disable_caching --media_dir "$DIR/media" "$DIR/scenes/$stem.py" "$scene"
 done
 .venv/bin/python bin/build.py "$TALK" "$Q"

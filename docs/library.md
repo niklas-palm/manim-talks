@@ -24,7 +24,7 @@ What a scene may use:
 | `FILL` `SOLID` | a container's fill opacity and a filled mark's; both are fainter in the bright style |
 | `MODE` | `"dark"` or `"light"`; a scene should not need to ask |
 | `identity(n)` | n colours that are told apart, for a thing whose colour means only "this one": twelve requests sharing a step. Chosen by perceptual distance from each other and from the accents. Identity, not vocabulary; never a substitute for a slot |
-| `ink_on(color)` | the legible ink for a label written on a solid mark of that colour: the ground or the body colour, whichever the eye can read there |
+| `ink_on(color)` | the legible ink for a label written on a solid mark of that colour: the ground or the body colour, whichever the eye can read there, pushed past both if neither clears the 4.5:1 small text needs |
 
 Two rules follow, and `bin/check.py` enforces the first:
 
@@ -41,7 +41,7 @@ opacity rather than replacing it when several members must fade together (see `d
 
 ## Colours
 
-The seven accent slots and the five roles above, as the active theme sets them. The default style (`dark`):
+The seven accent slots and the seven roles above, as the active theme sets them. The default style (`dark`):
 
 | name | hex | use |
 |---|---|---|
@@ -133,7 +133,7 @@ drawing lives there). If a second talk needs it, move it here and document it in
 | `dot_product(scene, vec, vcolor, mat, i, out, color)` | one output number, slowly: pairs light up, products fly, the cell fills |
 | `sweep(scene, vec, vcolor, [(mat, out, color)], rt)` | every row at speed; several matrices swept together |
 
-Pass `cols` when the matrix is not eight wide and `mat_color` when the matrix is not violet. The light-up colour is
+Pass `cols` when the matrix is not eight wide and `mat_color` when the matrix is not the deep accent. The light-up colour is
 `HI` in every deck: the neutral extreme of the ground, near-white on the dark style and near-black on the bright one.
 A highlight in an accent colour would read as that accent's meaning.
 

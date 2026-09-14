@@ -38,10 +38,10 @@ def cmd_list():
     print(f"{'theme':22s} {'mode':6s} description")
     for n in _theme.names():
         try:                                    # a half-written theme is a normal thing to have while editing one
-            t = _theme.load(n)
+            t = _theme.load(n)              # and formatting one is as likely to fail as loading it
+            print(f"{n:22s} {t['mode']:6s} {t['description']}")
         except (SystemExit, Exception) as e:
-            print(f"{n:22s} {'?':6s} {e}"); continue
-        print(f"{n:22s} {t['mode']:6s} {t['description']}")
+            print(f"{n:22s} {'?':6s} {e}")
     print(f"\nactive: {_theme.active_name()}   (THEME=<name>, a talk's .theme, or .theme at the repository root)")
 
 
@@ -131,7 +131,7 @@ def _colour(el):
     return None
 
 
-def _scheme(zf) -> dict:
+def _scheme(zf) -> tuple:
     """The colour and font scheme of the first theme part: dk1, lt1, dk2, lt2, accent1..6, and the two typefaces."""
     name = next(iter(sorted(n for n in zf.namelist() if re.match(r"ppt/theme/theme\d+\.xml$", n))), None)   # theme1 is the deck's; zip order is not
     if not name:

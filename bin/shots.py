@@ -8,11 +8,9 @@ import glob, os, subprocess, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib import theme as _theme
-from lib.talks import dir_of, duration, quality, read_index, rendered_or_exit, report_unrendered
+from lib.talks import duration, from_argv, read_index, rendered_or_exit, report_unrendered
 
-talk = sys.argv[1] if len(sys.argv) > 1 else sys.exit(__doc__)
-root = dir_of(talk)
-Q = quality(sys.argv[2] if len(sys.argv) > 2 else None, root)
+talk, root, Q = from_argv(__doc__)
 items = rendered_or_exit(root, Q, talk)     # before the delete below: an unrendered quality used to wipe the sheets and report success
 PAD = _theme.sheet_hex(root)               # the padding follows the deck's own style
 report_unrendered(root, items)

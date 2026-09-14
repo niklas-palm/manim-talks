@@ -19,11 +19,6 @@ ANSWER = ["mat", ".", "It", "slept", "."]
 L, TOK = 4, 10                     # layers drawn, token columns in the cache rack
 
 
-def small(s: str, color: str = TEXT) -> Text:
-    """Text for the zoomed view: rendered large, scaled down, so Pango lays it out properly."""
-    return label(s, 20, color).scale(0.3)
-
-
 def cache_cell(slot: Mobject) -> Rectangle:
     return Rectangle(width=0.22, height=0.36, fill_color=CACHE, fill_opacity=SOLID, stroke_width=0).move_to(slot)
 
@@ -31,15 +26,7 @@ def cache_cell(slot: Mobject) -> Rectangle:
 def vector(seed: int, color: str = PROMPT, cell: float = 0.065) -> VGroup:
     """A token's vector: eight cells whose shades stand for different numbers, so two vectors look different."""
     rnd = random.Random(seed)
-    return VGroup(*[Square(cell, fill_color=color, fill_opacity=SOLID * 0.33 + 0.7 * rnd.random(), stroke_width=0) for _ in range(8)]).arrange(DOWN, buff=0.012)
-
-
-def shades(v: VGroup) -> list:
-    return [c.get_fill_opacity() for c in v]
-
-
-def restore(v: VGroup, ops: list, color: str):
-    return [c.animate.set_fill(color, o) for c, o in zip(v, ops)]
+    return VGroup(*[Square(cell, fill_color=color, fill_opacity=SOLID * (0.33 + 0.67 * rnd.random()), stroke_width=0) for _ in range(8)]).arrange(DOWN, buff=0.012)
 
 
 def dot_product(scene, vec, vcolor, mat, i, out, color, cols: int = 8):

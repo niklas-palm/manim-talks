@@ -10,9 +10,11 @@ customer's numbers, anything that should not be committed here.
 """
 import glob
 import json
+import math
 import os
 import re
 import subprocess
+import sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOTS = ["out", "talks"]
@@ -21,6 +23,7 @@ ROOTS = ["out", "talks"]
 RES = {"ql": "480p15", "qm": "720p30", "qh": "1080p60"}   # the folder Manim renders into, per quality flag
 
 SCENE_RE = r"^class (\w+)\(TalkSlide\)"                 # what a scene is, in one place: the tools disagreed before
+
 
 def dir_of(talk: str) -> str:
     """The folder of a talk, relative to the repository root. Exits with a clear message if there is no such talk,
@@ -73,7 +76,8 @@ def rendered(root: str, q: str) -> list:
     """Every scene of a talk that a render finished at this quality, as (stem, scene, video, index, notes). Both the
     section index and the scene's video must exist: Manim writes the per-step clips before it combines them, so an
     interrupted render leaves an index with no video, and a tool that trusted the index alone wrote pages pointing at
-    a file that was not there. It backs rendered_or_exit, which is what the tools call."""
+    a file that was not there. It backs rendered_or_exit, which is what a tool that must not proceed without a render
+    calls; bin/check.py calls this one directly, because for the checker a missing render is a flag rather than a stop."""
     out = []
     for stem, scene in scenes_of(root):
         base = os.path.join(root, "media", "videos", stem, q)
@@ -138,11 +142,22 @@ def read_index(path: str) -> list:
         if not isinstance(sec, dict) or not isinstance(sec.get("duration", None), (int, float, str)):
             raise SystemExit(f"{path}: step {i + 1} has no duration; re-render this talk")
         try:
-            if float(sec["duration"]) < 0:
-                raise ValueError
-        except (TypeError, ValueError):
+            d = float(sec["duration"])
+            if isinstance(sec["duration"], bool) or not math.isfinite(d) or d < 0:
+                raise ValueError            # NaN passes every comparison, and a page whose step ends at NaN never pauses
+        except ValueError:
             raise SystemExit(f"{path}: step {i + 1} has duration {sec['duration']!r}; re-render this talk")
+        if not isinstance(sec.get("video", None), str) or not sec["video"]:
+            raise SystemExit(f"{path}: step {i + 1} names no clip; re-render this talk")   # export_pptx reads this one
     return index
+
+
+def from_argv(doc: str) -> tuple:
+    """The three things every tool that reads a render needs from its command line: the talk, its folder and the
+    resolution to work at. One reader, because five tools asked the same three questions in the same three lines."""
+    talk = sys.argv[1] if len(sys.argv) > 1 else sys.exit(doc)
+    root = dir_of(talk)
+    return talk, root, quality(sys.argv[2] if len(sys.argv) > 2 else None, root)
 
 
 def duration(video: str) -> float:

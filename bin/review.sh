@@ -13,12 +13,14 @@ LINES=()
 while IFS= read -r line; do LINES+=("$line"); done < <(.venv/bin/python -c "
 import sys; sys.path.insert(0, '.')
 from lib import theme
-from lib.talks import dir_of, duration, quality, rendered_or_exit
+from lib.talks import dir_of, duration, quality, rendered_or_exit, report_unrendered
 talk, q = sys.argv[1], sys.argv[2]
 root = dir_of(talk)
+items = rendered_or_exit(root, quality(q or None, root), talk)
+report_unrendered(root, items)                   # a partial render used to give a partial set of sheets, silently
 print(root)
 print(theme.sheet_hex(root))
-for _stem, scene, video, _i, _n in rendered_or_exit(root, quality(q or None, root), talk):
+for _stem, scene, video, _i, _n in items:
     print(f'{scene}\t{video}\t{duration(video):.0f}')
 print('END')                                     # the sentinel: a Python failure past the first two lines is visible here
 " "$TALK" "$Q")            # a read loop, not mapfile: /bin/bash on macOS is still 3.2

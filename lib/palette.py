@@ -94,11 +94,11 @@ def identity(n: int) -> list:
     return keep
 
 
-def ink_on(color: str, opacity: float = None) -> str:
+def ink_on(color: str) -> str:
     """The legible ink for a label written on a solid mark of `color`: the ground or the body colour, whichever the eye
     can read against that mark, pushed further if neither clears the 4.5:1 that small text needs. The ground alone was
     right on a dark theme and marginal on a bright one, where an accent at full strength is already mid-toned."""
-    face = _theme.blend(BG, color, SOLID if opacity is None else opacity)
+    face = _theme.blend(BG, color, SOLID)
     ink = TEXT if _theme.contrast(TEXT, face) >= _theme.contrast(BG, face) else BG
     return _theme.lift(ink, face, 4.5)
 

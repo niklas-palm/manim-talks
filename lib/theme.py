@@ -96,7 +96,7 @@ def blend(a: str, b: str, t: float) -> str:
     return hex_of(tuple(x + (y - x) * t for x, y in zip(rgb(a), rgb(b))))
 
 
-def lift(c: str, bg: str, ratio: float = 3.0) -> str:
+def lift(c: str, bg: str, ratio: float = SEEN) -> str:
     """Move a colour away from the background until it has at least `ratio` contrast against it, keeping its hue: what
     makes a real corporate palette usable on a stage. Returns the colour unchanged if it already passes, and the
     extreme it was heading for when the ratio cannot be reached at all (a mid grey ground caps every colour); the
@@ -141,8 +141,11 @@ def _named_in(folder: str) -> str:
     """The theme named by a `.theme` file in `folder`, or "" if there is none. Whitespace only counts as none."""
     f = os.path.join(REPO, folder, ".theme")
     if os.path.exists(f):
-        with open(f) as fh:
-            return fh.read().strip()
+        try:
+            with open(f) as fh:
+                return fh.read().strip()
+        except OSError as e:
+            raise SystemExit(f"cannot read {f}: {e}")
     return ""
 
 

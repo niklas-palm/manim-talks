@@ -380,3 +380,15 @@ First principles that the passes confirmed, written to outlast the decks they ca
 - Stop when the findings change character. Three rounds took the same target from "silently writes the wrong artefact"
   to "raises an ugly traceback on a file corrupted on purpose". That second kind is worth a sentence in the code and
   not another round: convergence is the goal, not the absence of imperfection.
+
+## Reviewing and editing at the same time
+
+- Never let a review run while the work it reviews is being edited. A reviewer told to leave the tree as it found it
+  restored the tree, and an hour of uncommitted repairs went with it: five tools were left importing a helper whose
+  definition had just been deleted. Commit before the next round starts, or give the reviewers a copy.
+- The recovery is the same either way: the last commit is a known good state, so go back to it first and reapply from
+  there. A tree that half-works is worse than a tree that is one commit behind.
+- An edit script that asserts on every anchor before writing anything is what makes reapplying safe. Each of these
+  passes either applied whole or changed nothing, which is why nothing was left half-converted.
+- When several edits are independent, apply them independently and report each one skipped. A single abort in the middle
+  of a batch silently drops the rest, and the ones that did land look like the whole batch.
