@@ -23,21 +23,29 @@ def query_camera(camera: int, question: str):
 
 class ToolFromApi(TalkSlide):
     def construct(self):
-        t = title(self, "From an API to a tool", "2  from an API to a tool")
+        # --- the last frame of move one, rebuilt: six messages, the camera API and the thermometer, the memory label
+        t = title_still(self, *TITLES["api"])
         st = stage()
         user, app, model, arrows, calls, tools = st["user"], st["app"], st["model"], st["arrows"], st["calls"], st["tools"]
         camera = device_box("camera API", CARD_YS[0])
+        thermo = device_box("thermometer", CARD_YS[1])
+        link = device_link(camera)
+        old = put_history(messages(), HIST_API)
+        mem = label("the list is the only memory: every call sends all of it", 14, MUTED).next_to(app[0], DOWN, buff=GAP_TIGHT).align_to(app[0], LEFT)
+        calls.tracker.set_value(3)
+        self.add(user, app, model, arrows, calls, tools, camera, thermo, link, old, mem)
+        # --- the first change: a new move, the conversation clears, the function that fetched the frame appears
         code1 = code(SRC1, "python", 15).move_to([LIST_X, 1.2, 0])
         cl = label("the application's own function, as it is", 14, MUTED).next_to(code1, DOWN, buff=GAP_TIGHT).align_to(code1, LEFT)
-        link = device_link(camera, "the function calls it")
-        self.add(user, app, model, arrows, calls, tools, camera)
-        self.play(FadeIn(code1), FadeIn(cl), FadeIn(link), run_time=0.6)
+        link2 = device_link(camera, "the function calls it")
+        t = retitle(self, t, *TITLES["tool"], extra=[FadeOut(old), FadeOut(mem), FadeOut(thermo), FadeOut(link), calls.to(0)])
+        self.play(FadeIn(code1), FadeIn(cl), FadeIn(link2), run_time=0.6)
         self.next_slide("""Same picture, and inside the application the function that fetched the frame in move one, exactly as it is: three
         lines, a name, two typed arguments, a call to the camera API, a call to a vision model on the frame. Nothing about
         it is agent-specific. This is the code most teams already have.""")
         # --- decorator and docstring; the card fills in from the code
         code2 = code(SRC2, "python", 15).move_to([LIST_X, -0.05, 0])
-        self.play(FadeOut(code1), FadeOut(cl), FadeOut(link), run_time=0.3)
+        self.play(FadeOut(code1), FadeOut(cl), FadeOut(link2), run_time=0.3)
         self.play(FadeIn(code2), run_time=0.5)
         bar = highlight_line(code2, 0)
         self.add(bar)

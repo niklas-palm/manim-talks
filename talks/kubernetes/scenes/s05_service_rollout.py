@@ -14,29 +14,56 @@ from objects import *
 
 class ServiceRollout(TalkSlide):
     def construct(self):
-        t = title(self, "A stable address for changing pods, and changing the pods", "5  a stable address, and change")
-        S = Stage(node_used=(0.95, 0.3, 0.95), controllers=[("deploy", "Deployment controller"), ("rs", "ReplicaSet controller"), ("sched", "scheduler"), ("extra", "EndpointSlice controller")])
+        t = title_still(self, "A node dies: the same loops, nothing new", "4  a node dies")   # move four's last frame, still
+        S = Stage(node_used=(0.95, 0.8, 0.95), controllers=[("deploy", "Deployment controller"), ("rs", "ReplicaSet controller"), ("sched", "scheduler"), ("extra", "node controller")])
         S.add_card("deploy", "Deployment", "3 replicas, v1", 0)
-        S.add_card("rs", "ReplicaSet v1", "3 replicas", 1)
-        rs2 = S.add_card("rs2", "ReplicaSet v2", "0 replicas", 4)
+        S.add_card("rs", "ReplicaSet", "3 replicas, v1", 1)
+        pod_cards = []
+        for nm, where, slot in (("a", "node 1, Running", 2), ("c", "node 1, Running", 4), ("d", "node 1, Running", 5)):
+            c = S.add_card(nm, f"Pod {nm}", where, slot)
+            c[0].set_stroke(color=ACTUAL); c[2].set_color(ACTUAL); pod_cards.append(c)
+        gone = S.add_card("b", "Pod b", "evicted", 3); gone[2].set_color(HOT); gone.set_opacity(0.25); pod_cards.append(gone)
         pods = {"a": S.place_pod(0, 0), "c": S.place_pod(0, 1), "d": S.place_pod(0, 2)}
         S.running.tracker.set_value(3)
-        for n in S.nodes:
+        n2 = S.nodes[1]
+        n2[0].set_stroke(color=HOT, opacity=0.35).set_fill(HOT, 0.08); n2[5].set_color(HOT)      # node two as move four left it: dead
+        for n in (S.nodes[0], S.nodes[2]):
             n[5].set_color(TEAL)
-        self.add(*S.base(*[S.ctrl[k] for k in ("deploy", "rs", "sched")], *[S.watches[k] for k in ("deploy", "rs", "sched")], S.cards["deploy"], S.cards["rs"], *pods.values()))
+        kw = {0: watch(S.nodes[0], S.api, NODE), 2: watch(S.nodes[2], S.api, NODE)}
+        nc, wn = S.ctrl["extra"], S.watches["extra"]
+        self.add(*S.base(*[S.ctrl[k] for k in ("deploy", "rs", "sched")], nc, *[S.watches[k] for k in ("deploy", "rs", "sched")], wn, *S.cards.values(), *pods.values(), *kw.values()))
+        # --- the title changes as the cluster settles: node two returns, the node controller goes quiet, the pod records make room
+        kw[1] = watch(n2, S.api, NODE)
+        rs_kind = label("ReplicaSet v1", 16, TEXT).move_to(S.cards["rs"][1])
+        rs_detail = label("3 replicas", 15, MUTED).move_to(S.cards["rs"][2])
+        t = retitle(self, t, "A stable address for changing pods, and changing the pods", "5  a stable address, and change",
+                    extra=[n2[0].animate.set_stroke(color=NODE, opacity=1.0).set_fill(NODE, 0.10), n2[5].animate.set_color(TEAL), Create(kw[1][0]),
+                           n2[4].animate.stretch_to_fit_width(0.3).align_to(n2[3], LEFT), FadeOut(nc), FadeOut(wn), *[FadeOut(c) for c in pod_cards],
+                           FadeOut(S.cards["rs"][1]), FadeIn(rs_kind), FadeOut(S.cards["rs"][2]), FadeIn(rs_detail)], run_time=1.0)
+        S.cards["rs"].remove(S.cards["rs"][1], S.cards["rs"][2]); S.cards["rs"].add(rs_kind, rs_detail)
+        for nm in "abcd":
+            del S.cards[nm]
+        ec = controller("EndpointSlice controller").move_to([X_CTRL, CTRL_YS["extra"], 0])   # takes the node controller's place when it is needed
+        we = watch(ec, S.api)
+        S.ctrl["extra"], S.watches["extra"] = ec, we
+        rs2 = S.add_card("rs2", "ReplicaSet v2", "0 replicas", 4)
+        self.next_slide("""The cluster settles. Node two comes back, empty, and its kubelet's lease line returns. The node controller has
+        nothing left to do and fades. And we stop drawing the four Pod records in etcd to make room for what comes next;
+        they still exist, the ReplicaSet card now says v1 and three replicas, because a second version is about to appear.
+        Three web pods run on node one. This move is about two things every service needs: an address that does not change,
+        and a way to change the pods behind it.""")
         # --- the problem: which address?
         front = pod(DESIRED).move_to(S.nodes[1][2][0])
         fl = label("frontend", 15, DESIRED).next_to(front, DOWN, buff=0.06)
         self.play(FadeIn(front), FadeIn(fl), run_time=0.4)
-        self.next_slide("""Node two is back and empty, and a new pod has landed on it: a frontend, drawn in blue because it is
-        something the user asked for. The three web pods run on nodes one and three. The frontend needs to reach them, and
-        that is the question of this scene.""")
+        self.next_slide("""A new pod lands on node two: a frontend, drawn in blue because it is something the user asked for. The three
+        web pods run on node one. The frontend needs to reach them, and that is the question of this scene.""")
         qs = VGroup(*[DashedLine(front.get_top(), p.get_bottom(), color=HOT, stroke_width=1.6, dash_length=0.08) for p in pods.values()])
         q = label("which address?", 16, HOT).move_to([COLS[3], Y_LABELS, 0], aligned_edge=LEFT)
         self.play(Create(qs), FadeIn(q), run_time=0.7)
-        self.next_slide("""Node two is back, and on it runs a frontend that needs the web pods. Each pod has its own IP address, and the set
-        changes: d replaced b in the last move and has a new address; the next rollout will replace all three. A client
-        cannot keep a list. This is the problem a Service solves, and it is solved with, once more, a record and a loop.""")
+        self.next_slide("""Each pod has its own IP address, and the set changes: d replaced b in the last move and has a new address; the
+        next rollout will replace all three. A client cannot keep a list. This is the problem a Service solves, and it is
+        solved with, once more, a record and a loop.""")
         # --- a Service record and its EndpointSlice
         self.play(FadeOut(qs), FadeOut(q), run_time=0.3)
         svc = card("Service", "10.96.0.10").scale(0.7).move_to(S.client.get_center() + DOWN * 0.8)

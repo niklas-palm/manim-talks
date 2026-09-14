@@ -14,13 +14,13 @@ ZOOM = 0.45
 class Controllers(TalkSlide):
     def construct(self):
         frame = self.camera.frame
-        t = title(self, "Controllers: loops that chase the gap", "2  loops that chase the gap")
+        t = title_still(self, "kubectl apply writes a record, not a process", "1  a record, not a process")   # move one's last frame, still
         S = Stage(controllers=[("deploy", "Deployment controller"), ("rs", "ReplicaSet controller")])
         S.add_card("deploy", "Deployment", "3 replicas, v1", 0)
         self.add(*S.base(S.cards["deploy"]))
-        # --- the Deployment controller
+        # --- the title changes as the Deployment controller appears: no cut
         c1, w1 = S.ctrl["deploy"], S.watches["deploy"]
-        self.play(FadeIn(c1), Create(w1[0]), FadeIn(w1[1]), run_time=0.7)
+        t = retitle(self, t, "Controllers: loops that chase the gap", "2  loops that chase the gap", extra=[FadeIn(c1), Create(w1[0]), FadeIn(w1[1])])
         self.next_slide("""Where the last scene ended: the Deployment record sits in etcd, the nodes are empty, three desired and
         none running. One new thing on screen, and it is not moving yet: the Deployment controller, a box with a loop drawn in
         it, connected to the API server by a dashed line labelled watch. It has not done anything. Next click, it does.""")

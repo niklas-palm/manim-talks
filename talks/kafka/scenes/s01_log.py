@@ -10,31 +10,23 @@ them, and the step's claim in the caption band.
 from lib.palette import *
 from objects import *
 
-SEQ = [KEY_A, KEY_B, KEY_A, KEY_C, KEY_B, KEY_A]
-NAMES = {KEY_A: "alice", KEY_B: "bob", KEY_C: "carol"}
-CELL = 0.55                      # the log is the whole picture here, so its cells are the largest in the deck
-LOG_Y, ROW_C = 1.55, -1.3
-
-
-def legend():
-    return VGroup(*[VGroup(Square(0.22, fill_color=c, fill_opacity=0.9, stroke_width=0), label(f"key {NAMES[c]}", 15, MUTED)).arrange(RIGHT, buff=GAP_TIGHT)
-                    for c in KEYS]).arrange(RIGHT, buff=GAP)
+SEQ = LOG_SEQ[:6]                # the first six records; the last two arrive while the second consumer reads
+CELL, ROW_C_ = LOG_CELL, ROW_C
 
 
 class TheLog(TalkSlide):
     def construct(self):
-        t = title(self, "A topic is an append-only log", "1  the log")
-        prod = producer().move_to([-5.45, LOG_Y, 0])                                   # left edge on the margin column
-        brk = broker("broker", 10.6, 3.0).move_to([1.1, 1.1, 0])                       # x -4.2 .. 6.4, y 2.6 .. -0.4
-        brk[1].align_to(brk[0].get_left() + RIGHT * 0.25, LEFT)                         # name top-left; the legend takes the top-right
-        log = Log(-3.6, LOG_Y, capacity=12, name="topic payments, one partition", cell=CELL, gap=GAP)
-        leg = legend().move_to([6.15, 2.35, 0], aligned_edge=RIGHT)
+        t = title(self, "A topic is an append-only log", "1  the log")   # the deck's first frame; every later scene retitles in place
+        st = log_stage()
+        prod, brk, log, leg, ar, al = st["prod"], st["brk"], st["log"], st["leg"], st["ar"], st["al"]
         self.play(FadeIn(prod), FadeIn(brk), FadeIn(log), FadeIn(leg), run_time=0.6)
-        ar = Arrow(prod.get_right() + RIGHT * 0.1, [brk[0].get_left()[0] - 0.1, LOG_Y, 0], buff=0, color=MUTED, stroke_width=2.2, tip_length=0.18)
-        al = label("append", 14, MUTED).next_to(ar, UP, buff=0.05)
         self.play(Create(ar), FadeIn(al), run_time=0.4)
         cl = claim(self, None, "one topic, one partition, nothing written yet", LOGC)
-        self.next_slide("""The starting picture, nothing moving yet. A producer on the left. A broker, one machine, holding one topic with a
+        self.next_slide("""This talk is for engineers who have produced to or consumed from Kafka and never seen the machinery. One
+        sentence carries it: a topic is an append-only log split into partitions, and every reader keeps one integer, an
+        offset into that log. Ordering, parallelism, replay and durability are consequences of those two facts, and each
+        move shows one of them: the log itself, then partitions, then replication, then what happens when disks fill, then
+        who decides. The starting picture, nothing moving yet. A producer on the left. A broker, one machine, holding one topic with a
         single partition: the empty rail is where records will land, and the numbers that will appear under them are offsets.
         The legend says what the colours mean: each record is drawn in the colour of its key, alice, bob, carol. Everything
         in this talk happens to this row of cells.""")

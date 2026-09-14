@@ -2,7 +2,7 @@
 goes to the nearest by anycast routing. A question is one small UDP packet; a long answer sets a flag and the client
 asks again over TCP. Then the whole picture once more, with the two rules written on it.
 
-  Clicks: 1 thirteen names, two thousand machines: a question goes to the nearest  2 the packet: 512 bytes over UDP,
+  Clicks: 1 move four's picture gives way to the root: thirteen names, two thousand machines  2 a question goes to the nearest  2 the packet: 512 bytes over UDP,
   the truncation flag, TCP behind it  3 the picture and the two rules
 """
 from lib.palette import *
@@ -11,19 +11,22 @@ from objects import *
 
 class Standing(TalkSlide):
     def construct(self):
-        t = title(self, "What keeps it standing", "5  what keeps it standing")
-        # --- anycast
+        # --- the last frame of move four, rebuilt
+        t = title_still(self, "The price of remembering", "4  the price of remembering")
+        pr = price_end_state()
+        self.add(*pr.values())
+        # --- the first change: the alias picture gives way to the root of the tree and the machines behind it
         names = VGroup(*[label(f"{c}.root-servers.net.", 15, ZONE) for c in "abcdefghijklm"]).arrange(DOWN, aligned_edge=LEFT, buff=0.045).move_to([-MARGIN, 0.1, 0], aligned_edge=LEFT)
         nl = label("13 server names, 12 operators", 16, MUTED).next_to(names, UP, buff=0.15).align_to(names, LEFT)
-        self.play(FadeIn(names, lag_ratio=0.05), FadeIn(nl), run_time=0.8)
         import random
         random.seed(3)
         world = Ellipse(width=8.4, height=4.8, color=DIM, stroke_width=1.5).move_to([2.2, 0.1, 0])
         sites = VGroup(*[Dot(radius=0.06, color=ZONE).move_to([2.2 + random.uniform(-3.9, 3.9), 0.1 + random.uniform(-2.1, 2.1), 0]) for _ in range(200)])
         sites = VGroup(*[d for d in sites if ((d.get_x() - 2.2) / 4.2) ** 2 + ((d.get_y() - 0.1) / 2.4) ** 2 < 1])
         sl = label("2,045 anycast instances of those 13 names; one dot per about 12", 15, MUTED).next_to(world, DOWN, buff=0.12)
-        self.play(FadeIn(world), FadeIn(sites, lag_ratio=0.005), FadeIn(sl), run_time=1.4)
-        self.next_slide("""The root of the tree, still: thirteen server names on the left, and on the right the world with the places those
+        t = retitle(self, t, "What keeps it standing", "5  what keeps it standing",
+                    extra=[FadeOut(VGroup(*pr.values())), FadeIn(names, lag_ratio=0.05), FadeIn(nl), FadeIn(world), FadeIn(sites, lag_ratio=0.005), FadeIn(sl)], run_time=1.4)
+        self.next_slide("""The root of the tree: thirteen server names on the left, and on the right the world with the places those
         thirteen names are actually answered from, two thousand and forty-five of them, one dot per dozen. Nothing moves
         until a resolver asks.""")
         you = Dot(radius=0.12, color=NAME).move_to([4.6, -1.7, 0])

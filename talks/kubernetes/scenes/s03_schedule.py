@@ -22,7 +22,7 @@ def score_of(node_g) -> int:
 class SchedulerKubelet(TalkSlide):
     def construct(self):
         frame = self.camera.frame
-        t = title(self, "From record to process: the scheduler, then the kubelet", "3  from record to process")
+        t = title_still(self, "Controllers: loops that chase the gap", "2  loops that chase the gap")   # move two's last frame, still
         S = Stage(controllers=[("deploy", "Deployment controller"), ("rs", "ReplicaSet controller"), ("sched", "scheduler")])
         S.add_card("deploy", "Deployment", "3 replicas, v1", 0)
         S.add_card("rs", "ReplicaSet", "3 replicas, v1", 1)
@@ -31,7 +31,7 @@ class SchedulerKubelet(TalkSlide):
         self.add(*S.base(S.ctrl["deploy"], S.ctrl["rs"], S.watches["deploy"], S.watches["rs"], *S.cards.values()))
         # --- the scheduler picks a pod with no node
         sc, ws = S.ctrl["sched"], S.watches["sched"]
-        self.play(FadeIn(sc), Create(ws[0]), run_time=0.7)
+        t = retitle(self, t, "From record to process: the scheduler, then the kubelet", "3  from record to process", extra=[FadeIn(sc), Create(ws[0])])
         self.next_slide("""Three Pod records in etcd, each with a red line: no node. The two controllers from the last scene are idle;
         their gap is closed. A third loop has appeared under them, the scheduler, watching the API server like the others. The
         nodes on the right are still empty. Nothing moves until the next click.""")

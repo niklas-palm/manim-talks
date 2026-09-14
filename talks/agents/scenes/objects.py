@@ -125,3 +125,40 @@ def stage():
     arrows = call_arrows(app, model)
     calls, tools = counters()
     return {"user": user, "app": app, "model": model, "arrows": arrows, "calls": calls, "tools": tools}
+
+
+# ------------------------------------------------------------------------------------------------ what each scene leaves behind
+# Every scene after the first rebuilds the previous scene's last frame from these, statically, so the seam is invisible.
+HIST_API = [("user", "user · anyone in the backyard?"), ("user", "user · [frame from camera 2] + the question"),
+            ("assistant", "assistant · yes, one person by the shed"), ("user", "user · warm enough to open the door?"),
+            ("user", "user · [frame from camera 2] + the question"), ("assistant", "assistant · I cannot read a temperature from a frame")]
+HIST_LOOP = [("user", "user · warm enough to open the door?"), ("tool_use", "assistant · tool_use: query_temperature()"),
+             ("tool_result", "user · tool_result: 19 °C"), ("assistant", "assistant · 19 °C: yes, open it"),
+             ("user", "user · anyone in the backyard?"), ("tool_use", 'assistant · tool_use: query_camera(2, "anyone there?")'),
+             ("tool_result", "user · tool_result: a person by the shed"), ("assistant", "assistant · yes, one person by the shed")]
+TITLES = {"api": ("An application, an API, and one model call", "1  an application, an API, one model call"),
+          "tool": ("From an API to a tool", "2  from an API to a tool"),
+          "loop": ("The loop", "3  the loop"),
+          "code": ("The same loop as code, and where to intercept it", "4  the loop as code"),
+          "state": ("The list is the only state", "5  the list is the only state")}
+
+
+def put_history(msgs: Stack, history) -> Stack:
+    """Fill a list without animation, for a scene's first frame."""
+    for kind, text in history:
+        b = message(kind, text).move_to(msgs.slot(len(msgs.blocks))); msgs.blocks.append(b); msgs.add(b)
+    return msgs
+
+
+# the reminder picture of move four: the same three things, small, on the left of the code
+MINI_X, MINI_TOP, MINI_H, MINI_GAP = -5.0, 1.45, 0.18, 0.04
+
+
+def mini_stage(kinds) -> tuple:
+    """The small model, list and cards that stand for the stage beside the code. kinds: the list's message kinds."""
+    model = box(2.6, 0.8, "model", MODEL, size=16, fill=0.10).move_to([MINI_X, 2.1, 0])
+    lst = Stack(MINI_X, MINI_TOP, h=MINI_H, gap=MINI_GAP)
+    for k in kinds:
+        b = block("", KIND[k], w=2.6, h=MINI_H, bare=True).move_to(lst.slot(len(lst.blocks))); lst.blocks.append(b); lst.add(b)
+    cards = VGroup(*[Rectangle(width=1.0, height=0.26, fill_color=TOOL, fill_opacity=0.12, stroke_color=TOOL, stroke_width=1.2).move_to([-3.1, 1.3 - 0.36 * i, 0]) for i in range(3)])
+    return model, lst, cards

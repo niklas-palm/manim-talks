@@ -126,3 +126,102 @@ def tree():
                   record("example.com.", "NS", "hera.ns.cloudflare.com.", "2 days", ZONE).move_to([X_TREE, Y_TLD - 0.34, 0]),
                   record("www.example.com.", "A", "104.20.23.154", "5 min", ADDRESS).move_to([X_TREE, Y_AUTH - 0.34, 0]))
     return VGroup(root, tld, auth), recs
+
+
+# ------------------------------------------------------------------------------------------------ end states
+# The last frame of each scene, rebuilt statically by the next scene so the video boundary is invisible (docs/principles.md,
+# rule 2). Each returns the objects by name so the next scene can move, fade or grow them in its first play.
+
+HOSTS = [("www.example.com", "104.20.23.154"), ("mail.example.com", "104.20.23.160"), ("intranet", "10.0.0.7"),
+         ("printer", "10.0.0.9"), ("git", "10.0.0.12"), ("wiki", "10.0.0.15")]
+MORE_HOSTS = [(f"host{i:03d}.example.net", f"203.0.113.{i}") for i in range(10)]
+SHORT = [("www", "104.20.23.154"), ("mail", "104.20.23.160")]
+NEW_ADDRESS = "104.20.24.1"
+
+
+def hosts_list(rows, x: float, y: float, width: float = 6.2, size: float = 16) -> VGroup:
+    g = VGroup(*[record(n, "", a, color=ADDRESS, width=width, size=size) for n, a in rows]).arrange(DOWN, buff=0.05).move_to([x, y, 0])
+    for r in g:
+        r[0].set_fill(TEXT, 0.07)
+    return g
+
+
+def fade_below(rows: VGroup, y0: float = -2.2, span: float = 1.0):
+    """A list that continues past the frame fades towards the edge instead of being cut."""
+    for r in rows:
+        y = r.get_y()
+        if y < y0:
+            r.set_opacity(max(0.0, 1 - (y0 - y) / span))
+
+
+def list_end_state() -> dict:
+    """Where move one ends: the laptop, the long list with one changed address, the counter, three copies of which two
+    are stale."""
+    client = client_box(0.4)
+    lst = hosts_list(HOSTS, -0.9, 0.4)
+    ll = label("a list every machine holds: name, address", 16, MUTED).next_to(lst, UP, buff=GAP_TIGHT).align_to(lst, LEFT)
+    more = hosts_list(MORE_HOSTS, -0.9, 0.0).next_to(lst, DOWN, buff=0.05).align_to(lst, LEFT)
+    fade_below(more)
+    count = Counter("names in the list", 340_000_000, "", TEXT, size=30).move_to([3.0, 2.3, 0], aligned_edge=LEFT)
+    cl = label("every one of them, on every machine", 16, MUTED).next_to(count, DOWN, buff=0.1).align_to(count, LEFT)
+    copies = VGroup(*[hosts_list(SHORT, 4.6, y, width=3.2, size=15) for y in (0.7, -0.55, -1.8)])
+    cpl = label("copies on other machines", 15, MUTED).next_to(copies, UP, buff=GAP_TIGHT).align_to(copies, LEFT)
+    stale = label("still the old address", 15, HOT).next_to(copies, DOWN, buff=GAP_TIGHT).align_to(copies, LEFT)
+    # the change: the master row and the first copy carry the new address, the other two copies are stale
+    lst[0][3].become(label(NEW_ADDRESS, 16, HOT).move_to(lst[0][3], aligned_edge=LEFT)); lst[0][0].set_fill(HOT, 0.25)
+    copies[0][0][3].become(label(NEW_ADDRESS, 15, HOT).move_to(copies[0][0][3], aligned_edge=LEFT)); copies[0][0][0].set_fill(HOT, 0.25)
+    copies[1][0][0].set_fill(DIM, 0.35); copies[2][0][0].set_fill(DIM, 0.35)
+    return {"client": client, "lst": lst, "ll": ll, "more": more, "count": count, "cl": cl, "copies": copies, "cpl": cpl, "stale": stale}
+
+
+def delegation_pointers(recs: VGroup, boxes: VGroup) -> VGroup:
+    """The two arrows from a zone's NS record to the zone it points at."""
+    return VGroup(Arrow(recs[0][2].get_bottom(), boxes[1][1].get_top() + RIGHT * 0.3, color=ZONE, stroke_width=2, buff=0.05, tip_length=0.15),
+                  Arrow(recs[1][2].get_bottom(), boxes[2][1].get_top() + RIGHT * 0.3, color=ZONE, stroke_width=2, buff=0.05, tip_length=0.15))
+
+
+def delegation_end_state() -> dict:
+    """Where move two ends: the tree with its pointers, the laptop, the resolver with the three records of the walk."""
+    boxes, recs = tree()
+    ptrs = delegation_pointers(recs, boxes)
+    client, res = client_box(), resolver_box()
+    a1 = arrow(client, res, "", MUTED)
+    al = label("one question, one answer", 15, MUTED).next_to(client, DOWN, buff=GAP_TIGHT)
+    rows = VGroup(cache_row(recs[0], CACHE_Y[0]), cache_row(recs[1], CACHE_Y[1]), cache_row(recs[2], CACHE_Y[2]))
+    return {"boxes": boxes, "recs": recs, "ptrs": ptrs, "client": client, "res": res, "a1": a1, "al": al, "rows": rows}
+
+
+def caching_end_state() -> dict:
+    """Where move three ends: the delegation picture plus a second laptop, five cached rows with their fuses, the far
+    zone, the hop counter at one, the browser and OS caches, and the countdown line."""
+    d = delegation_end_state()
+    rows = d["rows"]
+    c4 = cache_row(record("other.com.", "NS", "ns1.other.com.", "2 days", ZONE), CACHE_Y[3])
+    c5 = cache_row(record("mail.other.com.", "A", "198.51.100.7", "5 min", ADDRESS), CACHE_Y[4])
+    fuses = VGroup(fuse(rows[0], 0.998), fuse(rows[1], 0.996), fuse(rows[2], 1.0), fuse(c4), fuse(c5))
+    client2 = client_box(y=-1.1, name="another laptop", sub="same resolver")
+    far = box(W_TREE, 0.6, "other.com.   another owner's zone", ZONE, size=16).move_to([X_TREE, -2.5, 0])
+    hops = Counter("hops into the tree", 1, "", ZONE, size=24).move_to([-MARGIN, -2.4, 0], aligned_edge=LEFT)
+    stack = VGroup(label("browser cache", 15, REMEMBERED), label("OS cache", 15, REMEMBERED)).arrange(DOWN, aligned_edge=LEFT, buff=0.1)
+    stack.next_to(d["client"], UP, buff=0.3).align_to(d["client"], LEFT)
+    marks = VGroup(*[Rectangle(width=0.1, height=0.2, fill_color=REMEMBERED, fill_opacity=0.9, stroke_width=0).next_to(s_, LEFT, buff=0.1) for s_ in stack])
+    cd = label("the same TTL counts down in every cache: 300 s, then 281 s", 16, MUTED).move_to([0, -3.3, 0])
+    d.update({"c4": c4, "c5": c5, "fuses": fuses, "client2": client2, "far": far, "hops": hops, "stack": stack, "marks": marks, "cd": cd})
+    return d
+
+
+def owner_zone() -> VGroup:
+    """The owner's zone as move four draws it: large, top centre."""
+    return zone_box("example.com.", "the owner's zone", CONTENT_TOP - 0.825, w=6.6, h=1.65, x=0.0)
+
+
+def price_end_state() -> dict:
+    """Where move four ends: the owner's zone with the alias and SOA records, the laptop, the resolver, the alias's zone."""
+    auth = owner_zone()
+    cname = record("www.example.com.", "CNAME", "cdn.example.net.", "1 h", ZONE).move_to([0.0, 1.72, 0])
+    soa = record("example.com.", "SOA", "minimum 1800 s", "30 min", ZONE).move_to([0.0, 1.25, 0])
+    client = client_box(y=-0.9)
+    res = box(W_RESOLVER, 2.2, "recursive resolver", ZONE, size=18, name_align="left").move_to([X_RESOLVER, -0.9, 0])
+    far = zone_box("cdn.example.net.", "another zone: another walk, root, net, example.net", -0.9, w=W_TREE, h=1.1, x=X_TREE)
+    al = label("an alias is a pointer to another name: the walk restarts there", 16, MUTED).move_to([0, -3.3, 0])
+    return {"auth": auth, "cname": cname, "soa": soa, "client": client, "res": res, "far": far, "al": al}

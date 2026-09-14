@@ -12,26 +12,28 @@ is a row of markers inside the leader's box; counters and settings live in the t
 from lib.palette import *
 from objects import *
 
-YS = [1.7, 0.0, -1.7]              # three boxes of 1.55 fill the band from 2.5 to -2.5 with equal gaps
-BW, X0, CAP, CELL = 6.6, -3.05, 8, 0.5    # the rail ends at x 1.6, leaving the box's top-right corner to the in-sync markers
-XR = 3.3                          # left edge of the right column (counters, settings)
+YS, BW, X0, CAP, CELL, XR = R_YS, R_BW, R_X0, R_CAP, R_CELL, R_XR
 
 
 class Replication(TalkSlide):
     def construct(self):
-        t = title(self, "A broker dies: replication", "3  replication")
-        names = ["broker 1: leader", "broker 2: follower", "broker 3: follower"]
-        boxes = VGroup(*[box(BW, 1.55, n, LOGC, size=17, name_align="left").move_to([0.0, y, 0]) for y, n in zip(YS, names)])
-        logs = [Log(X0, y - 0.2, capacity=CAP, cell=CELL, gap=GAP) for y in YS]
-        prod = producer().move_to([-5.45, YS[0], 0])
-        cons = consumer("consumer", w=1.9).move_to([5.45, YS[0], 0])
+        # --- the last frame of move 2, rebuilt; then the three brokers stack up as three copies of one partition
+        d = partitions_end()
+        t = title_still(self, "One log cannot take the load: partitions", "2  partitions")
+        self.add(d["prod"], d["hashc"], d["load"], d["brokers"], *d["logs"], d["cons"][0], d["cons"][1], d["grp"], d["gl"], *d["ptrs"], d["olog"], d["claim"])
+        st = replication_stage()
+        boxes, logs, prod, cons = st["boxes"], st["logs"], st["prod"], st["cons"]
+        gone = VGroup(d["hashc"], d["load"], *d["logs"], d["cons"][0], d["cons"][1], d["grp"], d["gl"], *d["ptrs"], d["olog"], d["claim"], *[b_[1] for b_ in d["brokers"]])
         isr = Isr(3)
 
         def isr_home(b):   # top-right corner inside a broker box
             return isr.move_to([b[0].get_right()[0] - 0.25, b[0].get_top()[1] - 0.42, 0], aligned_edge=RIGHT)
 
         isr_home(boxes[0])
-        self.play(FadeIn(boxes), *[FadeIn(l) for l in logs], FadeIn(prod), FadeIn(cons), FadeIn(isr), run_time=0.6)
+        t = retitle(self, t, "A broker dies: replication", "3  replication",
+                    extra=[FadeOut(gone), *[Transform(d["brokers"][i][0], boxes[i][0]) for i in range(3)], *[FadeIn(boxes[i][1]) for i in range(3)],
+                           Transform(d["prod"], prod), *[FadeIn(l) for l in logs], FadeIn(cons), FadeIn(isr)], run_time=1.0)
+        self.remove(*[d["brokers"][i][0] for i in range(3)], d["prod"]); self.add(*[boxes[i][0] for i in range(3)], prod)
         a_in = arrow(prod, boxes[0], "acks=all", MUTED)
         a_out = arrow(boxes[0], cons, "fetch", MUTED)
         self.play(Create(a_in[0]), FadeIn(a_in[1]), Create(a_out[0]), FadeIn(a_out[1]), run_time=0.4)
@@ -62,7 +64,7 @@ class Replication(TalkSlide):
             return cell
 
         cl = claim(self, None, "one partition, three copies: a leader and two followers", LOGC)
-        self.next_slide("""The still picture: the same partition, now on three brokers. Broker one leads; brokers two and three are followers
+        self.next_slide("""The three brokers of the last move stack up, and the picture is now one partition on three of them. Broker one leads; brokers two and three are followers
         with empty copies. The producer writes to the leader with acks=all, the consumer fetches from the leader, the
         in-sync markers at the top right say which copies are current, and the green line is the high-water mark, the
         offset up to which everything is committed. Nothing has been written yet.""")

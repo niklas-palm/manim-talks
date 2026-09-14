@@ -8,14 +8,17 @@ from objects import *
 
 class TheApi(TalkSlide):
     def construct(self):
-        t = title(self, "An application, an API, and one model call", "1  an application, an API, one model call")
+        t = title(self, *TITLES["api"])   # the deck opens here: no title slide, the speaker introduces the talk over this picture
         st = stage()
         user, app, model, arrows, calls, tools = st["user"], st["app"], st["model"], st["arrows"], st["calls"], st["tools"]
         camera = device_box("camera API", CARD_YS[0])
         link = device_link(camera)
         msgs = messages()
         self.play(FadeIn(user), FadeIn(app), FadeIn(model), FadeIn(arrows), FadeIn(calls), FadeIn(tools), FadeIn(camera), FadeIn(link), run_time=0.8)
-        self.next_slide("""The picture for the whole talk, still. A user on the left. An application in the middle: a box that will hold a
+        self.next_slide("""This talk is for engineers who have used a chat assistant and want to see what an agent actually is. One
+        sentence carries it: a model is called in a loop over a growing list of messages; it may answer with a request to run a
+        tool instead of an answer; the application runs the tool, appends the result, and calls the model again. Everything on
+        screen for the next twelve minutes is one picture of that sentence, growing. The picture for the whole talk, still. A user on the left. An application in the middle: a box that will hold a
         list of messages. A model top right: every call sends it the system prompt and every message, and one reply comes
         back. On the right, a camera API, which the application's own code knows how to call. Two counters at the bottom:
         model calls, and tool calls, which stay at zero for a while. Nothing here is an agent yet.""")

@@ -3,9 +3,9 @@ one hop; a lookup of a different name under com skips the root; the pointers nea
 the address at the bottom for minutes, so the expensive part of the walk is the part remembered longest. Time passes,
 the address expires, and one lookup pays the walk again.
 
-  Final frame: the same picture as move two (laptop, resolver with three cached rows and their fuses, three zones),
-  plus a second laptop, a counter of hops per lookup, and a compressed clock.
-  Clicks: 1 the same name again: answered from cache in one hop  2 a different name under com: the root is skipped,
+  Final frame (move four starts from it): the picture of move two plus fuses under the cached rows, a second laptop,
+  two more cached rows, the far zone, the hop counter, the browser and OS caches.
+  Clicks: 1 move two's picture gains the fuses and the hop counter  2 the same name again: answered from cache in one hop  2 a different name under com: the root is skipped,
   and the TTLs say why (pointers live for days, the address for minutes)  3 time passes: the address expires, the next
   lookup walks the bottom again; a miss costs about 130 ms, a hit about nothing  4 caches at every level: browser, OS,
   resolver, and the record's TTL counting down in each
@@ -16,18 +16,19 @@ from objects import *
 
 class Caching(TalkSlide):
     def construct(self):
-        t = title(self, "Caching: remember what you were told", "3  caching: remember what you were told")
-        # --- the picture move two left behind
-        (root, tld, auth), (r_root, r_tld, r_auth) = tree()
-        client = client_box()
-        res = resolver_box()
-        rows = VGroup(cache_row(r_root, CACHE_Y[0]), cache_row(r_tld, CACHE_Y[1]), cache_row(r_auth, CACHE_Y[2]))
+        # --- the last frame of move two, rebuilt
+        t = title_still(self, "Delegation: the name is a path", "2  delegation: the name is a path")
+        d = delegation_end_state()
+        (root, tld, auth), (r_root, r_tld, r_auth) = d["boxes"], d["recs"]
+        client, res, rows = d["client"], d["res"], d["rows"]
+        self.add(*d.values())
+        # --- the first change: the cached rows get their time to live, and the hop counter says what the walk cost
         fuses = VGroup(*[fuse(r) for r in rows])
         hops = Counter("hops into the tree", 3, "", ZONE, size=24).move_to([-MARGIN, -2.4, 0], aligned_edge=LEFT)
-        self.play(FadeIn(root), FadeIn(tld), FadeIn(auth), FadeIn(r_root), FadeIn(r_tld), FadeIn(r_auth), FadeIn(client), FadeIn(res), FadeIn(rows), FadeIn(fuses), FadeIn(hops), run_time=0.8)
-        self.next_slide("""The picture the last move left behind, still. The three zones on the right, the resolver in the middle with
-        three records in its cache, each with its time to live on a shrinking bar, the laptop on the left, and the hop
-        counter at three: what the first walk cost. Watch what the second question costs.""")
+        t = retitle(self, t, "Caching: remember what you were told", "3  caching: remember what you were told", extra=[FadeIn(fuses), FadeIn(hops), FadeOut(d["al"])])
+        self.next_slide("""Same picture, one addition: under each record the resolver kept, a teal bar, its time to live, running out from
+        the moment it arrived; and at the bottom left the hop counter, at three, what the first walk cost. Watch what the
+        second question costs.""")
         # --- the same name again: one hop
         question(self, client, res, "www.example.com?", run_time=0.6)
         self.play(rows[2][0].animate.set_fill(REMEMBERED, 0.45), hops.to(0), run_time=0.3)

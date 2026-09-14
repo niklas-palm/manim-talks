@@ -1,9 +1,9 @@
 """Move 2: delegation. The name is a path from the root; each level is a zone owned by someone who holds only pointers to
 the levels below; a lookup walks the path, and every answer on the way is a pointer until the last one is the address.
 
-  Final frame: the laptop (left), the recursive resolver (centre) with an empty cache area, three zone boxes stacked on
-  the right (root, com, example.com) each holding the records it is authoritative for; the two actors named.
-  Clicks: 1 the name is split into labels, right to left, and becomes a path  2 each level is a zone with its owner,
+  Final frame (move three starts from it): the laptop (left), the recursive resolver (centre) with three cached rows,
+  three zone boxes stacked on the right (root, com, example.com) with their records and the pointers between them.
+  Clicks: 1 move one's picture gives way to one large name  2 the name is split into labels, right to left, and becomes a path  2 each level is a zone with its owner,
   holding pointers (NS records) to the level below  3 the two actors: stub asks one question, the resolver walks
   4 hop one: the root answers with a pointer to com  5 hop two: com answers with a pointer to example.com
   6 hop three: example.com answers with the address; it travels home
@@ -14,12 +14,19 @@ from objects import *
 
 class Delegation(TalkSlide):
     def construct(self):
-        t = title(self, "Delegation: the name is a path", "2  delegation: the name is a path")
-        # --- the name, split into labels right to left
+        # --- the last frame of move one, rebuilt: nothing may look different at the boundary
+        t = title_still(self, "One list for the whole internet", "1  one list for the whole internet")
+        e = list_end_state()
+        client = e["client"]
+        self.add(*e.values())
+        # --- the first change: the lists go, and the first name of the list grows into the name we will read
         name = label("www.example.com.", 60, NAME).move_to([0, 1.1, 0])
-        self.play(FadeIn(name), run_time=0.6)
-        self.next_slide("""One name, large, with the dot at the end that is usually invisible. Nothing else yet. Look at the name itself
-        before the machinery: it is not one word, it is a path, and the next click reads it the way DNS does.""")
+        seed = e["lst"][0][1].copy()
+        gone = VGroup(e["lst"], e["ll"], e["more"], e["count"], e["cl"], e["copies"], e["cpl"], e["stale"])
+        t = retitle(self, t, "Delegation: the name is a path", "2  delegation: the name is a path", extra=[FadeOut(gone), ReplacementTransform(seed, name)], run_time=0.9)
+        self.next_slide("""The list is gone; one name from it stays and grows, with the dot at the end that is usually invisible, and the
+        laptop that wanted its address is still there. Nothing else yet. Look at the name itself before the machinery:
+        it is not one word, it is a path, and the next click reads it the way DNS does.""")
         parts = [("www", 0, 3), ("example", 4, 11), ("com", 12, 15), (".", 15, 16)]
         boxes = VGroup()
         for text, a, b in reversed(parts):
@@ -40,9 +47,8 @@ class Delegation(TalkSlide):
         self.play(FadeIn(r_root), run_time=0.4)
         self.play(FadeIn(tld), FadeIn(r_tld), run_time=0.5)
         self.play(FadeIn(auth), FadeIn(r_auth), run_time=0.5)
-        ptr1 = Arrow(r_root[2].get_bottom(), tld[1].get_top() + RIGHT * 0.3, color=ZONE, stroke_width=2, buff=0.05, tip_length=0.15)
-        ptr2 = Arrow(r_tld[2].get_bottom(), auth[1].get_top() + RIGHT * 0.3, color=ZONE, stroke_width=2, buff=0.05, tip_length=0.15)
-        self.play(Create(ptr1), Create(ptr2), run_time=0.6)
+        ptrs = delegation_pointers(VGroup(r_root, r_tld, r_auth), VGroup(root, tld, auth))
+        self.play(Create(ptrs[0]), Create(ptrs[1]), run_time=0.6)
         self.next_slide("""Each level is a zone: a piece of the name space that one party is authoritative for, served from that party's
         servers. The root zone is run by twelve organisations on thirteen server names, spread today over 2,045 anycast
         instances. The com zone is run by a registry. The example.com zone is run by whoever registered it, on servers
@@ -51,10 +57,9 @@ class Delegation(TalkSlide):
         pointer for example.com. Only the bottom zone holds the address, an A record. A zone holds the pointers to the
         zones below it and nothing else about them: that is delegation, and it is why nobody has to hold the whole list.
         The number at the right of each record is its time to live; hold that thought for move three.""")
-        # --- the two actors
-        client = client_box()
+        # --- the two actors: the laptop moves to its place beside the resolver
         res = resolver_box()
-        self.play(FadeIn(client), FadeIn(res), run_time=0.6)
+        self.play(client.animate.move_to([X_CLIENT, Y_RESOLVER, 0]), FadeIn(res), run_time=0.6)
         a1 = arrow(client, res, "", MUTED)
         al = label("one question, one answer", 15, MUTED).next_to(client, DOWN, buff=GAP_TIGHT)
         self.play(Create(a1[0]), FadeIn(al), run_time=0.5)

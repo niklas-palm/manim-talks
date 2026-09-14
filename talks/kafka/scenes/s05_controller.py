@@ -15,7 +15,10 @@ LY, CELL = 0.2, 0.52
 
 class Controller(TalkSlide):
     def construct(self):
-        t = title(self, "Who decides: the controller quorum", "5  the controller")
+        # --- the last frame of move 4, rebuilt; then the compacted topic becomes the cluster's own metadata log
+        d = retention_end()
+        t = title_still(self, "Disks fill: retention and compaction", "4  retention and compaction")
+        self.add(d["segs"][1], d["segs"][2], d["logs"][1], d["logs"][2], d["ptr"], d["pl"], d["active"], d["clog"], d["headl"], d["compc"], d["delc"], d["dr"], d["claim"])
         ctrls = VGroup(*[broker(n, 3.9, 1.0, SYNC if i == 0 else LOGC).move_to([x, 2.1, 0]) for i, (n, x) in enumerate(zip(("controller 1: active", "controller 2: standby", "controller 3: standby"), CX))])
         mlog = Log(-3.6, LY, capacity=12, name="__cluster_metadata: the cluster's state", cell=CELL, gap=GAP)
         for c in (LOGC, LOGC, SYNC, LOGC, LOGC, LOGC):
@@ -23,10 +26,13 @@ class Controller(TalkSlide):
         brks = VGroup(*[broker(f"broker {i + 1}", 3.9, 1.0).move_to([x, -1.7, 0]) for i, x in enumerate(CX)])
         raft = VGroup(*[dashed(c, mlog.rail, "Raft" if i == 1 else "", SYNC) for i, c in enumerate(ctrls)])
         fetch = VGroup(*[dashed(mlog.rail, b, "fetch" if i == 1 else "", MUTED) for i, b in enumerate(brks)])
-        self.play(FadeIn(ctrls), FadeIn(mlog), FadeIn(brks), run_time=0.7)
+        gone = VGroup(d["segs"][1], d["segs"][2], d["logs"][1], d["logs"][2], d["ptr"], d["pl"], d["active"], d["headl"], d["compc"], d["delc"], d["dr"], d["claim"])
+        t = retitle(self, t, "Who decides: the controller quorum", "5  the controller",
+                    extra=[FadeOut(gone), ReplacementTransform(d["clog"], mlog), FadeIn(ctrls), FadeIn(brks)], run_time=1.0)
         self.play(Create(raft), Create(fetch), run_time=0.6)
         cl = claim(self, None, "3 or 5 controllers, one active; brokers fetch the log", LOGC)
-        self.next_slide("""Every decision so far, which broker leads a partition, which replicas are in sync, where a topic's partitions
+        self.next_slide("""The compacted topic of the last move slides up and becomes something else: the cluster's own metadata log,
+        kept exactly the same way. Every decision so far, which broker leads a partition, which replicas are in sync, where a topic's partitions
         live, is metadata, and something has to hold it and agree on it. Since Kafka 4.0 that is a quorum of controllers,
         three or five machines, running the Raft protocol over a log of their own, the __cluster_metadata topic. One
         controller is active and appends the changes; the others replicate the log and can take over in seconds. Every

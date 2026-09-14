@@ -66,7 +66,7 @@ margin where gauges and counters live.
 ```bash
 bin/render.sh <talk> ql <Scene>         # preview; a scene renders in seconds to a couple of minutes
 bin/shots.py <talk> ql                  # then open talks/<talk>/media/shots/<Scene>.png
-bin/seams.py <talk> ql                  # last frame of each scene beside the first of the next: must be identical or title only
+bin/seams.py <talk> ql                  # last frame of each scene beside the first of the next (media/seams/seams.png): identical or title only
 ```
 
 Look at the end frame of every step: collisions, clipped text, wrong colours, a label the animation left behind, a

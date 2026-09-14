@@ -12,7 +12,7 @@ from objects import *
 
 class NodeDies(TalkSlide):
     def construct(self):
-        t = title(self, "A node dies: the same loops, nothing new", "4  a node dies")
+        t = title_still(self, "From record to process: the scheduler, then the kubelet", "3  from record to process")   # move three's last frame, still
         S = Stage(node_used=(0.8, 0.8, 0.95), controllers=[("deploy", "Deployment controller"), ("rs", "ReplicaSet controller"), ("sched", "scheduler"), ("extra", "node controller")])
         S.add_card("deploy", "Deployment", "3 replicas, v1", 0)
         S.add_card("rs", "ReplicaSet", "3 replicas, v1", 1)
@@ -22,15 +22,16 @@ class NodeDies(TalkSlide):
         pods = {"a": S.place_pod(0, 0), "b": S.place_pod(1, 0), "c": S.place_pod(0, 1)}
         S.running.tracker.set_value(3)
         kw = [watch(n, S.api, NODE) for n in S.nodes]
-        for n in S.nodes:
+        for n in S.nodes[:2]:                    # nodes one and two got pods in move three; node three's kubelet has not spoken yet
             n[5].set_color(TEAL)
-        self.add(*S.base(*[S.ctrl[k] for k in ("deploy", "rs", "sched")], *[S.watches[k] for k in ("deploy", "rs", "sched")], *S.cards.values(), *pods.values(), *kw))
-        # --- heartbeats
+        self.add(*S.base(*[S.ctrl[k] for k in ("deploy", "rs", "sched")], *[S.watches[k] for k in ("deploy", "rs", "sched")], *S.cards.values(), *pods.values(), kw[0], kw[1]))
+        # --- the title changes as the third node's line joins the other two: no cut
         hb = label("lease renewed every 10 s", 15, TEAL).move_to([COLS[3], Y_LABELS, 0], aligned_edge=LEFT)
-        self.play(FadeIn(hb), run_time=0.3)
-        self.next_slide("""The cluster at rest: three Pods running on two nodes, three desired, every loop idle, and one detail that
-        was not drawn before: each node has its own dashed line to the API server. The label says what travels on it: a lease,
-        renewed every ten seconds by the kubelet. Watch it on the next click.""")
+        t = retitle(self, t, "A node dies: the same loops, nothing new", "4  a node dies", extra=[Create(kw[2][0]), S.nodes[2][5].animate.set_color(TEAL), FadeIn(hb)])
+        self.next_slide("""The cluster at rest: three Pods running on two nodes, three desired, every loop idle. One thing changed as the
+        title did: the third node's kubelet drew its own dashed line to the API server, like the two that already had pods.
+        The label says what travels on those lines: a lease, renewed every ten seconds by every kubelet, whether or not it
+        runs anything. Watch it on the next click.""")
         for _ in range(2):
             dots = [Dot(color=TEAL, radius=0.07).move_to(n[5].get_center()) for n in S.nodes]
             self.add(*dots)

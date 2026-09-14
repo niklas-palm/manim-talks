@@ -2,7 +2,7 @@
 """The seams of a talk: for every pair of consecutive scenes, the last frame of one beside the first frame of the next.
 Scenes are separate videos, so this is where a deck can cut to a fresh picture; the rule is that it never does. The
 first frame of a scene must be the last frame of the previous one, and the title changes in place as the picture
-starts to change. Writes talks/<talk>/media/shots/seams.png and prints a mean pixel difference per seam (0 is identical;
+starts to change. Writes talks/<talk>/media/seams/seams.png and prints a mean pixel difference per seam (0 is identical;
 under 4 is a title change on an unchanged picture; more means the picture jumped).
 Usage: bin/seams.py <talk> [ql|qm|qh]"""
 import glob, json, os, re, subprocess, sys
@@ -10,7 +10,7 @@ import glob, json, os, re, subprocess, sys
 talk = sys.argv[1] if len(sys.argv) > 1 else sys.exit(__doc__)
 Q = {"ql": "480p15", "qm": "720p30", "qh": "1080p60"}[sys.argv[2] if len(sys.argv) > 2 else "qh"]
 root = f"talks/{talk}"
-out_dir = f"{root}/media/shots"
+out_dir = f"{root}/media/seams"   # its own folder: bin/shots.py clears media/shots before writing
 os.makedirs(out_dir, exist_ok=True)
 
 scenes = []
@@ -34,7 +34,7 @@ pairs = []
 for (a, va), (b, vb) in zip(scenes, scenes[1:]):
     last, first = f"{out_dir}/seam-{a}-last.png", f"{out_dir}/seam-{b}-first.png"
     frame(va, max(0.0, duration(va) - 0.08), last)
-    frame(vb, 0.05, first)
+    frame(vb, 0.0, first)      # the very first frame: the retitle may start at once, so 0.05 s would already be mid-change
     pairs.append((a, b, last, first))
 
 from PIL import Image, ImageChops, ImageStat

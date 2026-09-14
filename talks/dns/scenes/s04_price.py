@@ -3,9 +3,10 @@ reaches resolvers only as their copies expire, so propagation time is the TTL an
 change. A name that does not exist is the most expensive kind of miss, so the "no" is cached too, for the zone's SOA
 minimum. An alias (CNAME) is a pointer to another name, and the resolver starts the walk again for that name.
 
-  Final frame: the owner's zone with a changed address; a row of five resolvers around the world, each with its copy and
-  its fuse, some stale; the negative record; the alias chain.
-  Clicks: 1 the owner changes the address; resolvers keep the old one until their copy expires  2 the trick: lower the
+  Final frame (move five starts from it): the owner's zone with the alias and SOA records, the laptop, the resolver,
+  the alias's zone.
+  Clicks: 1 move three's picture gives way: the owner's zone comes to the top, the resolvers of the world appear
+  2 the owner changes the address; resolvers keep the old one until their copy expires  2 the trick: lower the
   TTL first, wait one old TTL, then change  3 a name that does not exist: the walk to authority and the answer 'no',
   cached for the SOA minimum  4 an alias: CNAME points to another name, and the walk restarts there
 """
@@ -23,18 +24,27 @@ def resolver_small(x: float, y: float, name: str) -> VGroup:
 
 class Price(TalkSlide):
     def construct(self):
-        t = title(self, "The price of remembering", "4  the price of remembering")
-        auth = zone_box("example.com.", "the owner's zone", CONTENT_TOP - 0.825, w=6.6, h=1.65, x=0.0)
+        # --- the last frame of move three, rebuilt
+        t = title_still(self, "Caching: remember what you were told", "3  caching: remember what you were told")
+        c = caching_end_state()
+        self.add(*c.values())
+        old_auth, old_rec = c["boxes"][2], c["recs"][2]
+        # --- the first change: the owner's zone grows into the top of the frame; everything else has done its job
+        auth = owner_zone()
         r_auth = record("www.example.com.", "A", "104.20.23.154", "5 min", ADDRESS).move_to([0.0, 1.72, 0])
-        self.play(FadeIn(auth), FadeIn(r_auth), run_time=0.5)
         rs = VGroup(*[resolver_small(x, -1.0, n) for x, n in zip(RES_X, ("Stockholm", "Dublin", "Virginia", "Tokyo"))])
         rl = label("resolvers around the world, each with its own copy", 16, MUTED).next_to(rs, UP, buff=GAP_TIGHT).align_to(rs, LEFT)
         copies = VGroup(*[record("www", "", "104.20.23.154", "", ADDRESS, width=2.7, size=15).move_to(r[0].get_center() + DOWN * 0.18) for r in rs])
-        fuses = VGroup(*[fuse(c, f) for c, f in zip(copies, (0.9, 0.3, 0.6, 0.15))])
-        self.play(FadeIn(rl), FadeIn(rs), FadeIn(copies), FadeIn(fuses), run_time=0.7)
-        self.next_slide("""Still: the owner's zone at the top with the one record that matters, five minutes to live, and four resolvers
-        around the world, each holding its own copy with its own bar of time left, all different because each fetched the
-        record at a different moment. Nothing has changed yet.""")
+        fuses = VGroup(*[fuse(cp, f) for cp, f in zip(copies, (0.9, 0.3, 0.6, 0.15))])
+        rest = VGroup(*[m for k, m in c.items() if k not in ("boxes", "recs")], c["boxes"][0], c["boxes"][1], c["recs"][0], c["recs"][1])
+        t = retitle(self, t, "The price of remembering", "4  the price of remembering",
+                    extra=[FadeOut(rest), ReplacementTransform(old_auth[0], auth[0]), ReplacementTransform(old_auth[1], auth[1]), FadeOut(old_auth[2]), FadeIn(auth[2]),
+                           ReplacementTransform(old_rec, r_auth),   # the box and the name morph; the subtitle is different text, so it swaps
+                           FadeIn(rl), FadeIn(rs), FadeIn(copies), FadeIn(fuses)], run_time=1.0)
+        self.next_slide("""The owner's zone from the bottom of the tree comes forward and takes the top of the frame; the rest of the tree has
+        done its job. Under it, four resolvers around the world, each holding its own copy of the one record that matters,
+        five minutes to live, each with its own bar of time left, all different because each fetched the record at a
+        different moment. Nothing has changed yet.""")
         # --- the change
         new_val = label("104.20.24.1", 16, HOT).move_to(r_auth[3], aligned_edge=LEFT)
         self.play(Transform(r_auth[3], new_val), r_auth[0].animate.set_fill(HOT, 0.25), run_time=0.6)

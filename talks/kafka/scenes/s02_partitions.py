@@ -12,24 +12,27 @@ from lib.palette import *
 from objects import *
 import random
 
-XS = [-4.0, 0.0, 4.0]
-BY, CY = 1.0, -1.3
-KEY_PARTITION = {KEY_A: 0, KEY_B: 1, KEY_C: 2}
+XS, BY, CY = P_XS, P_BY, P_CY
 
 
 class Partitions(TalkSlide):
     def construct(self):
-        t = title(self, "One log cannot take the load: partitions", "2  partitions")
-        prod = producer("producer").move_to([0.0, 2.45, 0])
-        brokers = VGroup(*[broker(f"broker {i + 1}", 3.8, 2.1).move_to([x, BY, 0]) for i, x in enumerate(XS)])
-        logs = [Log(x - 1.75, BY - 0.2, capacity=7, name=f"partition {i}", gap=GAP) for i, x in enumerate(XS)]
-        load = Gauge("write\nload", FAIL, 1.8).move_to([-6.55, BY, 0])
-        self.play(FadeIn(prod), FadeIn(brokers[0]), FadeIn(logs[0]), FadeIn(load), *[FadeIn(b.copy().set_opacity(0.25)) for b in brokers[1:]], run_time=0.6)
-        ghosts = [m for m in self.mobjects if isinstance(m, VGroup) and m not in (prod, brokers[0], logs[0], load, t)]
+        # --- the last frame of move 1, rebuilt; then the picture rearranges for the split and the title changes with it
+        d = log_end()
+        t = title_still(self, "A topic is an append-only log", "1  the log")
+        self.add(*[d[k] for k in ("prod", "brk", "log", "leg", "ar", "al", "c1", "c2", "p1", "p2", "pos", "reset", "claim")])
+        st = partitions_stage()
+        prod, brokers, logs, load = st["prod"], st["brokers"], st["logs"], st["load"]
+        ghosts = VGroup(*[b_.copy().set_opacity(0.25) for b_ in brokers[1:]])
+        gone = VGroup(d["c1"], d["c2"], d["p1"], d["p2"], d["pos"], d["reset"], d["claim"], d["leg"], d["ar"], d["al"], d["log"], d["brk"][1])
+        t = retitle(self, t, "One log cannot take the load: partitions", "2  partitions",
+                    extra=[FadeOut(gone), Transform(d["brk"][0], brokers[0][0]), FadeIn(brokers[0][1]), Transform(d["prod"], prod),
+                           FadeIn(logs[0]), FadeIn(load), FadeIn(ghosts)], run_time=1.0)
+        self.remove(d["brk"][0], d["prod"]); self.add(brokers[0][0], prod)
         cl = claim(self, None, "one producer, one broker, one partition", LOGC)
-        self.next_slide("""The picture from the last scene, arranged for what comes next: the producer at the top, one broker holding the
-        only partition, a write-load gauge at the left, and two more brokers drawn faintly because they exist in the cluster
-        but hold nothing yet. Nothing has been written.""")
+        self.next_slide("""The same picture, rearranged for what comes next: the consumers step aside, the broker shrinks to make room for
+        two more, drawn faintly because they exist in the cluster but hold nothing yet, the producer moves to the top, and a
+        write-load gauge appears at the left. The partition is empty again so that the load can be watched from zero.""")
         rnd = random.Random(2)
         seq = [rnd.choice(KEYS) for _ in range(4)]
         for k, c in enumerate(seq):
@@ -40,7 +43,7 @@ class Partitions(TalkSlide):
         the two brokers beside it sit idle. The topic's throughput is capped by one machine. The fix is the second word of
         the spine: split the log.""")
         # --- split by key
-        self.remove(*ghosts)
+        self.remove(ghosts)
         hashc = code("partition = hash(key) % 3", "python", 16).next_to(prod, RIGHT, buff=GAP_WIDE)
         self.play(FadeIn(brokers[1]), FadeIn(brokers[2]), FadeIn(logs[1]), FadeIn(logs[2]), FadeIn(hashc), load.set(0.35), run_time=0.6)
         for c in [KEY_B, KEY_C, KEY_A, KEY_C, KEY_B, KEY_A, KEY_B, KEY_C, KEY_A]:

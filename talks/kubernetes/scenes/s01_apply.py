@@ -25,15 +25,20 @@ spec:
 class ApplyRequest(TalkSlide):
     def construct(self):
         frame = self.camera.frame
-        t = title(self, "kubectl apply writes a record, not a process", "1  a record, not a process")
+        t = title_still(self, "kubectl apply writes a record, not a process", "1  a record, not a process")   # the deck opens on this still
         S = Stage()
-        self.play(FadeIn(S.client), FadeIn(S.api), FadeIn(S.store), run_time=0.7)
         manifest = code(MANIFEST, "yaml", 17).move_to([COLS[3], 2.3, 0], aligned_edge=UL)   # what the user typed, in the node column until the nodes take it
         ml = label("what kubectl apply sends", 15, MUTED).move_to([COLS[3], Y_LABELS, 0], aligned_edge=LEFT)
-        self.play(FadeIn(manifest), FadeIn(ml), run_time=0.5)
-        self.next_slide("""The picture before anything happens. Left, kubectl on a laptop. Centre, the API server, the front door of
-        the cluster, and under it etcd, the database that holds every record. Right, the manifest the user is about to apply:
-        a Deployment, three replicas of one image. Nothing has been sent yet.""")
+        self.add(S.client, S.api, S.store, manifest, ml)
+        self.wait(0.3)
+        self.next_slide("""This talk is for engineers who use kubectl every day and have never watched the machinery. In fifteen minutes we
+        follow one command, kubectl apply of a Deployment with three replicas, from the moment it reaches the API server to
+        three running containers, and then break a node to see the same machinery again. One sentence carries it: you write
+        the state you want into one database, and independent loops each watch it and take one step toward it, forever. The
+        colours: blue is what you asked for, yellow is what actually runs, violet is the control plane closing the gap, teal
+        is the machines, red is a gap. The picture before anything happens: left, kubectl on a laptop. Centre, the API
+        server, the front door of the cluster, and under it etcd, the database that holds every record. Right, the manifest
+        the user is about to apply: a Deployment, three replicas of one image. Nothing has been sent yet.""")
         req = card("Deployment", "3 replicas, v1").next_to(S.client, DOWN, buff=GAP_WIDE)
         self.play(TransformFromCopy(manifest.panel, req[0]), FadeIn(req[1]), FadeIn(req[2]), run_time=0.7)
         self.next_slide("""Start with the command everyone has typed: kubectl apply of a Deployment, three replicas of an image. Look at
@@ -54,7 +59,8 @@ class ApplyRequest(TalkSlide):
         filled in, quotas enforced, policies applied, and it runs only for writes. Then the object is validated and goes to
         the store.""")
         # --- back out: written to etcd, quorum of two
-        self.play(frame.animate.scale(1 / ZOOM).move_to(ORIGIN), FadeIn(t), FadeIn(S.store), FadeIn(S.client), FadeIn(manifest), FadeIn(ml), run_time=1.0)
+        self.play(frame.animate.scale(1 / ZOOM).move_to(ORIGIN), FadeIn(t), FadeIn(S.store), FadeIn(S.client), FadeIn(manifest), FadeIn(ml),
+                  *[g.animate.set_fill(DIM, 0.9) for g in gates], *[n.animate.set_color(MUTED) for n in gnames], run_time=1.0)   # the gates dim again: the request has passed
         self.play(req.animate.scale(1 / 0.6).move_to(S.slots[0]), run_time=0.6)
         S.cards["deploy"] = req
         members = S.store[2]

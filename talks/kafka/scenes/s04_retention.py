@@ -11,29 +11,29 @@ column; the claim in the caption band.
 from lib.palette import *
 from objects import *
 
-SY = 1.45
-SEGX = [-4.3, 0.0, 4.3]
-SEQ = [KEY_A, KEY_B, KEY_C, KEY_A, KEY_B, KEY_A, KEY_C, KEY_B, KEY_A, KEY_C, KEY_B, KEY_A]
-CY, XR = -1.75, 3.2
+SY, SEGX, CY, XR = S_Y, S_XS, S_CY, S_XR
 
 
 class Retention(TalkSlide):
     def construct(self):
-        t = title(self, "Disks fill: retention and compaction", "4  retention and compaction")
-        segs = VGroup(*[broker(n, 4.1, 1.7).move_to([x, SY, 0]) for n, x in zip(("00000000000000000000.log", "00000000000000000008.log", "00000000000000000016.log"), SEGX)])
-        logs = [Log(x - 1.85, SY - 0.22, capacity=8, base=b, cell=0.38, gap=GAP) for x, b in zip(SEGX, (0, 8, 16))]
-        for i, l in enumerate(logs):
-            for k in range(8 if i < 2 else 5):
-                l.put(SEQ[(i * 8 + k) % len(SEQ)])
-        pl = label("one partition on disk: segment files", 17, LOGC).next_to(segs, UP, buff=GAP_TIGHT).align_to(segs, LEFT)
-        active = label("active segment: appends go here", 15, LOGC).next_to(segs[2], DOWN, buff=GAP_TIGHT).align_to(segs[2], LEFT)
-        self.play(FadeIn(segs), *[FadeIn(l) for l in logs], FadeIn(pl), FadeIn(active), run_time=0.7)
+        # --- the last frame of move 3, rebuilt; then broker 2's log opens into its segment files
+        d = replication_end()
+        t = title_still(self, "A broker dies: replication", "3  replication")
+        self.add(d["prod"], d["cons"], d["boxes"], *d["logs"], d["isr"], d["hwm"], d["ptr"], d["a_in"], d["a_out"], d["claim"])
+        st = retention_stage()
+        segs, logs, pl, active = st["segs"], st["logs"], st["pl"], st["active"]
+        gone = VGroup(d["prod"], d["cons"], d["boxes"][0], d["boxes"][2], d["logs"][0], d["logs"][2], d["isr"], d["hwm"], d["ptr"], d["a_in"], d["a_out"], d["claim"], d["boxes"][1][1])
+        t = retitle(self, t, "Disks fill: retention and compaction", "4  retention and compaction",
+                    extra=[FadeOut(gone), Transform(d["boxes"][1][0], segs[0][0]), FadeIn(segs[0][1]), ReplacementTransform(d["logs"][1], logs[0]),
+                           FadeIn(segs[1]), FadeIn(segs[2]), FadeIn(logs[1]), FadeIn(logs[2]), FadeIn(pl), FadeIn(active)], run_time=1.0)
+        self.remove(d["boxes"][1][0]); self.add(segs[0][0])
         ptr = Pointer("consumer, slow", READER).place(logs[0], 3, dy=0.95)
         self.play(FadeIn(ptr), run_time=0.3)
         rollc = config("log.segment.bytes\n= 1 GiB\nlog.roll.hours = 168", 15).move_to([XR, -0.35, 0], aligned_edge=LEFT)
         self.play(FadeIn(rollc), run_time=0.4)
         cl = claim(self, None, "segments: named by first offset, rolled by size or age", LOGC)
-        self.next_slide("""Zoom in on one partition's directory. The log is not one file but a sequence of segment files, each named by the
+        self.next_slide("""Broker two's copy of the partition, opened up: its eight records are the first segment file, and the records that
+        arrived since fill two more. Zoom in on one partition's directory. The log is not one file but a sequence of segment files, each named by the
         offset of the first record it holds, so finding offset twelve is a binary search over file names and then an index
         lookup inside one file. A segment rolls when it reaches log.segment.bytes, one gibibyte by default, or after
         log.roll.hours, a week. Only the last segment, the active one, is ever appended to; the others are immutable, which

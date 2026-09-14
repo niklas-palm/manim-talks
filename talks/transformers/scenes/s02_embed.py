@@ -1,7 +1,6 @@
-"""Move 2: words become vectors, and the vectors learn their order. Text is cut into tokens; each token's id looks up
-a row of a learned table, its embedding vector; a set of vectors has no order, so a position vector is added to each.
-One picture that grows: the sentence, the tokens with ids, the table at the left, a vector under each token, then the
-position vectors rising into them.
+"""Move 2: words become vectors, and the vectors learn their order. Opens on move 1's last frame (the six large tokens,
+their connections, the two counters); the connections and counters go, the tokens shrink, the sentence appears above
+them, and the picture grows: ids, the table at the left, a vector under each token, the position vectors rising in.
 """
 from lib.palette import *
 from objects import *
@@ -11,17 +10,23 @@ IDS = ["791", "8415", "7731", "389", "279", "2603"]
 
 class Embedding(TalkSlide):
     def construct(self):
-        t = title(self, "From words to vectors", "2  words become vectors")
-        sentence = label("The cat sat on the mat", 34, TOKEN).move_to([0, ROWS[0], 0])
-        self.play(FadeIn(sentence))
-        self.next_slide("""We start from text a person typed. A neural network does not work on letters; it works on numbers. So the first
-        two jobs are to cut the text into pieces and turn each piece into a list of numbers.""")
-        # --- tokens with ids
-        toks = VGroup(*[VGroup(Square(1.0, fill_color=TOKEN, fill_opacity=0.85, stroke_width=0), label(w, 22, "#0f1116")) for w in WORDS])
-        for g, x in zip(toks, XS):
-            g.move_to([x, ROWS[1], 0]); g[1].move_to(g[0])
+        # --- move 1's last frame, rebuilt: nothing moves yet
+        t = title_still(self, "The idea: read every token at once", "1  the parallel idea")
+        big = big_tokens(1.3)
+        edges = all_edges(big)
+        steps2, conns = sequential_counters(1, 30)
+        self.add(big, edges, steps2, conns)
+        # --- the boundary: the title changes as the connections go and the tokens settle into their working size
+        toks = big_tokens(1.0)
+        sentence = sentence_label()
+        t = retitle(self, t, "From words to vectors", "2  words become vectors",
+                    extra=[FadeOut(edges), FadeOut(steps2), FadeOut(conns), *[Transform(b, s) for b, s in zip(big, toks)], FadeIn(sentence)])
+        self.remove(*big); self.add(toks)
+        self.next_slide("""The connections come off and the six tokens settle: the same sentence, now with the text it came from above it. A
+        neural network does not work on letters; it works on numbers. So the first two jobs are to cut the text into pieces
+        and turn each piece into a list of numbers.""")
+        # --- ids
         ids = VGroup(*[label(i, 18, MUTED).next_to(g, DOWN, buff=GAP_TIGHT) for i, g in zip(IDS, toks)])
-        self.play(LaggedStart(*[TransformFromCopy(sentence, g) for g in toks], lag_ratio=0.08), run_time=1.2)
         self.play(LaggedStart(*[FadeIn(i, shift=DOWN * 0.1) for i in ids], lag_ratio=0.08), run_time=0.6)
         bpe = label("byte-pair encoding, vocabulary of 50,257", 18, MUTED).move_to([0, ROWS[2] - 0.4, 0])
         self.play(FadeIn(bpe))
@@ -36,11 +41,9 @@ class Embedding(TalkSlide):
         table.move_to([-6.3, -1.3, 0], aligned_edge=LEFT)
         tl = label("table\n50,257 rows", 15, WEIGHTS).next_to(table, UP, buff=GAP_TIGHT)
         self.play(FadeIn(table), FadeIn(tl))
-        vecs = VGroup()
+        vecs = embed_vectors()
         rows = [2, 9, 6, 11, 4, 8]
-        for k, (g, r) in enumerate(zip(toks, rows)):
-            v = vector(20 + k, TOKEN, cell=0.22).move_to([XS[k], -1.0, 0])
-            vecs.add(v)
+        for k, (v, r) in enumerate(zip(vecs, rows)):
             sel = table[r].copy().set_fill(TOKEN, 0.9)
             self.play(FadeIn(sel), run_time=0.15)
             self.play(sel.animate.move_to(v.get_center()).scale(0.4), FadeIn(v, scale=0.6), run_time=0.35)
@@ -63,8 +66,8 @@ class Embedding(TalkSlide):
         sits. But order carries meaning. So before anything else, each vector is given its position.""")
         # --- positional encoding added
         self.play(FadeOut(same), FadeOut(order), run_time=0.3)
-        pos = VGroup(*[vector(60 + k, ATTN, cell=0.22).move_to([XS[k] + 0.45, -1.0, 0]) for k, v in enumerate(vecs)])
-        pl = label("position vector added, one per slot", 18, ATTN).move_to([0, ROWS[4] - 0.25, 0])
+        pos = VGroup(*[vector(60 + k, ATTN, cell=0.22).move_to([XS[k] + 0.45, VEC_Y, 0]) for k in range(6)])
+        pl = position_label()
         self.play(LaggedStart(*[FadeIn(p, shift=UP * 0.1) for p in pos], lag_ratio=0.06), FadeIn(pl), run_time=0.8)
         self.play(LaggedStart(*[p.animate.move_to(v.get_center()) for p, v in zip(pos, vecs)], lag_ratio=0.08), run_time=1.0)
         self.play(*[v.animate.set_fill(TOKEN, 1.0) for v in vecs], FadeOut(pos), run_time=0.5)

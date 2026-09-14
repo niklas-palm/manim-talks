@@ -3,17 +3,24 @@ the model now answers with a tool call, the application runs it, appends the res
 answers in words. Then the backyard question runs through the same loop at speed."""
 from lib.palette import *
 from objects import *
+from s02_tool import SRC2
 
 
 class TheLoop(TalkSlide):
     def construct(self):
-        t = title(self, "The loop", "3  the loop")
+        # --- the last frame of move two, rebuilt: the decorated function, the three cards, the two labels
+        t = title_still(self, *TITLES["tool"])
         st = stage()
         user, app, model, arrows, calls, tools = st["user"], st["app"], st["model"], st["arrows"], st["calls"], st["tools"]
         cards = tool_cards()
+        code2 = code(SRC2, "python", 15).move_to([LIST_X, -0.05, 0])
+        stays = label("stays here: the code, the API, the credentials", 14, MUTED).next_to(code2, DOWN, buff=GAP_TIGHT).align_to(code2, LEFT)
+        to_model = label("to the model: name, description, input schema", 14, TOOL).move_to([MODEL_C[0] - CARD_W / 2, 0.9, 0], aligned_edge=LEFT)
+        self.add(user, app, model, arrows, calls, tools, cards, code2, stays, to_model)
         msgs = messages()
-        self.add(user, app, model, arrows, calls, tools, cards)
-        self.play(FadeIn(msgs), run_time=0.3)
+        # --- the first change: the code steps aside; the cards stay; the list is empty and ready
+        t = retitle(self, t, *TITLES["loop"], extra=[FadeOut(code2), FadeOut(stays), FadeOut(to_model)])
+        self.add(msgs)
         self.next_slide("""The same picture with the three tool cards in place and an empty list. Read the arrow into the model once more:
         the system prompt, the tools, and the messages. From here on every call carries the cards too, so the model knows
         what it can ask for.""")
@@ -61,4 +68,4 @@ class TheLoop(TalkSlide):
         its own choosing, the application fetches, the result joins the list, the model answers. Compare with move one: the
         code no longer decides what to look at; it only executes what the model asks for and keeps the list. That shift is
         the whole definition of an agent. Four model calls and two tool calls for two questions, and the list has grown to
-        nine messages; keep an eye on that.""")
+        eight messages; keep an eye on that.""")
