@@ -35,3 +35,11 @@ where they arrive first.
 - Never run two renders of the same talk at once; the shared text cache kills the longer one.
 - Ask what the audience will read a number as. "330,000 tokens of context" read as tiny until the label said "about
   40 conversations of 8k tokens, or one request at the model's full context".
+
+## Tooling (September 2026)
+
+- Never script the user's PowerPoint to verify an export. An AppleScript that opened a test file and then closed
+  "the active presentation" without saving closed the user's own open deck instead. Verify a .pptx by re-reading it
+  with python-pptx and inspecting the slide XML; leave opening it to the user, and say so in the report.
+- The PowerPoint export is one autoplaying clip per step with the note in the slide notes; 76 steps of 1080p60 came
+  to 44 MB. It is a convenience for rooms that demand PowerPoint; the web presenter stays the reference.

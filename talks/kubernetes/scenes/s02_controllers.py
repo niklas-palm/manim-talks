@@ -16,7 +16,7 @@ class Controllers(TalkSlide):
         frame = self.camera.frame
         t = title(self, "Controllers: loops that chase the gap", "2  loops that chase the gap")
         S = Stage(controllers=[("deploy", "Deployment controller"), ("rs", "ReplicaSet controller")])
-        S.add_card("deploy", "Deployment web", "replicas 3, v1", 0)
+        S.add_card("deploy", "Deployment web", "3 replicas, v1", 0)
         self.add(S.client, S.api, S.store, S.cards["deploy"], S.nodes, S.desired, S.running)
         # --- the Deployment controller
         c1, w1 = S.ctrl["deploy"], S.watches["deploy"]
@@ -26,7 +26,7 @@ class Controllers(TalkSlide):
         self.play(FadeOut(pulse), run_time=0.15)
         cmp = label("ReplicaSets for it: wants 1, has 0", 12, TEXT).next_to(c1, DOWN, buff=0.1)
         self.play(FadeIn(cmp), run_time=0.3)
-        rs = card("ReplicaSet web-7d4f", "replicas 3, v1").scale(0.7).move_to(c1[2].get_center())
+        rs = card("ReplicaSet web", "3 replicas, v1").scale(0.7).move_to(c1[2].get_center())
         self.play(FadeIn(rs), run_time=0.3)
         self.play(rs.animate.move_to(S.api[0].get_right() + RIGHT * 0.3), run_time=0.5)   # act: through the API server
         self.play(rs.animate.scale(1 / 0.7).move_to(S.slots[1]), run_time=0.6)

@@ -14,8 +14,8 @@ class ApplyRequest(TalkSlide):
         t = title(self, "kubectl apply writes a record, not a process", "1  a record, not a process")
         S = Stage()
         self.play(FadeIn(S.client), FadeIn(S.api), FadeIn(S.store), run_time=0.7)
-        req = card("Deployment web", "replicas: 3, image v1").next_to(S.client, DOWN, buff=0.35)
-        rl = label("the request: a description of the state you want", 13, MUTED).next_to(req, DOWN, buff=0.1)
+        req = card("Deployment web", "3 replicas, v1").move_to([X_CLIENT, 0.95, 0])
+        rl = label("the request: a description of the state you want, not a command", 13, MUTED, width=2.6).next_to(req, DOWN, buff=0.12)
         self.play(FadeIn(req, shift=DOWN * 0.1), FadeIn(rl), run_time=0.5)
         self.next_slide("""Start with the command everyone has typed: kubectl apply of a Deployment, three replicas of an image. Look at
         what the request is: not "start three containers", but a description of a state, replicas three, this image. The
@@ -27,7 +27,7 @@ class ApplyRequest(TalkSlide):
         for k in range(3):
             self.play(req.animate.move_to(gates[k].get_center() + LEFT * 0.38), run_time=0.35)
             self.play(gates[k].animate.set_fill(DESIRED, 1.0), gnames[k].animate.set_color(TEXT), run_time=0.25)
-        new_detail = label("replicas 3, v1, defaults filled", 12, MUTED).move_to(req[2])
+        new_detail = label("3 replicas, v1", 12, MUTED).move_to(req[2])
         self.play(FadeOut(req[2]), FadeIn(new_detail), run_time=0.3)
         req.remove(req[2]); req.add(new_detail)
         self.play(req.animate.scale(1 / 0.75).move_to(S.slots[0]), run_time=0.7)

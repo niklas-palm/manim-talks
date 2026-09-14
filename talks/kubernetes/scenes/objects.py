@@ -21,7 +21,7 @@ Y_TOP = 1.95
 NODE_YS = [1.75, 0.3, -1.15]
 
 
-def card(kind: str, detail: str = "", color: str = DESIRED, w: float = 1.35) -> VGroup:
+def card(kind: str, detail: str = "", color: str = DESIRED, w: float = 1.5) -> VGroup:
     """A record in the store: kind on top, a detail line under it. card[0] frame, card[1] kind, card[2] detail."""
     r = RoundedRectangle(corner_radius=0.08, width=w, height=0.52, stroke_color=color, stroke_width=1.8, fill_color=color, fill_opacity=0.14)
     g = VGroup(r, label(kind, 13, TEXT).move_to(r.get_top() + DOWN * 0.15))
@@ -41,7 +41,7 @@ def apiserver() -> VGroup:
     """The API server: a box with three thin gates a request passes through. [0] box, [1] name, [2] gates (3), [3] gate labels."""
     g = box(3.2, 1.0, "", CONTROL)
     name = label("API server", 16, CONTROL).move_to(g[0].get_top() + DOWN * 0.17)
-    gates = VGroup(*[Rectangle(width=0.08, height=0.42, fill_color=DIM, fill_opacity=0.9, stroke_width=0) for _ in range(3)]).arrange(RIGHT, buff=0.75).move_to(g[0].get_center() + DOWN * 0.12)
+    gates = VGroup(*[Rectangle(width=0.08, height=0.42, fill_color=DIM, fill_opacity=0.9, stroke_width=0) for _ in range(3)]).arrange(RIGHT, buff=1.0).move_to(g[0].get_center() + DOWN * 0.12)
     names = VGroup(*[label(s, 11, MUTED).next_to(gt, DOWN, buff=0.05) for s, gt in zip(("authenticate", "authorise", "admit"), gates)])
     g.add(name, gates, names)
     return g
@@ -49,18 +49,18 @@ def apiserver() -> VGroup:
 
 def store(members: int = 3) -> VGroup:
     """etcd: a box that holds record cards, with its members as dots on the top edge. [0] box, [1] name, [2] members."""
-    g = box(3.2, 2.5, "", NODE)
+    g = box(3.5, 2.5, "", NODE)
     g[0].set_stroke(color=TEAL).set_fill(TEAL, 0.05)
-    name = label("etcd", 16, TEAL).move_to(g[0].get_top() + DOWN * 0.17 + LEFT * 1.15)
-    dots = VGroup(*[Dot(radius=0.07, color=TEAL) for _ in range(members)]).arrange(RIGHT, buff=0.12).move_to(g[0].get_top() + DOWN * 0.17 + RIGHT * 1.0)
+    name = label("etcd", 16, TEAL).move_to(g[0].get_top() + DOWN * 0.17 + LEFT * 1.3)
+    dots = VGroup(*[Dot(radius=0.07, color=TEAL) for _ in range(members)]).arrange(RIGHT, buff=0.12).move_to(g[0].get_top() + DOWN * 0.17 + RIGHT * 1.15)
     g.add(name, dots)
     return g
 
 
 def slot_positions(st: VGroup, n: int = 6):
     """Where record cards sit inside the store: two columns, three rows."""
-    x0, y0 = st[0].get_center()[0] - 0.75, st[0].get_top()[1] - 0.72
-    return [[x0 + 1.5 * (i % 2), y0 - 0.62 * (i // 2), 0] for i in range(n)]
+    x0, y0 = st[0].get_center()[0] - 0.82, st[0].get_top()[1] - 0.72
+    return [[x0 + 1.64 * (i % 2), y0 - 0.62 * (i // 2), 0] for i in range(n)]
 
 
 def controller(name: str, w: float = 2.7) -> VGroup:
