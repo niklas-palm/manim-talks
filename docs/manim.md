@@ -61,6 +61,11 @@ Manim Community Edition 0.21, Python 3.12, macOS, ffmpeg 7, no LaTeX. Each entry
 - **`get_boundary_point(direction)` returns a corner for a diagonal direction.** Arrows and dashed lines between two
   boxes that are not on one axis came out skewed, ending at corners. The library's `edge_point()` meets the box where
   the centre-to-centre line crosses it; `arrow`, `dashed` and `travel(edges=True)` use it.
+- **A negative `z_index` does not put a new mobject behind what is already drawn, during a play.** The Cairo renderer bakes
+  every mobject that comes before the first moving one into a static image and draws the moving mobjects over it, sorted
+  by `z_index` only among themselves. So `FadeIn(box.set_z_index(-1))` covers the boxes it was meant to sit behind, and
+  whether it happens depends on where a live counter or an earlier `retitle` left the first moving mobject in the list.
+  Something that must appear behind existing objects is placed, not animated: `scene.add(g); scene.bring_to_back(g)`.
 - **`set_opacity` fills hollow shapes.** It sets fill and stroke opacity together, so a stroke-only cell becomes a
   filled one. Hide scrolling things under a background-coloured mask with a higher `z_index` instead.
 - **`rate_func=linear` on the play** makes a conveyor move at constant speed; the default smooth easing makes it
