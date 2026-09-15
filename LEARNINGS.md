@@ -413,3 +413,26 @@ First principles that the passes confirmed, written to outlast the decks they ca
   checklist as a thing to watch for in motion.
 - The orchestration belongs on screen, not only in the notes. A running line in the orchestrator's own box saying what it
   is doing between two calls is what makes an agent visible as an actor rather than a label.
+
+## What a deck claims, and how it was checked
+
+- A described picture is a specification. When the person asking says where the actors sit and what each click does,
+  build that picture; an analysis that suggests a better one has to be argued, not substituted. The first version of a
+  deck built from the analysis rather than the description was thrown away whole.
+- A summary is a claim about a source. When a note quotes a number, read the file that produces it: two figures taken
+  from a well-written overview were wrong, one a list of field names and one a latency that held for three uploads out of
+  thirty-six. The audience that knows the system will notice exactly those.
+- The spoken length is the word count of the notes, not a guess per move. Count them at about 130 words a minute before
+  writing a duration anywhere; the first estimate was two thirds of the truth.
+- Hierarchy needs guides, not spaces. A tree drawn by indenting names read as a list; the same names with a thin
+  vertical line per enclosing level read as a file browser at a glance.
+- Text that must fit a box goes through one helper that scales it into the box, and every box uses the helper. Checking
+  twenty-six frames by eye found the spills once; the helper finds them every time, including in the frames nobody
+  looked at.
+- A title wider than the frame is scaled down silently by the text helper, so a long title looks slightly smaller than its
+  neighbours rather than wrong. Shorten it instead: the scaling is a safety net, not a layout.
+- State that a later step must act on is carried as a tag on the object, not inferred back from a property. Recolouring
+  "whatever is currently the fresh colour" missed lines whose colour had been read differently; tagging the lines when they
+  were added and clearing the tag when settled cannot miss.
+- Stop a background render before editing the files it reads. A scene file changed while an earlier scene renders is
+  what the render reaches next, and the frames then disagree with the code that claims to have produced them.
