@@ -18,7 +18,7 @@ lib/talks.py         where a talk lives: talks/<slug> for the samples, out/<slug
 themes/dark.json     the two styles: dark (the default) and bright; a PowerPoint template can be imported as a third
 themes/bright.json
 bin/                 render.sh, build.py, shots.py, seams.py, review.sh, check.py, serve.sh, serve.py, export_pptx.py,
-                     themes.py
+                     export_pdf.py, themes.py
 talks/_template/     copy this to start a talk: a worked example scene, a second scene that continues it, objects.py, script.md
 talks/llm-serving/   the reference deck: 45 minutes on how open-weight LLMs are served, 82 steps, 13 scenes
 talks/<others>/      shorter example decks built with the same rules: dns, kubernetes, kafka, transformers, agents
@@ -46,6 +46,8 @@ pages: `present.html` for the audience and `presenter.html` for the speaker, wit
 where the next click lands. `bin/serve.sh` serves the talk over local http so the two windows can talk and the
 video can seek. `.venv/bin/python bin/export_pptx.py <talk> qh` writes the same deck as a PowerPoint file, one autoplaying clip per slide with
 the note in the slide notes, for rooms that insist on it; the file is generated from the render and not committed.
+`.venv/bin/python bin/export_pdf.py <talk> qh` writes one page per scene with its final picture and no notes, for the
+people who ask for the slides afterwards.
 
 ## Style, in five lines
 

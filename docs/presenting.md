@@ -69,3 +69,18 @@ there. The autoplay is the timing XML PowerPoint writes for "Start: Automaticall
 opens the file without repair and reports the clips' play-on-entry as true through its object model. Pass `--click`
 for clips that wait for a click instead. python-pptx writes a bare timing node of its own when it adds a movie; the
 export replaces it rather than adding a second, because two timing elements make the file unopenable.
+
+## Exporting to PDF
+
+The file people ask for after a talk is the pictures without the notes. `bin/export_pdf.py` writes one page per scene,
+showing the settled picture the scene ends on, which is everything the move drew; nothing from the notes goes in. Like
+the PowerPoint file it is generated from the render and never committed (`*.pdf` is in `.gitignore`).
+
+```bash
+bin/render.sh <talk> qh                           # the frames come from the render
+.venv/bin/python bin/export_pdf.py <talk> qh      # -> <talk folder>/<talk>.pdf, one page per scene
+.venv/bin/python bin/export_pdf.py <talk> qh out.pdf --steps   # elsewhere, and one page per step instead
+```
+
+`--steps` gives the frame every step holds on, the same frames `bin/shots.py` tiles for review: a fuller record, at the
+price of many pages that differ by one detail.
