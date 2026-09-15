@@ -12,11 +12,12 @@ class EveryAgent(TalkSlide):
         st = stage()
         user, app, model, arrows, calls, tools = st["user"], st["app"], st["model"], st["arrows"], st["calls"], st["tools"]
         cards = tool_cards()
-        msgs = put_history(messages(), HIST_STATE)
+        agent = agent_frame()
+        msgs = put_history(messages(AGENT_LIST_TOP), HIST_STATE)
         calls.tracker.set_value(5); tools.tracker.set_value(3)
-        window = context_window()
+        window = context_window(AGENT_LIST_TOP)
         sm = under_app(SUMMARY_LABEL, app=app)
-        self.add(user, app, model, arrows, calls, tools, cards, msgs, window, sm)
+        self.add(user, app, agent, model, arrows, calls, tools, cards, msgs, window, sm)
         # --- the first change: the surveillance tools become the tools of a coding agent; the list clears for a new task
         generic = VGroup(*[tool_card(*g) for g in GENERIC_TOOLS])
         t = retitle(self, t, *TITLES["every"], extra=[FadeOut(window), FadeOut(sm), FadeOut(msgs), calls.to(0), tools.to(0),
@@ -24,12 +25,12 @@ class EveryAgent(TalkSlide):
         who = under_app("Claude Code, Codex, and every coding agent: this loop, these tools", 15, TEXT, app=app)
         self.play(FadeIn(who), run_time=0.4)
         self.next_slide("""Last move. Keep everything and change only the three cards. A coding agent, Claude Code, Codex, the agent in your
-        editor, is exactly this picture: a model, a list of messages, a loop the harness runs. The difference is what the
+        editor, is exactly this picture: an application with an agent inside it that runs the loop and keeps the list, and a model. The difference is what the
         tools are. Ours knew about one house. Theirs are generic: run a shell command, read a file, write a file. Three tools
         that can do almost anything, because with a shell and a file system the agent can make whatever tool it needs on the
         spot: write a script, run it, read the output.""")
         # --- a coding task through the same loop, at speed
-        msgs = messages()
+        msgs = messages(AGENT_LIST_TOP)
         self.add(msgs)
         msgs.append(self, message("user", "user · add a retry to the upload function"), frm=user, run_time=0.5)
         call_model(self, msgs, model, extra=generic, run_time=0.5)

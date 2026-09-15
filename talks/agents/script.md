@@ -6,12 +6,15 @@ Audience: engineers who have used chat assistants and want to see what an agent 
 knowledge. Afterwards they should be able to turn one of their own API calls into a tool, read any agent framework's
 loop, say where guardrails attach, explain why long agent conversations need managing, and see a coding agent as the
 same loop with generic tools.
-Length: 16 minutes, 32 clicks, 6 scenes. Every scene opens on a still picture and the mechanism starts on the next click.
+Length: 16 minutes, 33 clicks, 6 scenes. Every scene opens on a still picture and the mechanism starts on the next click.
 
 One picture throughout, on the library grid: the user at the left margin; the application as a box holding the list of
 messages, which grows downward and is the only state; the model top right, which the list goes into and one reply
 comes out of; the tools in a column under the model, each card carrying the device it reaches; two counters at the
-bottom, model calls and tool calls. One accent slot per meaning: the user, the model, the tools, what came back from
+bottom, model calls and tool calls. From move four on, a frame labelled agent holds the list and the tools: the framework's
+object, which owns them and runs the loop. Beside the code it is drawn small; at the end of move four it is placed inside
+the application and runs the two questions of move three at speed, so that the application of move one (its own code
+deciding) and the application that runs an agent are visibly different things. One accent slot per meaning: the user, the model, the tools, what came back from
 the world, and a wall.
 
 The red thread, in one paragraph: a plain application answers questions about a camera with one model call, and its
@@ -50,8 +53,9 @@ enough that the agent makes its own.
 - Called again with the longer list: the answer in words, stop_reason end_turn. Two model calls, one tool call.
 - The backyard question runs through the same loop at speed; the code no longer decides what to look at.
 
-## 4. The loop behind a framework call, and the hooks into it (TheCode, 12 clicks, 5 min)
-- Still: the picture small on the left (model, empty list, tools: a new agent); the Strands definition on the right,
+## 4. The loop behind a framework call, and the hooks into it (TheCode, 13 clicks, 5 min)
+- Still: the picture small on the left (the model above a frame labelled agent, which holds an empty list and the three
+  tools: the framework's object, which owns them and the loop from here on); the Strands definition on the right,
   `Agent(model, system_prompt, tools)` and one call. No loop in the code.
 - The call runs once at speed with nothing to read: four messages, two model calls, one tool call, inside the Agent.
 - Under the hood: the definition opens into the eight lines the framework runs; the list rewinds to the question.
@@ -61,9 +65,13 @@ enough that the agent makes its own.
   of the same places under other names.
 - A before-tool-call hook cancels a deletion; the refusal becomes the tool result.
 - The eight lines fold back into the definition, which has gained one line: `hooks=[...]`.
+- The application, now: the code fades, the stage returns with the compact agent inside the application, and the two
+  questions of move three run through it at speed. Four model calls, two tool calls, none of it the application's code.
 
 ## 5. The list is the only state (TheState, 4 clicks, 2 min)
-- Still: the eight messages from move three inside a dashed frame, the context window (drawn as messages, counted in tokens).
+- Still: the compact agent inside the application, eight rows. First change: it opens up into the eight messages of
+  move three, inside the agent frame, and the cards take their place by the model; a dashed frame around the list is the
+  context window (drawn as messages, counted in tokens).
 - Every call sends the whole list; a 40,000-token tool result overflows the window and the call is refused.
 - Sliding window: the oldest exchange leaves, a tool call and its result together.
 - Summarisation: the oldest messages become one; the most recent stay verbatim. Sessions and memory are the next talk.
