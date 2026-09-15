@@ -97,6 +97,10 @@ for f in sorted(glob.glob(f"{root}/scenes/s*.py")):
             both = sorted(groups & members)
             if both:
                 flags.append(f"{name}: {c.group(1)} animates {', '.join(both)} and one of its members in the same play (see docs/manim.md); do the member change in its own play first")
+        # a zoom that opens and closes inside one step: what it opened is on screen for a second and nobody reads it
+        for step in re.split(r"self\.(?:next_slide|finish)\(", body)[:-1]:
+            if len(re.findall(r"frame\.animate\.scale\(", step)) > 1:
+                flags.append(f"{name}: {c.group(1)} zooms in and back out inside one step; the opened view needs its own click (docs/principles.md rule 10)")
         for step in re.split(r"self\.next_slide\(", body)[:-1]:
             if len(re.findall(r"(?<!swap_)caption\(self", step)) + step.count("swap_caption(") > 1:
                 flags.append(f"{name}: {c.group(1)} changes the caption more than once inside one step")

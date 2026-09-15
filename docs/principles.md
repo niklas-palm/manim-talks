@@ -125,6 +125,9 @@ A camera zoom is a chance to open an object and show its parts in the same place
 the layer box stretches and the three matrices, the attention read and the feed-forward appear inside it. Small
 text in a zoom is rendered large and scaled down (`small()`). Everything drawn in the zoom goes into one group that
 fades on the way out, and the box shrinks back so the wide view is untouched.
+The opened view is its own click. The camera goes in and the parts appear; then the step ends, and the speaker decides
+when to pull back, because a zoom exists to be read and a zoom that closes in the same click was open for a second.
+`bin/check.py` flags a step that scales the camera twice.
 
 ## 11. Use the frame well
 

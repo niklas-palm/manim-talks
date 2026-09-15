@@ -3,7 +3,8 @@
   Final frame: the stage from move one plus two control loops (Deployment controller, ReplicaSet controller) watching
   the API server; etcd holds Deployment, ReplicaSet and three Pod records marked "no node"; nodes still empty.
   Clicks: 1 the Deployment controller: observe, compare, act: a ReplicaSet record  2 the ReplicaSet controller, opened
-  under a zoom: wants 3, has 0, act three times: three Pod records with no node  3 every line points at the API server.
+  under a zoom: wants 3, has 0, gap 3  3 back out: it acts three times, three Pod records with no node  4 every line
+  points at the API server.
 """
 from lib.palette import *
 from objects import *
@@ -59,7 +60,11 @@ class Controllers(TalkSlide):
         self.play(FadeIn(verbs), run_time=0.4)
         self.play(FadeIn(wants), FadeIn(has), FadeIn(gap), run_time=0.5)
         self.play(FadeIn(act), run_time=0.4)
-        self.wait(0.4)
+        self.wait(0.3)
+        self.next_slide("""The ReplicaSet controller is the same loop for a different record. Open it up and read it: observe, compare,
+        act. It wants three Pods that match the template, it has zero, so the gap is three, and the act it is about to take is
+        three Pod records. Every controller in the cluster is this shape; only the record kind and the arithmetic differ.""")
+        # --- back out, and the act lands: three Pod records
         self.play(FadeOut(VGroup(verbs, wants, has, gap, act)), run_time=0.3)
         self.play(frame.animate.scale(1 / ZOOM).move_to(ORIGIN), FadeIn(wide), FadeIn(c2[2]),
                   c2[0].animate.stretch_to_fit_height(H_ROW).stretch_to_fit_width(W_CTRL).shift(UP * (OPEN_H - H_ROW) / 2),
@@ -71,10 +76,9 @@ class Controllers(TalkSlide):
             self.play(p.animate.move_to(door(c2)), run_time=0.3)
             self.play(p.animate.scale(1 / 0.7).move_to(S.slots[2 + i]), run_time=0.35)
             S.cards[name] = p
-        self.next_slide("""The ReplicaSet controller is the same loop for a different record. Open it up: it wants three Pods that match
-        the template, it has zero, the gap is three, so it acts three times, and three Pod records land in etcd. Read the
-        status line: no node. A Pod record is still a description; nothing has been placed anywhere and nothing runs. The
-        counter at the bottom still says zero. Two loops have run, and all they produced was more records.""")
+        self.next_slide("""Back out, and the loop acts three times: three Pod records land in etcd. Read the status line on each: no
+        node. A Pod record is still a description; nothing has been placed anywhere and nothing runs. The counter at the
+        bottom still says zero. Two loops have run, and all they produced was more records.""")
         # --- every line points at the API server
         lines = VGroup(w1[0], w2[0])
         self.play(*[ln.animate.set_stroke(color=TEXT, opacity=1.0, width=3.2) for ln in lines], S.api[0].animate.set_stroke(width=4), run_time=0.6)

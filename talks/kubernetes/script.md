@@ -4,7 +4,7 @@ Spine: you write the state you want into one database; independent loops each wa
 forever. Everything Kubernetes does is one of those loops closing a gap between desired and actual.
 Audience: engineers who use kubectl daily and have not watched the machinery. Afterwards they can explain what happens
 between `kubectl apply` and a running container, why a lost node heals itself, and why a Service address is stable.
-Length: about 15 minutes, 27 clicks, 5 scenes. No title slide: the deck opens on the first move's still picture and the
+Length: about 15 minutes, 29 clicks, 5 scenes. No title slide: the deck opens on the first move's still picture and the
 speaker introduces the talk over it. Every scene begins on the previous scene's last frame and changes its title as the
 first thing moves, so the audience keeps one picture from the first click to the last.
 
@@ -19,21 +19,22 @@ control plane and its loops; A4 = the machines (nodes, kubelet, kube-proxy, and 
   durable part.
 - The nodes appear, empty: 3 desired, 0 running. The API server did not talk to a node.
 
-## 2. Loops that chase the gap (3 min) — `Controllers`, 4 clicks
+## 2. Loops that chase the gap (3 min) — `Controllers`, 5 clicks
 - A controller is observe, compare, act; it acts by writing records through the API server. The Deployment controller
   wants one ReplicaSet with this template, has none, creates it; then has nothing to do.
-- The ReplicaSet controller, opened under a zoom: wants 3, has 0, gap 3, acts three times: three Pod records with no
-  node. Still nothing runs.
+- The ReplicaSet controller, opened under a zoom: wants 3, has 0, gap 3. The opened loop holds until the next click.
+- Back out: it acts three times, three Pod records with no node. Still nothing runs.
 - Every line points at the API server: components never talk to each other; the database is the coordination, which is
   why each loop can be simple and can fail and restart.
 
-## 3. From record to process (3 min) — `SchedulerKubelet`, 6 clicks
+## 3. From record to process (3 min) — `SchedulerKubelet`, 7 clicks
 - The scheduler's trigger: a Pod record with no node.
 - Zoom into the node column. Filtering: feasible nodes, e.g. enough memory; node 3 is out. No feasible node means the Pod stays pending.
 - Scoring: rank feasible nodes (least allocated here); ties broken at random; binding writes the node name into the
   record.
-- Zoom into node 1. The kubelet on that node watches for Pods bound to it, pulls the image, starts the container, reports Running into the
-  same record. The first process of the talk.
+- Zoom into node 1. The kubelet on that node watches for Pods bound to it, pulls the image, starts the container: the
+  first process of the talk. The opened node holds until the next click.
+- Back out: the kubelet reports Running into the same record; desired 3, running 1.
 - The other two at speed; desired 3 = running 3; every loop finds no gap and waits.
 
 ## 4. A node dies (3 min) — `NodeDies`, 4 clicks

@@ -11,13 +11,13 @@ forever.
 | Move | Scene | Clicks | Minutes |
 |---|---|---|---|
 | 1. A record, not a process | `ApplyRequest` | 5 | 3 |
-| 2. Loops that chase the gap | `Controllers` | 4 | 3 |
-| 3. From record to process | `SchedulerKubelet` | 6 | 3 |
+| 2. Loops that chase the gap | `Controllers` | 5 | 3 |
+| 3. From record to process | `SchedulerKubelet` | 7 | 3 |
 | 4. A node dies | `NodeDies` | 4 | 3 |
 | 5. A stable address, and change | `ServiceRollout` | 8 | 3 |
 
 No title slide: the deck opens on the first move's still picture. Every scene begins on the previous scene's last frame and
-changes its title as the first thing moves, so nothing ever cuts; 27 clicks in all. One picture for the whole talk: the API
+changes its title as the first thing moves, so nothing ever cuts; 29 clicks in all. One picture for the whole talk: the API
 server as a bar across the middle with its three gates, the one door everything passes through; above it kubectl and the
 row of control loops, each on a short dashed line down to the bar; below it etcd at the left holding the records, three
 nodes at the right, each kubelet on a short dashed line up to the bar, and between them two counters, pods desired and

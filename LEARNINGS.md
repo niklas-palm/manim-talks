@@ -450,6 +450,14 @@ First principles that the passes confirmed, written to outlast the decks they ca
 - A list of blocks must lay each one under the real height of those above it, or a block cannot grow a line; the library's
   Stack does now, and equal heights give the same positions as before.
 
+## A zoom is read only if the speaker owns its end
+
+- A camera zoom exists so that something inside a box can be read. If the same click also pulls the camera back, the
+  opened view was on screen for about a second, under an animation, and nobody read it; two decks had this and the
+  speaker noticed before the review did. The opened view is a click of its own, the pull-back is the next one, and
+  the checker now flags a step that scales the camera twice. The general form: whenever an animation reveals something
+  to be read, the step ends there, and the speaker decides when it goes away.
+
 ## Before publishing
 
 - A generated page committed next to media that is not makes a fresh clone look broken: the page opens and every clip

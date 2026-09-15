@@ -4,7 +4,7 @@
   ReplicaSet and three Pod records bound to nodes and reported Running; three running-coloured pods on the nodes; 3 desired,
   3 running.
   Clicks: 1 the scheduler appears and picks a pod with no node  2 zoom into the nodes: filtering, node 3 has no room
-  3 scoring, then binding: the record gets a node  4 zoom into node 1: the kubelet pulls, starts, reports Running
+  3 scoring, then binding: the record gets a node  4 zoom into node 1: the kubelet pulls and starts  5 back out: it reports Running
   5 the other two at speed; desired equals running and the loops go quiet.
 """
 from lib.palette import *
@@ -87,17 +87,20 @@ class SchedulerKubelet(TalkSlide):
         sl = label("start container", 18, MUTED).scale(ZK).move_to(bl, aligned_edge=LEFT)
         self.play(FadeOut(bar), FadeOut(bl), FadeIn(sl), FadeIn(p1, scale=0.5), mem(n1, 0.55), run_time=0.6)
         self.wait(0.3)
+        self.next_slide("""The kubelet is the agent on every node, and it is a loop too: it watches the API server for Pod records bound to
+        its own node. Node one's kubelet sees this one. Now, and only now, something happens on a machine: it asks the
+        container runtime to pull the image, creates the container, and starts it. The yellow square is the first real
+        process in this talk, and the memory bar moved for the first time.""")
+        # --- back out: the kubelet reports into the same record
         self.play(FadeOut(sl), run_time=0.2)
         self.play(frame.animate.scale(1 / ZK).move_to(ORIGIN), FadeIn(wide2), run_time=1.0)
         pulse(self, p1, S.api[0], color=ACTUAL, run_time=0.5)
         pulse(self, S.api[0], pa, color=ACTUAL, run_time=0.3)
         self.play(pa[0].animate.set_stroke(color=ACTUAL), S.running.to(1), run_time=0.4)
         set_detail(self, pa, "node 1, Running", ACTUAL)
-        self.next_slide("""The kubelet is the agent on every node, and it is a loop too: it watches the API server for Pod records bound to
-        its own node. Node one's kubelet sees this one. Now, and only now, something happens on a machine: it asks the
-        container runtime to pull the image, creates the container, and starts it. The yellow square is the first real
-        process in this talk. Then it reports back, through the API server, into the same record: node 1, Running. The
-        record and the world now agree, and the counter says one.""")
+        self.next_slide("""Back out. The kubelet reports what it did, through the API server, into the same record: node 1, Running. It
+        is the same path every other loop used, and the same record the scheduler wrote into a moment ago. The record and the
+        world now agree, and the counter says one.""")
         # --- the other two, at speed
         for nm, ni, si, used in (("b", 1, 0, 0.8), ("c", 0, 1, 0.8)):
             pc, nd = S.cards[nm], S.nodes[ni]
