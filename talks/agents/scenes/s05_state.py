@@ -6,25 +6,24 @@ from objects import *
 
 class TheState(TalkSlide):
     def construct(self):
-        # --- the last frame of move four, rebuilt: the small picture with eight messages, the last one refused, and the framework call with its hook
+        # --- the last frame of move four, rebuilt: the stage, the compact agent inside the application with the eight rows of
+        # move three's two questions, four model calls and two tool calls
         t = title_still(self, *TITLES["code"])
-        mini_model, mini, mini_cards = mini_stage(CODE_END_KINDS)
-        mini.blocks[-1].set_fill(PROBLEM, 0.16).set_stroke(PROBLEM); mini.blocks[-1][1].set_fill(PROBLEM, 0.95)
-        fw = code(FRAMEWORK_HOOKS_SRC, "python", 18).move_to([3.4, 0.35, 0])
-        fwl = label(FRAMEWORK_LABEL, 14, MUTED).next_to(fw, DOWN, buff=GAP_TIGHT).align_to(fw, LEFT)
-        self.add(mini_model, mini, mini_cards, fw, fwl)
-        # --- the first change: the code has done its job; the picture grows back to full size with the nine messages of move three
         st = stage()
         user, app, model, arrows, calls, tools = st["user"], st["app"], st["model"], st["arrows"], st["calls"], st["tools"]
-        cards = tool_cards()
-        msgs = put_history(messages(), HIST_LOOP)
+        agent_c, lst_c, cards_c = agent_in_app(HIST_KINDS)
         calls.tracker.set_value(4); tools.tracker.set_value(2)
-        t = retitle(self, t, *TITLES["state"], extra=[FadeOut(fw), FadeOut(fwl),
-                                                      ReplacementTransform(mini_model, model), ReplacementTransform(mini, msgs), ReplacementTransform(mini_cards, cards),
-                                                      FadeIn(user), FadeIn(app), FadeIn(arrows), FadeIn(calls), FadeIn(tools)], run_time=1.2)
-        window = context_window()
+        self.add(user, app, model, arrows, calls, tools, agent_c, lst_c, cards_c)
+        # --- the first change: the agent opens up, its rows become the messages they are, the cards take their place by the model
+        agent = agent_frame()
+        cards = tool_cards()
+        msgs = put_history(messages(AGENT_LIST_TOP), HIST_LOOP)
+        t = retitle(self, t, *TITLES["state"], extra=[ReplacementTransform(agent_c, agent), ReplacementTransform(lst_c, msgs), ReplacementTransform(cards_c, cards)], run_time=1.2)
+        window = context_window(AGENT_LIST_TOP)
         self.play(FadeIn(window), run_time=0.6)
-        self.next_slide("""The list as move three left it, eight messages, and around it a dashed frame: the context window, the most the
+        self.next_slide("""The agent opens up so its list can be read: the same eight messages the two questions produced, inside the agent,
+        inside the application; the tool cards take their place by the model, which is where their descriptions go on every
+        call. Around the list a dashed frame: the context window, the most the
         model can take in one call. Drawn here as eight messages; a real window is counted in tokens, a few hundred thousand
         for current models, and a long tool result or a large document eats it fast. The list is the only state the loop
         has, and this is its limit.""")
