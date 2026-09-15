@@ -35,20 +35,18 @@ class TheCode(TalkSlide):
         calls.tracker.set_value(4); tools.tracker.set_value(2)
         self.add(user, app, model, arrows, calls, tools, cards, full)
         # --- the first change: the picture shrinks to the left; a new agent, so an empty list; the framework's definition on the right
-        mini_model, agent, mini, mini_cards = mini_stage([])
+        mini_model, mini, mini_cards = mini_stage([])
         fw = code(FRAMEWORK_SRC, "python", 18).move_to(CODE_POS)
         fwl = label("a framework: the loop you just watched, behind one call", 14, MUTED).next_to(fw, DOWN, buff=GAP_TIGHT).align_to(fw, LEFT)
         pic_l = label("the same picture, small: model, list, tools", 14, MUTED).next_to(mini_model, UP, buff=GAP_TIGHT).align_to(mini_model, LEFT)
         t = retitle(self, t, *TITLES["code"], extra=[FadeOut(user), FadeOut(app), FadeOut(arrows), FadeOut(calls), FadeOut(tools), FadeOut(full),
                                                      ReplacementTransform(model, mini_model), ReplacementTransform(cards, mini_cards)], run_time=1.2)
-        self.add(agent, mini)
+        self.add(mini)
         self.play(FadeIn(fw), FadeIn(fwl), FadeIn(pic_l), run_time=0.6)
         self.next_slide("""Everything the application did by hand in move three, a framework does behind one call. The picture stepped aside
-        to the left, small: the model, the three tools, and the list, which now sits inside a new frame labelled agent. That
-        frame is the framework's object: from here on it owns the list and runs the loop, and the application's own code is
-        whatever is outside it. A new agent, so the list is empty. On the right, the whole agent as Strands writes it: a
-        model, a system prompt, the list of tools, and then a question. There is no loop in this code. The loop is inside
-        the Agent, and this move is about what is inside.""")
+        to the left, small: the model, the list, the three tools; a new agent, so the list is empty. On the right, the whole
+        agent as Strands writes it: a model, a system prompt, the list of tools, and then a question. There is no loop in
+        this code. The loop is inside the Agent, and this move is about what is inside.""")
 
         # --- the call runs once at speed: nothing to read, the dance happens inside
         def into_model(rt):
@@ -60,15 +58,15 @@ class TheCode(TalkSlide):
         bar = highlight_line(fw, CALL_LINE)
         self.add(bar)
         self.play(FadeIn(bar), run_time=0.3)
-        q = mini_block("user")
+        q = block("", USER, w=2.6, h=MINI_H, bare=True)
         mini.append(self, q, run_time=0.3)
         into_model(0.15)
-        b = mini_block("tool_use")
+        b = block("", TOOL, w=2.6, h=MINI_H, bare=True)
         mini.append(self, b, frm=mini_model[0], run_time=0.25)
         travel(self, b, mini_cards[1], TOOL, edges=True, run_time=0.25)
-        mini.append(self, mini_block("tool_result"), frm=mini_cards[1], run_time=0.25)
+        mini.append(self, block("", RESULT, w=2.6, h=MINI_H, bare=True), frm=mini_cards[1], run_time=0.25)
         into_model(0.15)
-        mini.append(self, mini_block("assistant"), frm=mini_model[0], run_time=0.25)
+        mini.append(self, block("", MODEL, w=2.6, h=MINI_H, bare=True), frm=mini_model[0], run_time=0.25)
         self.play(FadeOut(bar), run_time=0.3)
         self.next_slide("""The last line runs. Watch the picture, because there is nothing to read: the question joins the list, the list goes
         to the model, a tool call comes back, the thermometer answers, the result joins the list, the model is called again
@@ -102,7 +100,7 @@ class TheCode(TalkSlide):
         self.next_slide("""One line per click. Line one: the whole list, with the system prompt and the tool definitions, goes into the
         model, and the model works. Everything the model will ever know about this conversation is what went in here.""")
         to_line("append")
-        b = mini_block("tool_use")
+        b = block("", TOOL, w=2.6, h=MINI_H, bare=True)
         mini.append(self, b, frm=mini_model[0], run_time=0.7)
         self.next_slide("""Line two: the reply comes out and is appended to the list, whatever it is. This time it is a tool call, yellow, so
         the list is one message longer before anything has been decided.""")
@@ -113,7 +111,7 @@ class TheCode(TalkSlide):
         function behind the card and runs it against the real device. This is the only line where anything happens in the
         world, and it is your function that runs.""")
         to_line("result")
-        mini.append(self, mini_block("tool_result"), frm=mini_cards[1], run_time=0.7)
+        mini.append(self, block("", RESULT, w=2.6, h=MINI_H, bare=True), frm=mini_cards[1], run_time=0.7)
         self.next_slide("""Line five: the result comes back from the tool and is appended, as a message in the user's role, teal. The model
         has not seen it yet; it is just in the list.""")
         to_line("again")
@@ -124,20 +122,20 @@ class TheCode(TalkSlide):
         def pass_(rt):
             into_model(rt)
             to_line("append", rt)
-            b = mini_block("tool_use")
+            b = block("", TOOL, w=2.6, h=MINI_H, bare=True)
             mini.append(self, b, frm=mini_model[0], run_time=rt * 1.5)
             to_line("test", rt)
             to_line("run", rt)
             travel(self, b, mini_cards[1], TOOL, edges=True, run_time=rt * 1.5)
             to_line("result", rt)
-            mini.append(self, mini_block("tool_result"), frm=mini_cards[1], run_time=rt * 1.5)
+            mini.append(self, block("", RESULT, w=2.6, h=MINI_H, bare=True), frm=mini_cards[1], run_time=rt * 1.5)
             to_line("again", rt)
             to_line("model", rt)
 
         pass_(0.15)
         into_model(0.15)
         to_line("append", 0.15)
-        mini.append(self, mini_block("assistant"), frm=mini_model[0], run_time=0.25)
+        mini.append(self, block("", MODEL, w=2.6, h=MINI_H, bare=True), frm=mini_model[0], run_time=0.25)
         to_line("test", 0.15)
         to_line("return", 0.3)
         self.next_slide("""A second pass at speed, one more tool call than the fast run needed, to show the loop does not care how many. On
@@ -163,11 +161,11 @@ class TheCode(TalkSlide):
         self.play(dots[4].animate.set_color(PROBLEM), names[4].animate.set_color(PROBLEM), run_time=0.4)
         bar2 = highlight_line(cd, L["run"], PROBLEM)
         self.add(bar2)
-        req = mini_block("tool_use")
+        req = block("", TOOL, w=2.6, h=MINI_H, bare=True)
         mini.append(self, req, frm=mini_model[0], run_time=0.4)
         cross = label("delete_recording(...): refused by policy", 14, PROBLEM).move_to([-6.3, -2.45, 0], aligned_edge=LEFT)
         self.play(FadeIn(bar2), FadeIn(cross), run_time=0.5)
-        mini.append(self, mini_block("refused"), frm=mini_cards[2], run_time=0.5)
+        mini.append(self, block("", PROBLEM, w=2.6, h=MINI_H, bare=True), frm=mini_cards[2], run_time=0.5)
         self.next_slide("""One hook in action. The model asks to delete a recording; a before-tool-call hook checks a policy and cancels the
         call. The tool never runs, and the refusal becomes the tool result, so the model learns it was refused and tells the
         user instead of pretending. This is the shape of every guardrail in an agent: the model asks, your code decides.""")
@@ -178,39 +176,7 @@ class TheCode(TalkSlide):
         self.play(FadeOut(dots), FadeOut(names), FadeOut(bar2), FadeOut(cross), FadeOut(hl), run_time=0.4)
         self.play(ReplacementTransform(cd, fw2), run_time=1.0)
         self.play(FadeIn(fwl2), run_time=0.4)
-        self.next_slide("""And the eight lines fold back into the definition, which has gained one line: the hook, registered on the agent.
+        self.finish("""And the eight lines fold back into the definition, which has gained one line: the hook, registered on the agent.
         That is the trade a framework offers. You write the tools and the hooks; it runs the loop, keeps the list and raises
         the events. If you understood the loop, you understand what it does for you and what it cannot do: it cannot decide
-        what your tools are, and it cannot make the list stop growing.""")
-
-        # --- the application, now: the agent inside it, and the two questions of move three through it at speed
-        st = stage()
-        user, app, model, arrows, calls, tools = st["user"], st["app"], st["model"], st["arrows"], st["calls"], st["tools"]
-        agent2, lst, cards2 = agent_in_app([])
-        K = IN_APP[2]
-        self.play(FadeOut(fw2), FadeOut(fwl2), *[FadeOut(b) for b in mini.blocks], run_time=0.4)
-        self.play(FadeIn(user), FadeIn(app), FadeIn(arrows), FadeIn(calls), FadeIn(tools),
-                  ReplacementTransform(mini_model, model), ReplacementTransform(agent, agent2), ReplacementTransform(mini_cards, cards2), run_time=1.0)
-        self.add(lst)
-        n = {"calls": 0, "tools": 0}
-
-        def turn(card, rt):
-            lst.append(self, mini_block("user", K), frm=user, run_time=rt * 2)
-            call_model(self, lst, model, extra=cards2, run_time=rt * 2)
-            b = lst.append(self, mini_block("tool_use", K), frm=model[0], run_time=rt * 2)
-            n["calls"] += 1; self.play(calls.to(n["calls"]), run_time=rt)
-            travel(self, b, cards2[card], TOOL, edges=True, run_time=rt * 2)
-            lst.append(self, mini_block("tool_result", K), frm=cards2[card], run_time=rt * 2)
-            n["tools"] += 1; self.play(tools.to(n["tools"]), run_time=rt)
-            call_model(self, lst, model, extra=cards2, run_time=rt * 2)
-            lst.append(self, mini_block("assistant", K), frm=model[0], run_time=rt * 2)
-            n["calls"] += 1; self.play(calls.to(n["calls"]), run_time=rt)
-
-        turn(1, 0.2)    # warm enough to open the door: the thermometer
-        turn(0, 0.12)   # anyone in the backyard: the camera
-        self.finish("""And this is the application now. The user on the left and the model top right, as in move one; but inside the
-        application there is an agent: the framework's object, holding the list and the tools and running the loop. The
-        application's own code is whatever is around it: it hands the question in and gets the answer back. Watch the two
-        questions of move three go through it at speed: the door, the thermometer, the answer; the backyard, the camera, the
-        answer. Four model calls, two tool calls, and the application wrote none of it. The next move opens that agent up,
-        because the list inside it has a limit.""")
+        what your tools are, and it cannot make the list stop growing. That last one is the next move.""")
