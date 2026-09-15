@@ -17,6 +17,8 @@ experiences a deck: what they see first, then how it moves, then the words, then
       next click. The note for that click names what is on screen.
 - [ ] Zooms open an object where the audience was looking and close cleanly: contents fade first, then the camera
       pulls back to an untouched wide view.
+- [ ] Every zoomed view has its own click: the camera goes in and the parts appear, the step ends, and the pull-back is
+      the next click. A zoom that opens and closes in one step was never read (the checker flags it).
 - [ ] Repeated pictures replay at speed inside one click; nothing is explained twice by clicks.
 
 ## 2. The frame is used, and organised
