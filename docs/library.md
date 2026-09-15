@@ -147,7 +147,7 @@ Three decks independently drew state as a list that only grows; these are the sh
 | `Log(x0, y, capacity, base, name, cell, gap)` | an append-only row of cells with offsets beneath on a rail: a partition, a queue, a buffer, a write-ahead log. `append(scene, colour, source)` flies an item in; `put(colour)` places one silently; `cells[i]`, `offs[i]`, `slot(i)`, `below(i)` |
 | `Pointer(name, color)` | a reader's position under a Log; `place(log, i)`, `to(log, i)` returns the Transform. Replay is the pointer moving back |
 | `block(text, color, w, h, size, bare)` | one item of a Stack: a coloured block with a bar and one line of text; `"role · text"` colours the role |
-| `Stack(x, top, h, gap)` | a list of blocks growing downward; `append(scene, block, frm)` flies a block in from what produced it; the whole list is one VGroup so a copy can travel as one thing |
+| `Stack(x, top, h, gap)` | a list of blocks growing downward; `append(scene, block, frm)` flies a block in from what produced it; `slot(i, h)` is where the next one goes, under the real height of those above it, so a block may grow a line; the whole list is one VGroup so a copy can travel as one thing |
 | `code(source, language, size, width)` | syntax-highlighted code (the theme's Pygments style, any language Pygments knows) on the theme's panel, laid out large and scaled so spacing is exact; `block.lines[i]` per line, `block.panel` |
 | `highlight_line(block, i)` | a translucent bar behind line i; add it after the code and move it down the lines while the picture does each step |
 

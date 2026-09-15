@@ -39,9 +39,42 @@ def model_box() -> VGroup:
     return box(MODEL_W, MODEL_H, "model", MODEL, size=22, fill=FILL).move_to(MODEL_C)
 
 
-def message(kind: str, text: str) -> VGroup:
-    """One message in the list, coloured by its kind; the role in the block's colour."""
-    return block(text, KIND[kind], w=BW, h=BH, size=17)
+LINE = 0.28   # one more content block in a message, drawn as one more line
+
+
+def message(kind: str, text: str, extra: str = None) -> VGroup:
+    """One message in the list, coloured by its kind; the role in the block's colour. `extra` is a second content block
+    in the same message (the frame the code fetched, beside the question), drawn as a second line in the colour of what
+    came back from the world."""
+    b = block(text, KIND[kind], w=BW, h=BH, size=17)
+    if extra:
+        add_line(b, extra)
+    return b
+
+
+def add_line(b: VGroup, text: str) -> Text:
+    """Grow a one-line message by a second content block, statically: frame and bar stretch down from the same top edge
+    and the new line sits under the first. Returns the new line, already in the block."""
+    top, h = b[0].get_top()[1], b[0].height + LINE
+    b[0].stretch_to_fit_height(h).move_to([b[0].get_center()[0], top - h / 2, 0])
+    b[1].stretch_to_fit_height(h).move_to(b[0].get_left(), aligned_edge=LEFT)
+    t = label(text, 17, RESULT).move_to([b[2].get_left()[0], b[2].get_center()[1] - LINE, 0], aligned_edge=LEFT)
+    b.add(t)
+    return t
+
+
+def attach(scene, b: VGroup, text: str, frm: Mobject, run_time: float = 0.8) -> Text:
+    """add_line, animated: the message grows a line while the new content flies in from what produced it, so the
+    audience sees the frame join the question rather than a second message appear."""
+    g = b.copy()
+    t = add_line(g, text)
+    final = t.get_center()
+    t.scale(0.25).move_to(frm.get_center())
+    scene.add(t)
+    scene.play(Transform(b[0], g[0]), Transform(b[1], g[1]), t.animate.scale(4.0).move_to(final), run_time=run_time)
+    scene.remove(t)
+    b.add(t)
+    return t
 
 
 def messages() -> Stack:
@@ -129,9 +162,9 @@ def stage():
 
 # ------------------------------------------------------------------------------------------------ what each scene leaves behind
 # Every scene after the first rebuilds the previous scene's last frame from these, statically, so the seam is invisible.
-HIST_API = [("user", "user · anyone in the backyard?"), ("user", "user · [frame from camera 2] + the question"),
-            ("assistant", "assistant · yes, one person by the shed"), ("user", "user · warm enough to open the door?"),
-            ("user", "user · [frame from camera 2] + the question"), ("assistant", "assistant · I cannot read a temperature from a frame")]
+FRAME = "[frame from camera 2]"   # the second content block of a question in move one: the picture the code fetched
+HIST_API = [("user", "user · anyone in the backyard?", FRAME), ("assistant", "assistant · yes, one person by the shed"),
+            ("user", "user · warm enough to open the door?", FRAME), ("assistant", "assistant · I cannot read a temperature from a frame")]
 HIST_LOOP = [("user", "user · warm enough to open the door?"), ("tool_use", "assistant · tool_use: query_temperature()"),
              ("tool_result", "user · tool_result: 19 °C"), ("assistant", "assistant · 19 °C: yes, open it"),
              ("user", "user · anyone in the backyard?"), ("tool_use", 'assistant · tool_use: query_camera(2, "anyone there?")'),
@@ -173,7 +206,7 @@ HIST_STATE = [("summary", "summary · door opened at 19 °C; one person by the s
 # the labels one scene leaves for the next to start from; one string, two frames, so the seam cannot drift
 STAYS_LABEL = "stays here: the code, the API, the credentials"
 TO_MODEL_LABEL = "to the model: name, description, input schema"
-CHOOSES_LABEL = "the model chooses; the application runs it; then asks the model again"
+WHICH_LABEL = "which tool does this question need?"
 FRAMEWORK_LABEL = "the loop, the list and the hook: behind one call"
 SUMMARY_LABEL = "summarisation: the oldest messages become one; the most recent stay verbatim"
 WINDOW = 8   # messages the drawn context window holds; a real window is counted in tokens (the note says so)
@@ -198,8 +231,8 @@ def context_window() -> VGroup:
 
 def put_history(msgs: Stack, history) -> Stack:
     """Fill a list without animation, for a scene's first frame."""
-    for kind, text in history:
-        b = message(kind, text).move_to(msgs.slot(len(msgs.blocks))); msgs.blocks.append(b); msgs.add(b)
+    for entry in history:
+        b = message(*entry); b.move_to(msgs.slot(len(msgs.blocks), b.height)); msgs.blocks.append(b); msgs.add(b)
     return msgs
 
 

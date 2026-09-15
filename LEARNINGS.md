@@ -437,6 +437,19 @@ First principles that the passes confirmed, written to outlast the decks they ca
 - Stop a background render before editing the files it reads. A scene file changed while an earlier scene renders is
   what the render reaches next, and the frames then disagree with the code that claims to have produced them.
 
+## Where a protocol detail belongs
+
+- Draw a protocol's shape where it is true and explain it where it matters, not before. A plain application that sends a
+  picture with a question sends one message with two content blocks; drawing it as two user messages was accurate about
+  nothing and taught the audience the wrong shape early. Later, when a tool result arrives in the user's role, that is the
+  one place the protocol surprises, so it gets a click of its own with the label on the role; the same fact appended to a
+  click about running the tool was read by nobody.
+- A preview of the next move's mechanism is a cut in disguise. A move that ends by ghosting the tool cards into the model,
+  to say "and then the model chooses", showed a motion whose meaning the next move was about to draw properly; ending on
+  the named problem instead, with the answer in the note, lets the next move's first call carry the whole idea.
+- A list of blocks must lay each one under the real height of those above it, or a block cannot grow a line; the library's
+  Stack does now, and equal heights give the same positions as before.
+
 ## Before publishing
 
 - A generated page committed next to media that is not makes a fresh clone look broken: the page opens and every clip

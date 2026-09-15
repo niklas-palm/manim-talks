@@ -619,11 +619,17 @@ class Stack(VGroup):
         super().__init__(**kw)
         self.x, self.top, self.h, self.gap, self.blocks = x, top, h, gap, []
 
-    def slot(self, i: int):
-        return [self.x, self.top - (self.h / 2 + i * (self.h + self.gap)), 0]
+    def slot(self, i: int, h: float = None):
+        """The centre of slot i for a block h tall (the list's height by default): under the blocks already there, each
+        as tall as it is, because a block may have grown a line (a message with two content blocks)."""
+        h = self.h if h is None else h
+        y = self.top
+        for k in range(i):
+            y -= (self.blocks[k].height if k < len(self.blocks) else self.h) + self.gap
+        return [self.x, y - h / 2, 0]
 
     def append(self, scene, b: VGroup, frm=None, run_time: float = 0.45):
-        target = self.slot(len(self.blocks))
+        target = self.slot(len(self.blocks), b.height)
         if frm is not None:                       # born small at its source, growing into its slot: the audience sees where it came from
             b.scale(0.25).move_to(frm.get_center())
             scene.add(b)
