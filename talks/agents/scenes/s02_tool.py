@@ -76,18 +76,12 @@ class ToolFromApi(TalkSlide):
         two more cards, each tied to the device it reaches. The line that matters for security and for architecture: what
         crosses to the model is the cards, name, description and schema, text. What stays in the application is the code, the
         API endpoints and the credentials. The model never executes anything; it can only ask.""")
-        # --- the new problem: which tool? the model chooses, and the application must then call it again
-        cards = VGroup(card, *others)
-        q = label("which tool does this question need?", 15, PROBLEM).next_to(app[0], DOWN, buff=GAP_TIGHT).align_to(app[0], LEFT)
+        # --- the new problem: which tool? Named here; the next move shows the answer, the cards going in with the list
+        q = under_app(WHICH_LABEL, 15, PROBLEM, app=app)
         self.play(FadeIn(q), run_time=0.4)
-        ghost = VGroup(*[c.copy() for c in cards]).set_opacity(0.6)
-        self.play(ghost.animate.scale(0.15).move_to(model[0].get_center()), run_time=0.9)
-        self.play(FadeOut(ghost), model[0].animate.set_fill(MODEL, 0.35), run_time=0.25)
-        self.play(model[0].animate.set_fill(MODEL, 0.10), run_time=0.2)
-        chooses = label(CHOOSES_LABEL, 15, TEXT).move_to(q, aligned_edge=LEFT)
-        self.play(FadeOut(q), FadeIn(chooses), run_time=0.5)
         self.finish("""And now the new problem, the one the old code never had: with three tools, which one does a question need? Not
-        the code; the code deciding was the wall. The model can choose, if it is told what the tools are: the cards go into
-        the call beside the system prompt and the messages, and the model answers with the name of a tool and the arguments
-        it wants. But a choice is not an answer. The application has to run the chosen tool, put the result into the list, and
-        ask the model again, until the model answers in words. That is the loop, and in the next move the application runs it.""")
+        the code; the code deciding was the wall. The model can choose, if it is told what the tools are: read the arrow into
+        the model once more, the cards go into every call beside the system prompt and the messages, and the model can
+        answer with the name of a tool and the arguments it wants. But a choice is not an answer. The application has to run
+        the chosen tool, put the result into the list, and ask the model again, until the model answers in words. That is the
+        loop, and in the next move the application runs it.""")

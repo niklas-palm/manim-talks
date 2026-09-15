@@ -16,11 +16,11 @@ class TheLoop(TalkSlide):
         code2 = code(SRC2, "python", 15).move_to([LIST_X, -0.05, 0])
         stays = label(STAYS_LABEL, 14, MUTED).next_to(code2, DOWN, buff=GAP_TIGHT).align_to(code2, LEFT)
         to_model = label(TO_MODEL_LABEL, 14, TOOL).move_to([MODEL_C[0] - CARD_W / 2, 0.9, 0], aligned_edge=LEFT)
-        chooses = under_app(CHOOSES_LABEL, 15, TEXT, app=app)
-        self.add(user, app, model, arrows, calls, tools, cards, code2, stays, to_model, chooses)
+        which = under_app(WHICH_LABEL, 15, PROBLEM, app=app)
+        self.add(user, app, model, arrows, calls, tools, cards, code2, stays, to_model, which)
         msgs = messages()
         # --- the first change: the code steps aside; the cards stay; the list is empty and ready for the loop
-        t = retitle(self, t, *TITLES["loop"], extra=[FadeOut(code2), FadeOut(stays), FadeOut(to_model), FadeOut(chooses)])
+        t = retitle(self, t, *TITLES["loop"], extra=[FadeOut(code2), FadeOut(stays), FadeOut(to_model), FadeOut(which)])
         self.add(msgs)
         self.next_slide("""The same picture with the three tool cards in place and an empty list. Read the arrow into the model once more:
         the system prompt, the tools, and the messages. From here on every call carries the cards too, so the model knows
@@ -38,12 +38,22 @@ class TheLoop(TalkSlide):
         a rule. It cannot run it; it can only ask.""")
         # --- the application runs it
         travel(self, tu, cards[1], TOOL, text="run", edges=True, run_time=0.7)          # the call goes to the tool that answers it
-        msgs.append(self, message("tool_result", "user · tool_result: 19 °C"), frm=cards[1], run_time=0.8)   # the result comes back from that tool into its slot
-        ran = label("the application ran it; the model never does", 14, MUTED).next_to(app[0], DOWN, buff=GAP_TIGHT).align_to(app[0], LEFT)
+        ran = under_app("the application ran it; the model never does", 14, MUTED, app=app)
         self.play(tools.to(1), FadeIn(ran), run_time=0.4)
-        self.next_slide("""The application sees the tool call, finds the function behind the card, runs it against the real thermometer, and
-        appends the result to the list as a message in the user's role, tagged with the call it answers. Tool calls: one.
-        Nothing has been decided about the door yet; the model has not seen the number.""")
+        self.next_slide("""The application sees the tool call, finds the function behind the card, and runs it against the real thermometer.
+        Tool calls: one. The model asked; the application acted. That division never changes, whatever the framework: the
+        model never executes anything.""")
+        # --- the result comes back, and look at its role: the first time, this gets a click of its own
+        msgs.append(self, message("tool_result", "user · tool_result: 19 °C"), frm=cards[1], run_time=0.8)   # the result comes back from that tool into its slot
+        role = under_app("the result returns as a user message", 14, RESULT, app=app)
+        self.play(FadeOut(ran), run_time=0.25)
+        self.play(FadeIn(role), run_time=0.3)
+        self.next_slide("""The thermometer answers 19 degrees and the application appends it to the list. Look at the role on that message:
+        user. The protocol has two roles, user and assistant, and nothing else; the model's turn ended with a request, so
+        whatever answers the request is, from the model's point of view, the other side talking. The result goes back as a
+        user message, tagged with the id of the call it answers, and in the same colour as the frame the code fetched in move
+        one: something that came from the world. Nothing has been decided about the door yet; the model has not seen the
+        number.""")
         # --- call again; the answer in words
         call_model(self, msgs, model, extra=cards, run_time=0.8)
         reply(self, msgs, model, "assistant", "assistant · 19 °C: yes, open it", run_time=0.6)
@@ -53,7 +63,7 @@ class TheLoop(TalkSlide):
         end_turn. That is the whole loop: call, if the reply is a tool call then run it and append the result and call
         again, otherwise the turn is over. Two model calls, one tool call, one question the code alone could not answer.""")
         # --- the same loop at speed, for the first question
-        self.play(FadeOut(ran), FadeOut(stop2), run_time=0.3)
+        self.play(FadeOut(role), FadeOut(stop2), run_time=0.3)
         msgs.append(self, message("user", "user · anyone in the backyard?"), frm=user, run_time=0.35)
         call_model(self, msgs, model, extra=cards, run_time=0.4)
         tu2 = reply(self, msgs, model, "tool_use", 'assistant · tool_use: query_camera(2, "anyone there?")', run_time=0.3)

@@ -12,7 +12,7 @@ growing.
 |---|---|---|---|
 | 1. An application with one model call | `TheApi` | 3 | 2 |
 | 2. The whole process becomes a tool | `ToolFromApi` | 4 | 2.5 |
-| 3. The application runs the loop itself | `TheLoop` | 5 | 3 |
+| 3. The application runs the loop itself | `TheLoop` | 6 | 3 |
 | 4. The loop behind a framework call, and the hooks into it | `TheCode` | 12 | 5 |
 | 5. The list is the only state | `TheState` | 4 | 2 |
 | 6. Every agent today works like this | `EveryAgent` | 3 | 1.5 |
@@ -34,7 +34,11 @@ the same thing change role rather than a new thing appear. The loop is run first
 three); then the framework call that hides it is shown and run once with nothing to read, and only then is the call
 opened into the eight lines and walked one line per click (move four). Hooks come after the framework is named, because
 they are the framework's feature, not the loop's; the move closes by folding the code back into the definition with the
-hook as one more line, so the audience sees what the framework took and what it gave. Tool cards carry three lines (name
+hook as one more line, so the audience sees what the framework took and what it gave. The plain application's question is one message that grows a line when the frame comes back, not a second user message:
+the protocol's shape (a picture is a content block beside the text) is drawn where it is true and not explained until it
+matters, which is when a tool result arrives in the user's role in move three, and that arrival gets a click of its own.
+Move two ends on the named problem, which tool a question needs, without a preview of the cards going into the model; the
+loop scene draws that properly on its first call. Tool cards carry three lines (name
 17, description 14, schema 13) in a 3.6 by 0.95 card. The context window is drawn as eight messages because tokens
 cannot be drawn; the label and the note say so. Every label one scene leaves for the next is a constant in `objects.py`,
 and the window is one builder, so the seams cannot drift.

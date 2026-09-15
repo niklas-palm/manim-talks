@@ -6,7 +6,7 @@ Audience: engineers who have used chat assistants and want to see what an agent 
 knowledge. Afterwards they should be able to turn one of their own API calls into a tool, read any agent framework's
 loop, say where guardrails attach, explain why long agent conversations need managing, and see a coding agent as the
 same loop with generic tools.
-Length: 16 minutes, 31 clicks, 6 scenes. Every scene opens on a still picture and the mechanism starts on the next click.
+Length: 16 minutes, 32 clicks, 6 scenes. Every scene opens on a still picture and the mechanism starts on the next click.
 
 One picture throughout, on the library grid: the user at the left margin; the application as a box holding the list of
 messages, which grows downward and is the only state; the model top right, which the list goes into and one reply
@@ -25,10 +25,11 @@ enough that the agent makes its own.
 
 ## 1. An application with one model call (TheApi, 3 clicks, 2 min)
 - Still: user, application whose whole code is three lines, model, a camera API the code calls (dashed link).
-- A question: the code fetches the latest frame, frame and question become the list, the whole list goes to the model,
-  one reply in words. Model calls: 1. This is how applications used models before agents.
-- A question the code cannot serve: the code fetches a frame again, the model cannot read a temperature from it; a
-  thermometer exists with no code path to it. The wall: the code decided what to fetch, not the model.
+- A question: the code fetches the latest frame and puts it into the user's message beside the question (one message,
+  two content blocks, drawn as two lines), the list goes to the model, one reply in words. Model calls: 1. This is how
+  applications used models before agents.
+- A question the code cannot serve: the code fetches a frame again into the message, the model cannot read a temperature
+  from it; a thermometer exists with no code path to it. The wall: the code decided what to fetch, not the model.
 
 ## 2. The whole process becomes a tool (ToolFromApi, 4 clicks, 2.5 min)
 - Still: the same picture, the conversation cleared, the three lines moved up to be read as one process.
@@ -37,13 +38,15 @@ enough that the agent makes its own.
   becomes the card's device tag.
 - Two more functions become two more cards. What crosses to the model: name, description, schema. What stays: code,
   API, credentials.
-- The new problem: which tool does a question need? The cards go into the model with the list; the model chooses; the
-  application must run the choice and ask the model again.
+- The new problem, named and left standing: which tool does a question need? The note says the model can choose if it
+  is told what the tools are; the next move shows it, so nothing is drawn here that the loop will draw properly.
 
-## 3. The application runs the loop itself (TheLoop, 5 clicks, 3 min)
+## 3. The application runs the loop itself (TheLoop, 6 clicks, 3 min)
 - Still: three cards in place, empty list; the arrow into the model reads system prompt + tools + messages.
 - The question that failed: the reply is a tool call (stop_reason tool_use), chosen from the descriptions.
-- The application runs it against the thermometer and appends the result as a message in the user's role.
+- The application runs it against the thermometer; the model never does.
+- The result comes back into the list as a message in the user's role. Its own click, the first time: the protocol has
+  two roles, and a tool result is the other side answering the model's request.
 - Called again with the longer list: the answer in words, stop_reason end_turn. Two model calls, one tool call.
 - The backyard question runs through the same loop at speed; the code no longer decides what to look at.
 
@@ -116,7 +119,8 @@ enough that the agent makes its own.
   order; the drawings are new.
 
 ## Simplifications
-- Messages are drawn as one line each; a real message can hold several content blocks (text and tool_use together).
+- Messages are drawn as one line each, except the plain application's questions, which show their two content blocks
+  (the question and the frame) as two lines; a real message can hold several blocks (text and tool_use together).
 - The context window is drawn as room for eight messages and labelled so; real windows are measured in tokens (the note
   gives 200k and 1M).
 - One tool call per turn is drawn; models can request several in one reply (parallel tool use), noted in the notes.

@@ -27,24 +27,25 @@ class TheApi(TalkSlide):
         model calls, and tool calls, which stay at zero for a while. Nothing here is an agent.""")
         # --- one question, answered the pre-agent way: fetch, then one model call
         bar = highlight_line(src, 1)
-        msgs.append(self, message("user", "user · anyone in the backyard?"), frm=user, run_time=0.8)
+        q = msgs.append(self, message("user", "user · anyone in the backyard?"), frm=user, run_time=0.8)
         self.add(bar); self.play(FadeIn(bar), run_time=0.2)
         travel(self, src, camera, MUTED, text="frame(2)", edges=True, run_time=0.7)          # the request goes from the code to the API
-        msgs.append(self, message("user", "user · [frame from camera 2] + the question"), frm=camera, run_time=0.9)   # the frame comes back into the list
+        attach(self, q, FRAME, frm=camera, run_time=0.9)                                     # the frame comes back into the same message
         self.play(bar.animate.move_to(highlight_line(src, 2)), run_time=0.3)
         call_model(self, msgs, model, run_time=1.0)
         reply(self, msgs, model, "assistant", "assistant · yes, one person by the shed", run_time=0.7)
         one = label("one model call per question", 14, MODEL).next_to(app[0], DOWN, buff=GAP_TIGHT).align_to(app[0], LEFT)
         self.play(calls.to(1), FadeOut(bar), FadeIn(one), run_time=0.4)
         self.next_slide("""The user asks whether anyone is in the backyard. Follow the code. Line two runs: the application calls the camera
-        API and gets the latest frame. The frame and the question become the list. Line three: one model call, the whole list
+        API and gets the latest frame, and puts it into the user's message next to the question: one message, a question and a
+        picture, in the colour this talk uses for anything that came from the world. Line three: one model call, the list
         goes in, and one reply comes back in words: yes, one person by the shed. One model call per question. This is a
         perfectly good application, and it is how most teams first used a model: the code decides what to fetch, fetches it,
         and asks the model to read it.""")
         # --- a question the code cannot serve
-        msgs.append(self, message("user", "user · warm enough to open the door?"), frm=user, run_time=0.5)
+        q2 = msgs.append(self, message("user", "user · warm enough to open the door?"), frm=user, run_time=0.5)
         travel(self, src, camera, MUTED, text="frame(2)", edges=True, run_time=0.35)
-        msgs.append(self, message("user", "user · [frame from camera 2] + the question"), frm=camera, run_time=0.5)
+        attach(self, q2, FRAME, frm=camera, run_time=0.5)
         call_model(self, msgs, model, run_time=0.6)
         reply(self, msgs, model, "assistant", "assistant · I cannot read a temperature from a frame", run_time=0.5)
         thermo = device_box("thermometer", CARD_YS[1])
@@ -52,7 +53,7 @@ class TheApi(TalkSlide):
         why = label("the code decided what to fetch, not the model", 14, PROBLEM).move_to(one, aligned_edge=LEFT)
         self.play(calls.to(2), FadeIn(thermo), FadeIn(wall), FadeOut(one), FadeIn(why), run_time=0.6)
         self.finish("""A second question: is it warm enough to open the door? The code does the only thing it knows, fetches a camera
-        frame, and the model answers honestly that a frame has no temperature in it. A thermometer exists, right there, but no
+        frame and puts it in the message, and the model answers honestly that a frame has no temperature in it. A thermometer exists, right there, but no
         code path reaches it, because line two decided what to fetch before the model ever saw the question. Notice also what
         every call carried: the whole list, again; the model keeps nothing between calls. That is the wall an agent removes:
         the decision of what to look at has to move from the code to the model. The next move is about how, and it starts
