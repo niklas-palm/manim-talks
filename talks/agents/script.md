@@ -6,15 +6,12 @@ Audience: engineers who have used chat assistants and want to see what an agent 
 knowledge. Afterwards they should be able to turn one of their own API calls into a tool, read any agent framework's
 loop, say where guardrails attach, explain why long agent conversations need managing, and see a coding agent as the
 same loop with generic tools.
-Length: 16 minutes, 33 clicks, 6 scenes. Every scene opens on a still picture and the mechanism starts on the next click.
+Length: 17 minutes, 34 clicks, 7 scenes. Every scene opens on a still picture and the mechanism starts on the next click.
 
 One picture throughout, on the library grid: the user at the left margin; the application as a box holding the list of
 messages, which grows downward and is the only state; the model top right, which the list goes into and one reply
 comes out of; the tools in a column under the model, each card carrying the device it reaches; two counters at the
-bottom, model calls and tool calls. From move four on, a frame labelled agent holds the list and the tools: the framework's
-object, which owns them and runs the loop. Beside the code it is drawn small; at the end of move four it is placed inside
-the application and runs the two questions of move three at speed, so that the application of move one (its own code
-deciding) and the application that runs an agent are visibly different things. One accent slot per meaning: the user, the model, the tools, what came back from
+bottom, model calls and tool calls. One accent slot per meaning: the user, the model, the tools, what came back from
 the world, and a wall.
 
 The red thread, in one paragraph: a plain application answers questions about a camera with one model call, and its
@@ -23,8 +20,9 @@ Now something must choose a tool per step; the model can, if it is told what the
 has to run the choice and ask again, so the application ends up running a loop in its own code. A framework hides that
 loop behind one `Agent(...)` call; under the hood it is eight lines, and because the framework owns them it can offer
 hooks at the places the loop has (Strands names an event for each). The loop only appends, so the list grows until it
-hits the context window, and two remedies shorten it. And every agent in use today is this loop with tools generic
-enough that the agent makes its own.
+hits the context window, and two remedies shorten it. Every agent in use today is this loop with tools generic
+enough that the agent makes its own. And at the end all of it folds into one thing, the agent, drawn compact inside the
+application with its rows and its cards: the picture to carry away.
 
 ## 1. An application with one model call (TheApi, 3 clicks, 2 min)
 - Still: user, application whose whole code is three lines, model, a camera API the code calls (dashed link).
@@ -53,9 +51,8 @@ enough that the agent makes its own.
 - Called again with the longer list: the answer in words, stop_reason end_turn. Two model calls, one tool call.
 - The backyard question runs through the same loop at speed; the code no longer decides what to look at.
 
-## 4. The loop behind a framework call, and the hooks into it (TheCode, 13 clicks, 5 min)
-- Still: the picture small on the left (the model above a frame labelled agent, which holds an empty list and the three
-  tools: the framework's object, which owns them and the loop from here on); the Strands definition on the right,
+## 4. The loop behind a framework call, and the hooks into it (TheCode, 12 clicks, 5 min)
+- Still: the picture small on the left (model, empty list, tools: a new agent); the Strands definition on the right,
   `Agent(model, system_prompt, tools)` and one call. No loop in the code.
 - The call runs once at speed with nothing to read: four messages, two model calls, one tool call, inside the Agent.
 - Under the hood: the definition opens into the eight lines the framework runs; the list rewinds to the question.
@@ -65,13 +62,9 @@ enough that the agent makes its own.
   of the same places under other names.
 - A before-tool-call hook cancels a deletion; the refusal becomes the tool result.
 - The eight lines fold back into the definition, which has gained one line: `hooks=[...]`.
-- The application, now: the code fades, the stage returns with the compact agent inside the application, and the two
-  questions of move three run through it at speed. Four model calls, two tool calls, none of it the application's code.
 
 ## 5. The list is the only state (TheState, 4 clicks, 2 min)
-- Still: the compact agent inside the application, eight rows. First change: it opens up into the eight messages of
-  move three, inside the agent frame, and the cards take their place by the model; a dashed frame around the list is the
-  context window (drawn as messages, counted in tokens).
+- Still: the eight messages from move three inside a dashed frame, the context window (drawn as messages, counted in tokens).
 - Every call sends the whole list; a 40,000-token tool result overflows the window and the call is refused.
 - Sliding window: the oldest exchange leaves, a tool call and its result together.
 - Summarisation: the oldest messages become one; the most recent stay verbatim. Sessions and memory are the next talk.
@@ -80,6 +73,11 @@ enough that the agent makes its own.
 - Still: the same stage; the three surveillance cards become bash, read_file, write_file.
 - A coding task runs through the same loop at speed: find the function, write the change, run the tests, answer.
 - Generic tools: the agent makes the tool it needs, on demand. That is a coding agent.
+
+## 7. The agent, as one thing (TheAgent, 2 clicks, 1.5 min)
+- The list and the three cards fold into one compact entity inside the application: a frame named agent holding the
+  rows and the named cards; the model stays outside. Introduced only now, when every part has been seen at full size.
+- A task through it at speed. The picture the talk leaves behind, and the one a talk on harnesses starts from.
 
 ## Sources (read 2026-09-14)
 - Anthropic, "Building effective agents": agents versus workflows; the augmented LLM (retrieval, tools, memory); agents

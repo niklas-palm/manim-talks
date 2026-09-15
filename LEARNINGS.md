@@ -458,18 +458,16 @@ First principles that the passes confirmed, written to outlast the decks they ca
   the checker now flags a step that scales the camera twice. The general form: whenever an animation reveals something
   to be read, the step ends there, and the speaker decides when it goes away.
 
-## When who runs the loop changes, the picture must gain a layer
+## Compact a picture only after every part of it has been seen
 
-- A talk that moves from "the application's own code decides" to "a framework runs the loop inside the application" has
-  changed what the box is, and the box must show it. The same application box holding the same list in both halves made
-  the audience see nothing change. The general form: whenever the owner of a mechanism changes, draw the new owner as a
-  container, not as a label.
-- The way to introduce the new owner is the drawing the audience already trusts, made small. The compact picture (the
-  list as bare coloured rows, the tools as bare cards, in a frame with the owner's name) had already carried the code
-  walk; placing that same small picture inside the application and running the familiar two questions through it at
-  speed said "the application now runs an agent" in one click, with nothing new to learn. Then the next move opens it up
-  to full size where the words are needed again. Small is for showing where something lives and how it moves; full size
-  is for reading it.
+- A talk that has drawn the list, the tools, the loop and the framework one at a time earns the right to fold them into
+  one compact entity, and that fold is the picture the audience carries away: a frame with a name, the messages as bare
+  coloured rows, the tools as small named cards. Folding earlier, in the middle of the argument, to say "a framework now
+  owns this", read as a new picture rather than a summary of the old one, and the speaker said it was half-way to
+  something and not an improvement. The general form: compaction is a closing move. It summarises what was shown at full
+  size; it cannot introduce anything.
+- The compact entity is what the next talk starts from. Draw it once, as a builder in `objects.py`, so a deck that
+  continues the argument (a harness around this agent) opens on exactly this picture and grows from it.
 
 ## Before publishing
 

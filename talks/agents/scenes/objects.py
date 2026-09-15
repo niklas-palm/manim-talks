@@ -5,9 +5,7 @@ card carrying the device it reaches. Every scene adds the parts it starts from a
 
 Layout (scene units; frame 14.22 by 8, content band y 2.6 to -2.3):
   user          node at x -5.9, y 1.9
-  application   box x -4.6 .. 1.6, y 2.55 .. -2.35, name top-left; the list of messages inside, blocks 5.6 by 0.36
-  agent         from move four on, a frame inside the application around the list: the framework's object, which owns
-                the list and the loop; the application's own code is what is left outside it
+  application   box x -4.6 .. 1.6, y 2.55 .. -2.35, name top-left; the list of messages inside, blocks 5.6 by 0.4
   model         box x 3.1 .. 6.7, y 2.45 .. 1.05
   tools         three cards 3.6 by 0.95 at y 0.25, -0.8, -1.85 in the model's column
   counters      one row at y -2.75: model calls at x 3.1, tool calls at x 5.2
@@ -18,12 +16,11 @@ USER, MODEL, TOOL, RESULT, PROBLEM = A1, A3, A2, A4, ALERT
 SYSTEM = MUTED
 set_thread({"user": USER, "model": MODEL, "tool": TOOL, "tools": TOOL, "result": RESULT, "results": RESULT, "api": TOOL})
 
-KIND = {"user": USER, "assistant": MODEL, "tool_use": TOOL, "tool_result": RESULT, "system": SYSTEM, "summary": MODEL, "refused": PROBLEM}
+KIND = {"user": USER, "assistant": MODEL, "tool_use": TOOL, "tool_result": RESULT, "system": SYSTEM, "summary": MODEL}
 
 APP_X0, APP_X1, APP_Y0, APP_Y1 = -4.6, 1.6, -2.35, 2.55
 LIST_X, LIST_TOP = (APP_X0 + APP_X1) / 2, 2.1
-BW, BH, BGAP = 5.6, 0.36, 0.06
-AGENT_TOP, AGENT_LIST_TOP = 2.12, 1.66   # the agent frame's top edge, under the application's name; where its list starts
+BW, BH, BGAP = 5.6, 0.42, 0.07
 MODEL_C, MODEL_W, MODEL_H = [4.9, 1.75, 0], 3.6, 1.4
 CARD_W, CARD_H, CARD_YS = 3.6, 0.95, [0.25, -0.8, -1.85]
 COUNTER_Y = -2.75
@@ -80,16 +77,8 @@ def attach(scene, b: VGroup, text: str, frm: Mobject, run_time: float = 0.8) -> 
     return t
 
 
-def messages(top: float = LIST_TOP) -> Stack:
-    return Stack(LIST_X, top, h=BH, gap=BGAP)
-
-
-def agent_frame() -> VGroup:
-    """The framework's object, drawn as a frame inside the application around the list: from move four on, the loop and
-    the list live in here, and the application's own code is whatever is outside it. frame[0] rectangle, [1] name."""
-    w, h = APP_X1 - APP_X0 - 0.3, AGENT_TOP - (APP_Y0 + 0.12)
-    g = box(w, h, "agent", MUTED, size=15, fill=FILL * 0.6, name_align="left")
-    return g.move_to([LIST_X, AGENT_TOP - h / 2, 0])
+def messages() -> Stack:
+    return Stack(LIST_X, LIST_TOP, h=BH, gap=BGAP)
 
 
 def call_arrows(app: VGroup, model: VGroup) -> VGroup:
@@ -185,7 +174,8 @@ TITLES = {"api": ("An application with one model call", "1  a plain application"
           "loop": ("The application runs the loop itself", "3  the agentic loop"),
           "code": ("The loop behind a framework call, and the hooks into it", "4  what a framework hides"),
           "state": ("The list is the only state", "5  the list is the only state"),
-          "every": ("Every agent today works like this", "6  the same loop, generic tools")}
+          "every": ("Every agent today works like this", "6  the same loop, generic tools"),
+          "agent": ("The agent, as one thing", "7  one thing inside the application")}
 
 # the plain application of move one: one function, one model call, the frame fetched by the code every time
 APP_SRC = '''def answer(question):
@@ -204,6 +194,8 @@ agent("warm enough to open the door?")'''
 # the same definition with the hook of move four registered: one more line
 FRAMEWORK_HOOKS_SRC = FRAMEWORK_SRC.replace("           camera_history],\n", "           camera_history],\n    hooks=[RefuseDeletions()],\n")
 
+# the small list move four ends with: one question, two tool exchanges, an answer, then the refused call and its result
+CODE_END_KINDS = ["user", "tool_use", "tool_result", "tool_use", "tool_result", "assistant", "tool_use", "tool_result"]
 
 GENERIC_TOOLS = [("bash", "run a shell command", "command: str", "shell", CARD_YS[0]),
                  ("read_file", "read a file from the repository", "path: str", "disk", CARD_YS[1]),
@@ -227,13 +219,13 @@ def under_app(text: str, size: float = 14, color: str = MUTED, app: VGroup = Non
     return label(text, size, color).next_to(ref, DOWN, buff=GAP_TIGHT).align_to(ref, LEFT)
 
 
-def context_window(top: float = LIST_TOP) -> VGroup:
+def context_window() -> VGroup:
     """The context window drawn around the list: room for WINDOW messages, dashed, in the problem colour. Its label sits
     centred on the top edge over a background, so it reads across the application box's border and clear of the arrow
     labels. window[0] frame, [1] label."""
     h = WINDOW * (BH + BGAP)
-    frame = DashedVMobject(RoundedRectangle(corner_radius=rad(0.53), width=BW + 0.2, height=h + 0.1, stroke_color=PROBLEM, stroke_width=sw(0.64), fill_opacity=0), num_dashes=60)
-    frame.move_to([LIST_X, top - h / 2 + BGAP / 2, 0])
+    frame = DashedVMobject(RoundedRectangle(corner_radius=rad(0.53), width=BW + 0.3, height=h + 0.1, stroke_color=PROBLEM, stroke_width=sw(0.64), fill_opacity=0), num_dashes=60)
+    frame.move_to([LIST_X, LIST_TOP - h / 2 + BGAP / 2, 0])
     lbl = label("context window", 14, PROBLEM).next_to(frame, UP, buff=GAP_TIGHT)
     return VGroup(frame, VGroup(BackgroundRectangle(lbl, color=BG, fill_opacity=1, buff=0.05), lbl))
 
@@ -245,41 +237,109 @@ def put_history(msgs: Stack, history) -> Stack:
     return msgs
 
 
+# the reminder picture of move four: the same three things, small, on the left of the code
+MINI_X, MINI_TOP, MINI_H, MINI_GAP = -5.0, 1.45, 0.18, 0.04
+
+
 def app_code():
     """The plain application's code, small, in the lower part of the application box."""
     return code(APP_SRC, "python", 13).move_to([LIST_X, -1.55, 0])
 
 
-# the compact agent: the picture of move four, beside the code and then inside the application. A frame named agent holds
-# the list as bare coloured rows and the tools as bare cards; the model is drawn outside it, because it is not part of it.
-MINI_H, MINI_GAP = 0.18, 0.04
-MINI_AGENT = (-4.55, 0.4, 1.0)          # beside the code: the frame's centre, and the drawing's scale
-MINI_MODEL = [-5.0, 2.1, 0]
-IN_APP = (LIST_X, -0.1, 1.3)            # inside the application: larger, since the box has the room
-HIST_KINDS = [kind for kind, _ in HIST_LOOP]   # the two questions of move three, as the compact list shows them
+def mini_stage(kinds) -> tuple:
+    """The small model, list and cards that stand for the stage beside the code. kinds: the list's message kinds."""
+    model = box(2.6, 0.8, "model", MODEL, size=16, fill=FILL).move_to([MINI_X, 2.1, 0])
+    lst = Stack(MINI_X, MINI_TOP, h=MINI_H, gap=MINI_GAP)
+    for k in kinds:
+        b = block("", KIND[k], w=2.6, h=MINI_H, bare=True).move_to(lst.slot(len(lst.blocks))); lst.blocks.append(b); lst.add(b)
+    cards = VGroup(*[Rectangle(width=1.0, height=0.26, fill_color=TOOL, fill_opacity=FILL * 1.2, stroke_color=TOOL, stroke_width=sw(0.48)).move_to([-3.1, 1.3 - 0.36 * i, 0]) for i in range(3)])
+    return model, lst, cards
 
 
-def mini_block(kind: str, k: float = 1.0) -> VGroup:
-    return block("", KIND[kind], w=2.6 * k, h=MINI_H * k, bare=True)
+# ------------------------------------------------------------------------------------------------ the agent as one thing (move seven)
+# Everything the talk built, drawn as one compact entity inside the application: a frame named agent holding the list as
+# bare coloured rows and the tools as small named cards. It is introduced only after every part has been seen full size.
+#   frame 3.0 x 1.7 centred (-2.95, 1.35): x -4.45..-1.45, y 2.2..0.5; the context as thin lines 1.4 wide, the tools as
+#   cards 1.1 by 0.3 beside them
+ENTITY = dict(cx=-2.95, cy=1.35, w=3.0, h=1.7, gap=0.38, row_w=1.4, card_w=1.1)
+ROW_H, ROW_GAP = 0.1, 0.03                      # a message in the entity: a thin line
+HIST_CODE = [("user", "user · add a retry to the upload function"), ("tool_use", 'assistant · tool_use: bash("grep -rn upload src/")'),
+             ("tool_result", "user · tool_result: src/client.py:88 def upload(path):"), ("tool_use", 'assistant · tool_use: write_file("src/client.py", …)'),
+             ("tool_result", "user · tool_result: written"), ("tool_use", 'assistant · tool_use: bash("pytest tests/test_upload.py")'),
+             ("tool_result", "user · tool_result: 3 passed"), ("assistant", "assistant · added a retry with backoff; tests pass")]
+HIST_CODE_KINDS = [kind for kind, _ in HIST_CODE]
+BASE_TOOLS = [g[0] for g in GENERIC_TOOLS]
 
 
-def compact_agent(kinds, cx: float, cy: float, k: float = 1.0) -> tuple:
-    """The agent drawn small, centred at (cx, cy), scaled by k: (frame, list, cards). kinds: the list's message kinds."""
-    frame = box(4.0 * k, 2.3 * k, "agent", MUTED, size=12 * k, fill=FILL * 0.6, name_align="left").move_to([cx, cy, 0])
-    lst = Stack(cx - 0.45 * k, cy + 0.85 * k, h=MINI_H * k, gap=MINI_GAP * k)
+def mini_block(kind: str, w: float = ENTITY["row_w"], rows: int = 1) -> VGroup:
+    """A message as the entity draws it: a thin bare line; `rows` > 1 draws a taller one for a message that is visibly bigger."""
+    return block("", KIND[kind], w=w, h=ROW_H * rows + ROW_GAP * (rows - 1), bare=True)
+
+
+def compact_card(name: str, w: float) -> VGroup:
+    """A tool as the entity draws it: a card carrying the tool's name, larger than the lines of context beside it."""
+    r = Rectangle(width=w, height=0.3, fill_color=TOOL, fill_opacity=FILL * 1.2, stroke_color=TOOL, stroke_width=sw(0.48))
+    return VGroup(r, label(name, 12, TEXT).move_to(r))
+
+
+def agent_entity(kinds, names=tuple(BASE_TOOLS), cx: float = ENTITY["cx"], cy: float = ENTITY["cy"], w: float = ENTITY["w"], h: float = ENTITY["h"],
+                 gap: float = ENTITY["gap"], row_w: float = ENTITY["row_w"], card_w: float = ENTITY["card_w"]) -> tuple:
+    """The agent as one thing: (frame, list, cards). kinds: the rows' message kinds; names: the cards. The list fills the
+    left of the frame, the cards the right; the list remembers its row width so a scene can add rows that fit."""
+    frame = box(w, h, "agent", MUTED, size=12, fill=FILL * 0.6, name_align="left").move_to([cx, cy, 0])
+    left, right, top = cx - w / 2 + 0.15, cx + w / 2 - 0.15, cy + h / 2
+    lst = Stack(left + row_w / 2, top - 0.32, h=ROW_H, gap=ROW_GAP)
+    lst.row_w = row_w
     for kind in kinds:
-        b = mini_block(kind, k).move_to(lst.slot(len(lst.blocks))); lst.blocks.append(b); lst.add(b)
-    cards = VGroup(*[Rectangle(width=1.0 * k, height=0.26 * k, fill_color=TOOL, fill_opacity=FILL * 1.2, stroke_color=TOOL, stroke_width=sw(0.48))
-                     .move_to([cx + 1.45 * k, cy + (0.77 - 0.36 * i) * k, 0]) for i in range(3)])
+        b = mini_block(kind, row_w).move_to(lst.slot(len(lst.blocks))); lst.blocks.append(b); lst.add(b)
+    cards = VGroup(*[compact_card(n, card_w).move_to([right - card_w / 2, top - 0.42 - gap * i, 0]) for i, n in enumerate(names)])
     return frame, lst, cards
 
 
-def mini_stage(kinds) -> tuple:
-    """Beside the code in move four: the small model above the compact agent. Returns (model, frame, list, cards)."""
-    model = box(2.6, 0.8, "model", MODEL, size=16, fill=FILL).move_to(MINI_MODEL)
-    return (model, *compact_agent(kinds, *MINI_AGENT))
+class Run:
+    """The loop at speed through the entity: rows join its list, the list goes to the model, a tool call travels to its
+    card and on to what the tool reaches, results come back, the counters count. `on_model` and `on_tool` let a scene
+    draw something more each time."""
 
+    def __init__(self, scene, lst: Stack, cards: VGroup, model: VGroup, calls: Counter, tools: Counter, n_calls: int = 0, n_tools: int = 0):
+        self.s, self.lst, self.cards, self.model, self.calls, self.tools = scene, lst, cards, model, calls, tools
+        self.n_calls, self.n_tools = n_calls, n_tools
+        self.on_model = self.on_tool = None
 
-def agent_in_app(kinds) -> tuple:
-    """The compact agent inside the application box, where move four ends and move five begins."""
-    return compact_agent(kinds, *IN_APP)
+    def row(self, kind: str, rows: int = 1) -> VGroup:
+        return mini_block(kind, self.lst.row_w, rows)
+
+    def clear(self, rt: float = 0.3):
+        """The previous task is done: its rows leave, the list is empty for the next."""
+        if self.lst.blocks:
+            self.s.play(*[FadeOut(b) for b in self.lst.blocks], run_time=rt)
+            for b in self.lst.blocks:
+                self.lst.remove(b)
+            self.lst.blocks = []
+
+    def ask(self, frm, rt: float = 0.3):
+        return self.lst.append(self.s, self.row("user"), frm=frm, run_time=rt)
+
+    def think(self, rt: float = 0.25):
+        call_model(self.s, self.lst, self.model, extra=self.cards, run_time=rt)
+        self.n_calls += 1
+        self.s.play(self.calls.to(self.n_calls), run_time=rt / 2)
+        if self.on_model:
+            self.on_model()
+
+    def use(self, card: int, target=None, rt: float = 0.25):
+        b = self.lst.append(self.s, self.row("tool_use"), frm=self.model[0], run_time=rt)
+        travel(self.s, b, self.cards[card], TOOL, edges=True, run_time=rt)
+        if target is not None:
+            travel(self.s, self.cards[card], target, TOOL, edges=True, run_time=rt)
+        self.n_tools += 1
+        self.s.play(self.tools.to(self.n_tools), run_time=rt / 2)
+        if self.on_tool:
+            self.on_tool()
+        return b
+
+    def result(self, frm, rt: float = 0.25, rows: int = 1):
+        return self.lst.append(self.s, self.row("tool_result", rows), frm=frm, run_time=rt)
+
+    def answer(self, rt: float = 0.25):
+        return self.lst.append(self.s, self.row("assistant"), frm=self.model[0], run_time=rt)
