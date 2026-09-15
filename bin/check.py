@@ -6,7 +6,8 @@ have; that objects.py declares its vocabulary with set_thread; that scene names 
 wrote as many notes as it rendered steps, text sizes below 12, on-screen strings that look like sentences (more
 than 14 words in a label), captions swapped more than once in a step, a scene in a file that is not scenes/s*.py, two
 scenes with one class name, and a group animated together with one of its members in one play (the trap that leaves the
-member behind). Exit code 1 if anything is
+member behind). Below the flags it lists every Transform whose target is built on the spot rather than named, for the
+reviewer to confirm by eye that the morph is intended (it does not affect the exit code). Exit code 1 if anything is
 flagged. It is a checklist helper, not a judge: docs/review.md is the review."""
 import glob, os, re, sys
 
@@ -110,4 +111,17 @@ elif Q not in [RES[q] for q in _have_q]:
 print(f"{talk}: {'ok' if not flags else str(len(flags)) + ' flags'}  (theme {_name}, {_th['mode']})")
 for x in flags:
     print("  -", x)
+
+# A Transform whose target is built on the spot, rather than a named object already on screen, redraws the whole target:
+# a group that gains a member this way melts and re-forms instead of gaining the member. It is sometimes the point (a
+# bar chart redrawn with new heights) and sometimes a defect the shot sheet cannot show, so it is listed, not flagged.
+_morphs = []
+for _n, _src in sorted(_sources.items()):
+    for _i, _line in enumerate(_src.splitlines(), 1):
+        for _m in re.finditer(r"\b(?:Replacement)?Transform\(\s*[\w.\[\]]+\s*,\s*([A-Za-z_][\w.]*\s*\()", _line):
+            _morphs.append(f"{_n}:{_i}  {_line.strip()[:90]}")
+if _morphs:
+    print(f"  morphs to confirm by eye ({len(_morphs)}): the target is built on the spot, so the whole object redraws")
+    for x in _morphs:
+        print("   ", x)
 sys.exit(1 if flags else 0)

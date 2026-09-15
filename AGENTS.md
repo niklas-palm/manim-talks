@@ -179,7 +179,8 @@ bin/serve.sh <talk>                      # one local server for the repository; 
 P=.venv/bin/python                       # the Python tools want the project's interpreter, as the wrappers above do
 $P bin/shots.py <talk> ql                # the frame every step holds on, tiled per scene: media/shots/<Scene>.png
 $P bin/check.py <talk> ql                # structural checks: files, notes per step, text sizes, on-screen sentences,
-                                         # colours a scene named itself, and whether the talk's style is fit to present
+                                         # colours a scene named itself, whether the talk's style is fit to present, and a
+                                         # list of transforms to a rebuilt object: confirm by eye that each morph is intended
 $P bin/seams.py <talk> ql                # every scene boundary: last frame beside first frame, with a difference score
 $P bin/export_pptx.py <talk> qh          # optional: one slide per step, the clip autoplaying, the note in the notes
 $P bin/themes.py list|check|preview|from-pptx    # the styles a deck can be presented in; see "Choosing the look"

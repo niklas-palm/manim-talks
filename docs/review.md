@@ -49,6 +49,10 @@ experiences a deck: what they see first, then how it moves, then the words, then
 - [ ] Nothing dragged back by a fade-in, nothing left behind by a group move: a member's change and its group's move
       are never in one play (the checker flags it).
 - [ ] The camera moves only when the movement is the point (a zoom to open something); the picture never jumps.
+- [ ] Every morph is intended. A `Transform` turns an object into a changed version of itself; a transform whose target
+      is a rebuilt group of a different shape redraws the whole thing, and the audience sees a box melt and re-form when
+      only a label should have appeared. Animate the parts in place (`.animate.set_color`, a `FadeIn` of the new member)
+      unless the morph itself is the point. `bin/check.py` lists every transform to a freshly built object to confirm by eye.
 - [ ] Every travelling object starts at the thing that produced it and ends at the exact thing that receives it (the
       slot, the cell, the device), never at a container's edge or a group's centre; one motion per exchange. Check the
       contact sheet for each `travel`, `append` and `Transform` with a moving source.

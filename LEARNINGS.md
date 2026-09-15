@@ -407,5 +407,9 @@ First principles that the passes confirmed, written to outlast the decks they ca
 - Monospaced text is wide: a code line of sixty characters at a readable size is wider than most panels, and a group
   fitted to a panel shrinks every label in it to match the code. Keep code lines under about fifty characters, or set
   the code in plain proportional type when it is quoted rather than run.
+- A transform between two groups of different shapes redraws the whole target: the audience sees a box melt and
+  re-form when only a label should have appeared. Change the parts in place, and keep transforms for the moments
+  when the morph is the point. It is invisible on a shot sheet, which shows only end frames, so it belongs on the
+  checklist as a thing to watch for in motion.
 - The orchestration belongs on screen, not only in the notes. A running line in the orchestrator's own box saying what it
   is doing between two calls is what makes an agent visible as an actor rather than a label.
