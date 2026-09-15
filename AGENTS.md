@@ -183,6 +183,7 @@ $P bin/check.py <talk> ql                # structural checks: files, notes per s
                                          # list of transforms to a rebuilt object: confirm by eye that each morph is intended
 $P bin/seams.py <talk> ql                # every scene boundary: last frame beside first frame, with a difference score
 $P bin/export_pptx.py <talk> qh          # optional: one slide per step, the clip autoplaying, the note in the notes
+$P bin/export_pdf.py <talk> qh           # optional: one page per scene, its final picture, no notes: the file to share afterwards
 $P bin/themes.py list|check|preview|from-pptx    # the styles a deck can be presented in; see "Choosing the look"
 THEME=<name> bin/render.sh <talk> ql     # render in another style without changing anything
 ```
