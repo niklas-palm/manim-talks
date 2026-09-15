@@ -43,6 +43,14 @@ in `docs/manim.md`, the style rules in `docs/principles.md`; this file is where 
   with python-pptx and inspecting the slide XML; leave opening it to the user, and say so in the report.
 - The PowerPoint export is one autoplaying clip per step with the note in the slide notes; 76 steps of 1080p60 came
   to 44 MB. It is a convenience for rooms that demand PowerPoint; the web presenter stays the reference.
+- The themes name fonts that come with one operating system. On a machine without them Pango substitutes a family of
+  its own choosing, and `bin/themes.py check` says so. Aliasing the family in fontconfig (a `fonts.conf` that prefers a
+  metric-compatible family, such as Liberation Sans for Helvetica and DejaVu Sans Mono for Menlo) makes the substitution
+  a choice rather than an accident; the check keeps reporting the family as missing, because it asks Pango which families
+  are installed, not fontconfig which one it would use. Look at the shots before trusting either answer.
+- The two pages `bin/build.py` writes embed the player data: every scene's clip path and every step. Anything that hosts
+  a rendered talk elsewhere can read that list and copy exactly those files, instead of guessing which quality folder
+  under `media/` the pages play.
 
 ## From the example decks (talks/dns, kubernetes, kafka, transformers, agents)
 Five decks built in parallel by agents from the same instructions. What they found in common, then per deck.
