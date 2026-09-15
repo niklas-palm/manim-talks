@@ -2,12 +2,12 @@
 """Structural checks for a talk, the things a review should not have to find by eye. Usage: .venv/bin/python bin/check.py <talk> [ql|qm|qh]   (the quality is inferred when only one is rendered)
 Reports, per talk: the style it presents in and whether that style is fit to present (contrast, accents that can be
 told apart, fonts installed); any colour a scene names itself instead of taking from objects.py; the files a talk must
-have; that objects.py declares its vocabulary with set_thread; that scene names are unique; that every scene class
-wrote as many notes as it rendered steps, text sizes below 12, on-screen strings that look like sentences (more
-than 14 words in a label), captions swapped more than once in a step, a scene in a file that is not scenes/s*.py, two
-scenes with one class name, and a group animated together with one of its members in one play (the trap that leaves the
-member behind). Below the flags it lists every Transform whose target is built on the spot rather than named, for the
-reviewer to confirm by eye that the morph is intended (it does not affect the exit code). Exit code 1 if anything is
+have; that objects.py declares its vocabulary with set_thread; that every scene class wrote as many notes as it
+rendered steps, has a finish(), and imports lib.palette; that script.md has a title line; text sizes below 12, on-screen
+strings that look like sentences (more than 14 words in a label), captions swapped more than once in a step, a scene in
+a file that is not scenes/s*.py, two scenes with one class name, and a group animated together with one of its members
+in one play (the trap that leaves the member behind). Below the flags it lists every Transform whose target is built
+on the spot rather than named, for the reviewer to confirm by eye that the morph is intended (it does not affect the exit code). Exit code 1 if anything is
 flagged. It is a checklist helper, not a judge: docs/review.md is the review."""
 import glob, os, re, sys
 
@@ -33,12 +33,13 @@ else:
 
 # A colour a scene names itself is a colour that will not follow the theme: objects.py maps the talk's nouns onto the
 # accent slots, and every scene uses those names. objects.py is checked too, because that is where the mapping lives.
-# The names are the ones lib/palette.py deletes from its own namespace, so this stays the friendly sentence before the
-# NameError rather than a shorter list that drifts from it.
-_HUES = r"\b(BLUE|YELLOW|VIOLET|TEAL|GREEN|ORANGE|RED|PURPLE|PINK|GOLD|MAROON|WHITE|BLACK|GREY|GRAY)\b"
+# The pattern covers every colour constant Manim defines and lib/palette.py deletes from its namespace: the base hues,
+# their DARK_/DARKER_/LIGHT_/LIGHTER_/PURE_ variants and their _A.._E shades, so this stays the friendly sentence before
+# the NameError. Comments and docstrings are searched too; a word in capitals there is worth rewording.
+_HUES = r"\b(?:(?:DARK|DARKER|LIGHT|LIGHTER|PURE)_)?(BLUE|YELLOW|VIOLET|TEAL|GREEN|ORANGE|RED|PURPLE|PINK|GOLD|MAROON|WHITE|BLACK|GREY|GRAY)(?:_[A-E])?\b"
 _sources = {os.path.basename(f): open(f).read() for f in sorted(glob.glob(f"{root}/scenes/*.py"))}
 for _n, _src in _sources.items():
-    for _hue in sorted(set(re.findall(_HUES, _src))):
+    for _hue in sorted(set(m.group(0) for m in re.finditer(_HUES, _src))):
         flags.append(f"{_n} names the colour {_hue}: use the meaning from objects.py, or a slot (A1..A6, ALERT)")
     for _hex in sorted(set(re.findall(r"[\"']#[0-9A-Fa-f]{3,6}[\"']", _src))):
         flags.append(f"{_n} draws with the literal colour {_hex}: it cannot follow the theme (use a slot, BG, HI, ...)")

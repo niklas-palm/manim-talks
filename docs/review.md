@@ -10,7 +10,7 @@ experiences a deck: what they see first, then how it moves, then the words, then
 - [ ] Each move is one continuous illustration. Nothing already on screen is replaced by a different picture; it
       grows, moves, opens under a zoom, or fades because its job is done. A new scene file starts from the previous
       scene's final picture (the stage), so the audience never has to re-orient.
-- [ ] `bin/seams.py <talk> qh` reports every seam as "identical" or "title only": no scene opens on a fresh picture,
+- [ ] `.venv/bin/python bin/seams.py <talk> qh` reports every seam as "identical" or "title only": no scene opens on a fresh picture,
       no title slide, no black frame with a header. The first change of a scene is a `retitle()` with the first animation.
 - [ ] The final frame of each move contains everything the move drew, where the storyboard planned it.
 - [ ] Every scene opens on a still: title, kicker, furniture, the objects the scene begins with; nothing moves until the
@@ -79,8 +79,9 @@ experiences a deck: what they see first, then how it moves, then the words, then
       theme fit to present (text 7:1 against the ground, accents 3:1 and 22 apart, both fonts installed).
 - [ ] No scene names a hue or writes a literal `"#RRGGBB"`, and none invents a corner, a stroke or a fill: meanings
       come from `objects.py`, geometry from `rad()`, `sw()`, `FILL`, `SOLID`, more colours than the slots from
-      `identity(n)`. `bin/check.py` refuses all of it, checks `objects.py` too, and also flags two scenes with one
-      class name and a scene in a file that is not `s*.py`. Run it under `.venv/bin/python`, or the font check can
+      `identity(n)`. `bin/check.py` refuses the hue names and the hex literals, in `objects.py` too, and also flags two
+      scenes with one class name and a scene in a file that is not `s*.py`; a corner, stroke or fill typed as a number
+      is found by eye. Run it under `.venv/bin/python`, or the font check can
       only say it could not ask.
 - [ ] In the bright style, nothing assumed a dark ground: no near-white fill used as a highlight, no faint strip turned
       into a dark bar by a flat `set_opacity`, no pale grey where something must still be seen, and the code panel still

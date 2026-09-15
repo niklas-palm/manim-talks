@@ -40,7 +40,7 @@ where the next click lands). How that works and why is in `docs/presenting.md`.
 ```
 scenes/objects.py    the talk's five accent slots with fixed meaning (prompt, output, weights, cache, hot),
                      the nouns they colour, and the GPU drawing (memory bar, compute grid, bus and compute gauges)
-scenes/s00 .. s08    one file per move; scenes are presented in file order
+scenes/s01 .. s08    one file per move; scenes are presented in file order
 script.md            the spine, the moves, the sources
 ```
 

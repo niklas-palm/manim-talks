@@ -56,8 +56,8 @@ Render the deck first, then export; regenerate after every render, since the fil
 ```bash
 .venv/bin/pip install python-pptx                 # once
 bin/render.sh <talk> qh                           # the clips the export embeds
-bin/export_pptx.py <talk> qh                      # -> <talk folder>/<talk>.pptx  (a minute or two; 12 to 45 MB per deck)
-bin/export_pptx.py <talk> qh out.pptx --click     # elsewhere, and clips that wait for a click instead of starting
+.venv/bin/python bin/export_pptx.py <talk> qh   # -> <talk folder>/<talk>.pptx  (a minute or two; 12 to 45 MB per deck)
+.venv/bin/python bin/export_pptx.py <talk> qh out.pptx --click   # elsewhere, and clips that wait for a click instead of starting
 ```
 
 One slide per step: the step's clip fills the slide and is set to start automatically when the slide appears, so a

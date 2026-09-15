@@ -77,8 +77,8 @@ margin where gauges and counters live.
 ```bash
 bin/render.sh <talk> ql <Scene>         # preview; a scene renders in seconds to a couple of minutes
 THEME=<name> bin/render.sh <talk> ql <Scene>   # the same scene in another style, to check the deck is not tied to one
-bin/shots.py <talk> ql                  # then open <talk folder>/media/shots/<Scene>.png
-bin/seams.py <talk> ql                  # each scene's last frame beside the next scene's first: identical or title only
+.venv/bin/python bin/shots.py <talk> ql   # then open <talk folder>/media/shots/<Scene>.png
+.venv/bin/python bin/seams.py <talk> ql   # each scene's last frame beside the next scene's first: identical or title only
 ```
 
 Look at the end frame of every step: collisions, clipped text, wrong colours, a label the animation left behind, a
@@ -97,8 +97,11 @@ Keep tool output short; renders are chatty. Pipe to a log and `grep -c Traceback
 
 Run `.venv/bin/python bin/check.py <talk> ql` first: it names the style the talk presents in and whether that style is
 fit to present, and it flags any colour a scene named itself, missing files, an `objects.py` without `set_thread`,
-scenes whose note count differs from their step count, two scenes with one class name, a scene in a file that is not
-`s*.py`, labels under size 12, and sentences of more than 14 words on screen. Fix those,
+scenes whose note count differs from their step count, a scene with no `finish()`, a scene file that does not import
+`lib.palette`, a `script.md` without a title line, two scenes with one class name, a scene in a file that is not
+`s*.py`, labels under size 12, sentences of more than 14 words on screen, a caption swapped twice in one step, and a
+group animated together with one of its members. Below the flags it lists every transform to a rebuilt object, for
+you to confirm by eye that the morph is intended. Fix those,
 then do the part only eyes can do.
 
 
@@ -110,7 +113,7 @@ say what each step showed? Fix, then run `docs/review.md`.
 
 ```bash
 bin/render.sh <talk> qh                 # every scene, 1080p60, then the pages; tens of minutes for a full deck
-bin/shots.py <talk> qh
+.venv/bin/python bin/shots.py <talk> qh
 bin/serve.sh <talk>                     # opens the presenter; click "open audience window"
 ```
 

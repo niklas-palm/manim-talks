@@ -19,7 +19,7 @@ themes/dark.json     the two styles: dark (the default) and bright; a PowerPoint
 themes/bright.json
 bin/                 render.sh, build.py, shots.py, seams.py, review.sh, check.py, serve.sh, serve.py, export_pptx.py,
                      themes.py
-talks/_template/     copy this to start a talk: title scene, a worked example scene, objects.py, script.md
+talks/_template/     copy this to start a talk: a worked example scene, a second scene that continues it, objects.py, script.md
 talks/llm-serving/   the reference deck: 45 minutes on how open-weight LLMs are served, 82 steps, 13 scenes
 talks/<others>/      shorter example decks built with the same rules: dns, kubernetes, kafka, transformers, agents
 talks/<talk>-bright/ the same deck in the bright style: a .theme and symlinks to the talk's scenes, nothing copied
@@ -30,7 +30,7 @@ LEARNINGS.md         the living log of what cost time and what changed a rule
 ## Quick start
 
 ```bash
-brew install ffmpeg cairo pango pkg-config          # once
+brew install ffmpeg cairo pango pkg-config          # once (macOS; on Linux install the same four with your package manager)
 python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt
 bin/render.sh llm-serving ql                         # preview render of the reference deck (480p)
 bin/serve.sh llm-serving                             # opens the presenter; click "open audience window"
@@ -44,7 +44,7 @@ A talk is a folder of Manim scenes. Each scene is one continuous picture; `self.
 and records the speaker note. Manim writes one clip per click, `bin/build.py` strings the clips and notes into two
 pages: `present.html` for the audience and `presenter.html` for the speaker, with notes, a timer and a preview of
 where the next click lands. `bin/serve.sh` serves the talk over local http so the two windows can talk and the
-video can seek. `bin/export_pptx.py <talk> qh` writes the same deck as a PowerPoint file, one autoplaying clip per slide with
+video can seek. `.venv/bin/python bin/export_pptx.py <talk> qh` writes the same deck as a PowerPoint file, one autoplaying clip per slide with
 the note in the slide notes, for rooms that insist on it; the file is generated from the render and not committed.
 
 ## Style, in five lines

@@ -36,7 +36,7 @@ Consequences:
   whose title changes as it starts to move, never a black frame with a new header. The hand-over can also be the
   last step of the old scene (the reference deck does this: the picture folds into the next one and the title changes,
   then the click into the new scene shows the identical frame); either way both sides of the seam come from one
-  builder function in `objects.py`. `bin/seams.py <talk>` measures every seam; anything above "title only" is a cut.
+  builder function in `objects.py`. `.venv/bin/python bin/seams.py <talk>` measures every seam; anything above "title only" is a cut.
   There are no title slides: the deck opens on the first picture, and the speaker introduces the talk over it.
 
 ## 3. One idea per click
@@ -178,7 +178,7 @@ what you measured that confirms it; then stop.
 
 ## 15. Review with your eyes
 
-Render at preview quality, look at the end frame of every step (`bin/shots.py`), then at the contact sheet of
+Render at preview quality, look at the end frame of every step (`.venv/bin/python bin/shots.py`), then at the contact sheet of
 frames through the animation (`bin/review.sh`). Every collision, clipped label, colour mistake and mistimed reveal
 in the reference deck was found this way and none from reading code. Do this per scene while building and once
 more for the whole deck at 1080p60 before calling it done.

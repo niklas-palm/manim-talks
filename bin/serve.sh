@@ -12,7 +12,8 @@ TALK=${1:?usage: bin/serve.sh <talk> [port]}; PORT=${2:-8765}
 [[ $PORT =~ ^[1-9][0-9]*$ ]] && (( PORT <= 65535 && PORT >= 1024 )) || { echo "port must be a number from 1024 to 65535 with no leading zero, not $PORT"; exit 1; }
 DIR=$(.venv/bin/python -c "import sys; sys.path.insert(0,'.'); from lib.talks import dir_of; print(dir_of(sys.argv[1]))" "$TALK")
 URL="http://localhost:$PORT/$DIR/presenter.html"
-[[ -f $DIR/presenter.html ]] || { echo "$DIR has no presenter.html yet: run bin/render.sh $TALK first"; exit 1; }
+# The pages are committed with each talk, so their presence proves nothing; the clips they play are not, so check those.
+[[ -f $DIR/presenter.html && -d $DIR/media/videos ]] || { echo "$DIR has no render yet: run bin/render.sh $TALK first"; exit 1; }
 LOG=${TMPDIR:-/tmp}/manim-talks-serve-$PORT.log
 # The pattern is anchored: "serve.py 1234" also matches a server on 12345, and serve.sh would then believe one was up.
 if ! pgrep -f "serve\.py $PORT( |\$)" > /dev/null; then

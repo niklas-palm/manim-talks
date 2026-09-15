@@ -8,7 +8,8 @@ Compose Manim directly for everything else; the patterns section shows how the r
 
 Nothing in the library carries a colour, a font, a corner radius or a stroke width of its own. They come from the
 active theme, loaded once at import (`lib/theme.py`; `THEME=<name>`, a talk's `.theme`, the repository's `.theme`, else
-`themes/dark.json`). AGENTS.md, "Choosing the look", names the two styles and how to import a company's own.
+`themes/dark.json`). A talk's `.theme` reaches the library because `bin/render.sh` exports `THEME` before Manim starts;
+running `manim` by hand sees only the environment and the repository's `.theme`. AGENTS.md, "Choosing the look", names the two styles and how to import a company's own.
 What a scene may use:
 
 | token | what it is |
@@ -116,7 +117,7 @@ fade the old label out and a new one in, or `Transform` to a new label of the sa
 | `column(n, color, cell, op)` | a vector: a thin column of cells | shades vary per cell to look like numbers (see the reference deck's `vector()`) |
 | `grid(rows, cols, color, cell, op)` | a matrix or a memory | indexed `grid[row * cols + col]` |
 | `dot_grid(n, cols, color, radius)` | n dots in rows | a population whose members change one by one |
-| `Gauge(name, color, height)` | a vertical gauge; `.set(level)` returns the animation | red above 0.9 |
+| `Gauge(name, color, height)` | a vertical gauge; `.set(level)` returns the animation | `ALERT` above 0.9 |
 | `Counter(name, value, unit, color, size, decimals)` | a number with unit and name; `.to(value)` counts; `.stop()` freezes it before a FadeOut | the name must carry unit and clock; set `tracker.set_value()` for a still frame |
 | `Bars(heights, width, gap, color)` | a small bar chart | `Transform(bars, Bars(new))` to redraw |
 | `timeline(y, x0, [(kind, length)], colors)` | a horizontal bar of labelled segments | time along x |

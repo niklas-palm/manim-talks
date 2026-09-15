@@ -86,8 +86,8 @@ How the theme is chosen, first hit wins:
 
 - `THEME=bright bin/render.sh <talk> ql` — one render, for trying the other style
 - `<talk>/.theme` — one line naming a style; that talk always presents in it. Every sample has a `-bright` sibling
-  that holds nothing but this file, a README and a symlink to the same scenes (see below), so each subject exists as a
-  deck in each style
+  that holds nothing but this file, a README and symlinks to the same `scenes/` and `script.md` (see below), so each
+  subject exists as a deck in each style
 - `.theme` at the repository root — the project's style, which every talk without its own follows
 - nothing — `dark`
 
@@ -98,8 +98,8 @@ bin/themes.py preview <talk> <Scene>      one frame of a real deck in every styl
 bin/themes.py from-pptx <file> <name>     a company's PowerPoint theme -> themes/local/<name>.json
 ```
 
-**A company's own theme.** `bin/themes.py from-pptx company.pptx acme` reads the file's colour scheme, its heading and
-body typefaces and its slide master's background; matches its six accents to what each accent slot means, so a deck
+**A company's own theme.** `bin/themes.py from-pptx company.pptx acme` reads the file's colour scheme, its body
+typeface and its slide master's background; matches its six accents to what each accent slot means, so a deck
 keeps its vocabulary in someone else's colours; lifts each away from the background until it can be seen from the back
 row; pushes them apart until no two read as one; derives an alert red of the palette's own character; and writes
 `themes/local/acme.json`. Render with `THEME=local/acme`. Logos, picture backgrounds and slide layouts are not
@@ -153,8 +153,8 @@ at 1080p60, test the presenter and audience windows in a browser, and commit. De
   Never reuse a colour for a second meaning. Name the slot, never the hue: `USER, MODEL, TOOL = A1, A3, A2`, not
   `= BLUE, VIOLET, YELLOW`. The theme decides what A1 looks like; every slot keeps its character in every theme
   (A1 cool, A2 warm, A3 deep, A4 fresh, A5 growth, A6 spice, ALERT wrong). The same goes for corners, strokes and
-  fills: `rad()`, `sw()`, `FILL`, `SOLID`, never a number of your own. `bin/check.py` refuses a scene that names a hue
-  or writes a literal `"#RRGGBB"`. When a picture needs more colours than the six slots, because they identify things
+  fills: `rad()`, `sw()`, `FILL`, `SOLID`, never a number of your own. `bin/check.py` refuses a scene that names one of Manim's
+  colour constants or writes a literal `"#RRGGBB"`; a corner, stroke or fill typed as a number is found by eye. When a picture needs more colours than the six slots, because they identify things
   rather than mean things (twelve requests sharing a step), `identity(n)` gives that many, told apart from each other
   and from the accents, out of the active theme.
 - **Words on screen name things that are visible.** Labels sit next to the object they name and stay. A caption,
@@ -199,8 +199,8 @@ cp -r talks/_template talks/<slug>        # a sample this repository will carry
 cp -r talks/_template out/<slug>          # a talk for an audience, which git ignores
 ```
 
-Then follow `docs/workflow.md`. The template has a title scene, one worked example scene that uses most of the
-library, an `objects.py` to fill in, and a `script.md` skeleton.
+Then follow `docs/workflow.md`. The template has one worked example scene that uses most of the library, a second
+scene that shows how to continue the previous frame without a cut, an `objects.py` to fill in, and a `script.md` skeleton.
 
 ## Definition of done
 

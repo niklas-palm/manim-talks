@@ -84,7 +84,7 @@ Manim Community Edition 0.21, Python 3.12, macOS, ffmpeg 7, no LaTeX. Each entry
   size, which is exact. Never construct `Text` directly in a scene; go through `label()`, `small()` or `code()`.
 - **Leading spaces vanish in `Text`** because Manim aligns on the glyphs' bounding box; `code()` puts indentation
   back by shifting each line by its indent times a measured character width.
-- **Text does not wrap.** `label(width=...)` wraps with `textwrap` at about 185 / font_size characters per scene
+- **Text does not wrap.** `label(width=...)` wraps with `textwrap` at about 175 / font_size characters per scene
   unit and scales to the frame if still too wide. Every caption goes through it.
 - **Frame is 14.22 by 8.** Text at size 15 is about 0.09 units per character, at 13 about 0.077, at 22 about 0.13;
   a 60-character label at size 15 is 5.4 units wide. Check the right edge (x 7.1) before placing a long label at a

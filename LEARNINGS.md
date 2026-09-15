@@ -3,11 +3,10 @@
 The living log. Add an entry whenever something cost time or changed a rule, written as a first principle: what is
 generally true, why, and what to do instead, in words that outlive the deck it came from. No dates, no company names,
 no "in the agents deck"; if a lesson needs an example, the example is one clause of it. The older sections, written
-before that rule, carry dates and deck names; they are left as they were. The technical Manim entries are consolidated
+before that rule, still name the sample decks they came from; those decks are in this repository, so the reference stands. The technical Manim entries are consolidated
 in `docs/manim.md`, the style rules in `docs/principles.md`; this file is where they arrive first.
 
-## From the reference deck (talks/llm-serving, September 2026)
-
+## From the reference deck (talks/llm-serving)
 - Prefill and decode are the same picture with a different number of columns, so draw them that way: the first
   zoom takes the whole block through the layer (one row lit, five columns multiplied), the second takes one column
   through the same stages. The contrast does the teaching; no caption has to say "compute-bound".
@@ -38,16 +37,14 @@ in `docs/manim.md`, the style rules in `docs/principles.md`; this file is where 
 - Ask what the audience will read a number as. "330,000 tokens of context" read as tiny until the label said "about
   40 conversations of 8k tokens, or one request at the model's full context".
 
-## Tooling (September 2026)
-
+## Tooling
 - Never script the user's PowerPoint to verify an export. An AppleScript that opened a test file and then closed
   "the active presentation" without saving closed the user's own open deck instead. Verify a .pptx by re-reading it
   with python-pptx and inspecting the slide XML; leave opening it to the user, and say so in the report.
 - The PowerPoint export is one autoplaying clip per step with the note in the slide notes; 76 steps of 1080p60 came
   to 44 MB. It is a convenience for rooms that demand PowerPoint; the web presenter stays the reference.
 
-## From the example decks (talks/dns, kubernetes, kafka, transformers, agents; 2026-09-14)
-
+## From the example decks (talks/dns, kubernetes, kafka, transformers, agents)
 Five decks built in parallel by agents from the same instructions. What they found in common, then per deck.
 
 Common to all five:
@@ -113,8 +110,7 @@ Agents:
   positions to pixels at the requested size. Laying out at 48 and scaling down fixed it everywhere at once; the lesson
   is that text must always go through the library, never `Text()` directly, so a fix like this lands in one place.
 
-## From the quality passes and the agents rebuild (2026-09-14, afternoon)
-
+## From the quality passes and the agents rebuild
 First principles that the passes confirmed, written to outlast the decks they came from:
 - The audience re-orients every time the picture changes. One fixed stage per deck, built by one function in
   `objects.py` and added by every scene, is what makes six scene files one illustration; the alternative, a fresh
@@ -141,8 +137,7 @@ First principles that the passes confirmed, written to outlast the decks they ca
 - Review by looking, at half size, before the 1080p render, and again after. Every pass found something the previous one
   had called done.
 
-## From the pacing pass (2026-09-14, afternoon)
-
+## From the pacing pass
 - A still first step is cheap when a scene builds its furniture in one play: insert the click after that play and write
   a note that names what is on screen. Where the opening was an animation of the object itself, a FadeIn of the
   finished object is the still and the reveal becomes the first mechanism.
@@ -159,8 +154,7 @@ First principles that the passes confirmed, written to outlast the decks they ca
   two-phase picture, and the Fleet scene's first two steps use the upper half. Both would be better as pictures that
   grow; recorded here rather than redesigned in this pass.
 
-## No cuts between scenes (2026-09-14, evening)
-
+## No cuts between scenes
 - The seams were the last place the decks still cut: every scene opened on a black frame with its title being written,
   because a scene is its own video. The rule that fixed it is mechanical: a scene's first frame is the previous scene's
   last frame, rebuilt statically (`self.add`, `title_still`), and its first play is `retitle()` with the first change.
@@ -189,8 +183,7 @@ First principles that the passes confirmed, written to outlast the decks they ca
 - `bin/review.sh` at half-second spacing still misses where a dot starts and lands; sample eight frames across the
   step's clip with ffmpeg when checking a travel.
 
-## PowerPoint export, verified (2026-09-14, evening)
-
+## PowerPoint export, verified
 - The export was broken until now: python-pptx writes its own `<p:timing>` when it adds a movie, and the autoplay
   timing was appended as a second one. PowerPoint silently refused to open such a file (no repair prompt, no window,
   no presentation listed). Replacing the existing element fixed it. Lesson: re-reading a file with the library that
@@ -200,8 +193,7 @@ First principles that the passes confirmed, written to outlast the decks they ca
   shape, close that presentation by name. `active presentation` is never used.
 - `--click` exports clips that start on click, for speakers who want to talk over the still first.
 
-## Containment and routing pass (2026-09-14, afternoon)
-
+## Containment and routing pass
 - Manim's `get_boundary_point(direction)` returns the extreme point in that direction, a corner for any diagonal, so
   every arrow between two boxes not on one axis looked skewed. `edge_point()` in the library now meets the box where
   the centre-to-centre line crosses it, and `arrow`, `dashed` and `travel(edges=True)` use it. Better still: put the two
@@ -436,3 +428,18 @@ First principles that the passes confirmed, written to outlast the decks they ca
   were added and clearing the tag when settled cannot miss.
 - Stop a background render before editing the files it reads. A scene file changed while an earlier scene renders is
   what the render reaches next, and the frames then disagree with the code that claims to have produced them.
+
+## Before publishing
+
+- A generated page committed next to media that is not makes a fresh clone look broken: the page opens and every clip
+  is dead. Guard on the artifact the page plays, not on the page, and never commit a generated file whose source is
+  ignored unless it is useful on its own.
+- A script invoked bare in the documentation runs under whatever interpreter the reader's machine has first. If the
+  project has its own interpreter, every documented command names it; a command that worked by luck on the author's
+  machine is the one that fails first elsewhere.
+- A checker that claims to cover a list must be tested against that list. A pattern matching fifteen base names was
+  described as covering the eighty-nine constants a library removes, and passed seventy-four of them. Derive the set
+  from the source of truth, or widen the pattern and count.
+- Review the history, not only the tree, before a repository goes public: a file deleted long ago is still one command
+  away. Search every revision for the names that must not appear, and for the kinds of file that never should have been
+  committed.

@@ -7,11 +7,11 @@ What lives here
                 apart, ink_on(colour) for a label written on a solid mark
   TalkSlide     a Scene whose steps are clicks; each step carries a speaker note (next_slide / finish)
   text          label, title, title_still, retitle, small, caption, swap_caption, pin, thread colouring of a talk's nouns
-  objects       tokens, box, node, arrow, dashed, column, grid, dot_grid, Counter, Gauge, Bars, travel
+  objects       tokens, box, node, arrow, edge_point, dashed, column, grid, dot_grid, Counter, Gauge, Bars, timeline, travel
   vectors       vector, shades, restore, dot_product, sweep: the picture of a matrix multiplication
   lists         Log and Pointer (a row of cells with offsets and a reader), Stack and block (a list that grows)
   code          code (syntax-highlighted block) and highlight_line (a bar that walks the lines)
-  layout        the frame constants and the bands titles, pictures and captions live in
+  layout        the frame constants and the bands titles, pictures and captions live in; guides() draws them (GUIDES=1)
 
 Rules the helpers encode (see docs/principles.md for the why):
   * all text is laid out at BASE_SIZE (48) and scaled to its size, because Pango rounds glyph positions to pixels at

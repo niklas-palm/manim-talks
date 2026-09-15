@@ -20,7 +20,7 @@ growing.
 ```bash
 bin/render.sh agents ql      # preview; qh for the talk itself
 bin/serve.sh agents          # presenter and audience windows
-bin/export_pptx.py agents qh # optional PowerPoint, one autoplaying clip per step (generated, not committed)
+.venv/bin/python bin/export_pptx.py agents qh # optional PowerPoint, one autoplaying clip per step (generated, not committed)
 ```
 
 Sources and simplifications are in `script.md`; speaker notes live next to the steps in `scenes/`.
