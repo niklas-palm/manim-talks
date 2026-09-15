@@ -469,6 +469,15 @@ First principles that the passes confirmed, written to outlast the decks they ca
 - The compact entity is what the next talk starts from. Draw it once, as a builder in `objects.py`, so a deck that
   continues the argument (a harness around this agent) opens on exactly this picture and grows from it.
 
+## What a renderer draws first is not what a z-index says
+
+- A ghost box meant to sit behind the runtime, given a negative z-index and faded in, hid the runtime's contents in one
+  scene and behaved in a probe of the same lines. The cause was the renderer's static frame: everything before the first
+  moving mobject in the scene's list is drawn once as a background, and the moving mobjects are drawn over it whatever
+  their z-index; what counted as "first moving" had shifted with a live counter and an earlier retitle. The fix is to
+  place a background object rather than animate it (docs/manim.md). The lesson for review: a defect that appears in a
+  scene and not in a probe of its lines is a defect of the scene's history, and the probe must replay the history.
+
 ## Before publishing
 
 - A generated page committed next to media that is not makes a fresh clone look broken: the page opens and every clip
