@@ -392,3 +392,20 @@ First principles that the passes confirmed, written to outlast the decks they ca
   passes either applied whole or changed nothing, which is why nothing was left half-converted.
 - When several edits are independent, apply them independently and report each one skipped. A single abort in the middle
   of a batch silently drops the rest, and the ones that did land look like the whole batch.
+
+## Following one request through a system
+
+- An architecture deck that shows the parts and their connections tells an audience what exists; one that follows a
+  single request through the parts tells them how it works. When the audience is the team that will build on the system,
+  the second is the one to make: keep the actors fixed on screen, and let one request move.
+- Give every step the same beats, and the audience learns the choreography once. Run, look inside, look at what was
+  written and what came back: by the third step nobody watches the mechanics of the deck any more, only the content.
+- A zoom is a shape that grows out of the thing being examined and shrinks back into it. A panel that appears beside the
+  thing reads as a new slide; the same panel opened out of the step's own outline reads as looking closer.
+- Draw the finished design when the audience will build it, and keep the gaps for the notes or another talk. A picture
+  that mixes what exists with what is missing teaches neither.
+- Monospaced text is wide: a code line of sixty characters at a readable size is wider than most panels, and a group
+  fitted to a panel shrinks every label in it to match the code. Keep code lines under about fifty characters, or set
+  the code in plain proportional type when it is quoted rather than run.
+- The orchestration belongs on screen, not only in the notes. A running line in the orchestrator's own box saying what it
+  is doing between two calls is what makes an agent visible as an actor rather than a label.
