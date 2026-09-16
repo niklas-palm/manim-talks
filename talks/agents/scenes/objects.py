@@ -259,9 +259,9 @@ def mini_stage(kinds) -> tuple:
 # ------------------------------------------------------------------------------------------------ the agent as one thing (move seven)
 # Everything the talk built, drawn as one compact entity inside the application: a frame named agent holding the list as
 # bare coloured rows and the tools as small named cards. It is introduced only after every part has been seen full size.
-#   frame 3.0 x 1.7 centred (-2.95, 1.35): x -4.45..-1.45, y 2.2..0.5; the context as thin lines 1.4 wide, the tools as
+#   frame 3.0 x 1.7 centred (-2.95, 1.23): x -4.45..-1.45, y 2.08..0.38, clear of the application's name; the context as thin lines 1.4 wide, the tools as
 #   cards 1.1 by 0.3 beside them
-ENTITY = dict(cx=-2.95, cy=1.35, w=3.0, h=1.7, gap=0.38, row_w=1.4, card_w=1.1)
+ENTITY = dict(cx=-2.95, cy=1.23, w=3.0, h=1.7, gap=0.38, row_w=1.4, card_w=1.1)
 ROW_H, ROW_GAP = 0.1, 0.03                      # a message in the entity: a thin line
 HIST_CODE = [("user", "user · add a retry to the upload function"), ("tool_use", 'assistant · tool_use: bash("grep -rn upload src/")'),
              ("tool_result", "user · tool_result: src/client.py:88 def upload(path):"), ("tool_use", 'assistant · tool_use: write_file("src/client.py", …)'),
@@ -309,13 +309,14 @@ class Run:
     def row(self, kind: str, rows: int = 1) -> VGroup:
         return mini_block(kind, self.lst.row_w, rows)
 
-    def clear(self, rt: float = 0.3):
-        """The previous task is done: its rows leave, the list is empty for the next."""
-        if self.lst.blocks:
-            self.s.play(*[FadeOut(b) for b in self.lst.blocks], run_time=rt)
-            for b in self.lst.blocks:
+    def clear(self, rt: float = 0.3, keep: int = 0):
+        """The previous task is done: its rows leave (all but the first `keep`, a system prompt say), ready for the next."""
+        gone = self.lst.blocks[keep:]
+        if gone:
+            self.s.play(*[FadeOut(b) for b in gone], run_time=rt)
+            for b in gone:
                 self.lst.remove(b)
-            self.lst.blocks = []
+            self.lst.blocks = self.lst.blocks[:keep]
 
     def ask(self, frm, rt: float = 0.3):
         return self.lst.append(self.s, self.row("user"), frm=frm, run_time=rt)
