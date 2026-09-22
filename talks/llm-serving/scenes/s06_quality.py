@@ -171,7 +171,7 @@ class PrecisionCost(TalkSlide):
         grid, gl = p["grid"], p["gl"]
         cap = caption(self, "fp8 against bf16: 4 of 100 change, 2 each way: the noise floor")
         idx = flip(self, grid, 2, 2, seed=2)
-        self.next_slide("""fp8 against bf16. Across three model families and several thousand items per task, about 4 percent of items
+        self.next_slide("""fp8 against bf16. Across four model families and several thousand items per task, about 4 percent of items
         change, and the gains equal the losses: on one 32B model, 84 items got better and 84 got worse. That is the noise floor
         from the last scene. It held on the standard question suites, on structured extraction, on tool calling, on coding
         fixes and on agent tasks: every aggregate inside the repeat spread, every flip balanced. Half the bytes per weight,
@@ -183,7 +183,9 @@ class PrecisionCost(TalkSlide):
         picture showing up. Six to ten percent of items change and the losses outnumber the gains about four to three: plus 123
         and minus 163 for one format, plus 114 and minus 167 for another, on the same model. In aggregates that is half a point
         to two points on the standard suite, 3 to 5 percent worse perplexity, about a point on tool calling. Small, real, and
-        the same for every 4-bit format we tried. The format does not matter; the number of levels does.""")
+        the same for every 4-bit format we tried. Even a publisher's own quantisation-aware 4-bit, a model trained to be rounded,
+        paid the same on a fourth family: half a point to two, one answer in twelve to twenty flipped. The format does not matter;
+        the number of levels does.""")
         reset(self, grid, idx)
         cap = swap_caption(self, cap, "One community 4-bit build: 18 of 100 change, 3 wrong per 1 right", 22, HOT)
         idx = flip(self, grid, 4, 14, seed=4)

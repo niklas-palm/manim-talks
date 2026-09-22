@@ -492,3 +492,21 @@ First principles that the passes confirmed, written to outlast the decks they ca
 - Review the history, not only the tree, before a repository goes public: a file deleted long ago is still one command
   away. Search every revision for the names that must not appear, and for the kinds of file that never should have been
   committed.
+
+## When the source moves
+
+- Check every picture against the deck's own spine, not only against the source. The tensor-parallel timeline drew
+  "compute shrinks, the exchange stays" in a talk whose spine says a decode step is bound by the bytes it reads; the spine
+  predicted that splitting a dense model over a fast link speeds up one request, and a later measurement said so
+  (64, 97, 134 tokens/s at TP 1, 2, 4 over NVLink). The picture had contradicted the spine for weeks and nobody read it
+  that way because the caption said otherwise.
+- A measured rule carries the conditions it was measured under; draw the condition or the rule will be repeated without
+  it. "It does not make a fitting model faster" was true over PCIe. The timeline now draws the PCIe exchange as long as
+  the saving, then shrinks it for NVLink, so the audience sees which link the rule belongs to.
+- When a source explains a number twice, take the mechanism, not the arithmetic that happens to fit. The fp8 prefill
+  doubling was narrated as "half the bytes" although prefill is compute-bound and the source said the gain came from fp8
+  tensor cores; a weight-only 4-bit build later halved the bytes again and halved prefill, which "half the bytes" cannot
+  explain.
+- Count what is drawn against what is said. A hand-over note promised "the five that matter" and the scene drew six.
+- When the source repository moves, diff its docs from the revision the deck cites and read every note against the diff;
+  a claim that was true is the hardest kind of wrong to notice.

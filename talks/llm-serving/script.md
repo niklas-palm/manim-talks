@@ -1,7 +1,8 @@
 # Serving open-weight LLMs: what the GPU is doing, and what that decides
 
 One line per step (each `next_slide()` in the scenes), with the section of the companion repository's `docs/tuning.md`
-that carries the measurement (the repository is named in this talk's README). Timings are targets for a 45-minute slot.
+that carries the measurement (the repository is named in this talk's README; last read 2026-09-22 at its commit 59d00ed,
+which added a fourth model family measured on one g7e and on eight H100s). Timings are targets for a 45-minute slot.
 
 ## Opening (folded into move 1)
 - No title slide. The deck opens on the sentence, and the first note introduces the talk: who it is for, the spine
@@ -21,28 +22,31 @@ that carries the measurement (the repository is named in this talk's README). Ti
 
 ## 3. Three knobs (8 min)
 - **Quantisation, "fewer bytes per weight".** Every quantity named on screen: 30B parameters at 2 bytes is 57 GB read per decode step, leaving room for about 330,000 tokens of context across all requests (about 40 conversations of 8k tokens, 96 KB per token; one request at the model's full 262k). fp8: 29 GB, about 630,000 tokens; an fp8 cache at 48 KB per token: 1.27 million (the engine's own figure at start). (*Quantisation*)
-- Measured: 7,900 against 16,200 prompt tokens prefilled per second, one GPU, inside an eight-second latency budget. Half the fleet for the same work. (*Every weight option, measured*)
-- Two independent decisions: the weights' precision and the cache's. What it costs in answers comes in move 5.
+- Measured: 7,900 against 16,200 prompt tokens prefilled per second, one GPU, inside an eight-second latency budget. Half the fleet for the same work. The prefill doubling is not the bytes: prefill is compute-bound and this GPU multiplies fp8 at twice the bf16 rate; the prefill ceiling is about 250 TFLOPS over twice the active parameters at bf16, twice that at fp8 (a dense 31B measured 4,300 and 8,100). (*Every weight option, measured*, *Quantisation is two independent decisions*, *Which wall are you at?*)
+- Two independent decisions: the weights' precision and the cache's. The cache precision can decide which attention kernel the engine gets (a bf16 cache 28 to 69% faster on long prompts for one family on H100s); KV bytes per token are the model's and vary six-fold (33 KiB to 186 KiB). What it costs in answers comes in move 5. (*`kvCacheDtype: fp8`*, *Will my model fit?*)
 - **MixtureOfExperts, "dense versus mixture of experts".** Dense, 32B parameters: every weight read for every token, 32 GB. Mixture of experts, 30B parameters: 128 experts per layer, a router picks 8, 3B active, 3 GB per token; drawn as 8 experts with 2 chosen. Same depth, a tenth of the bytes, ten times the decode ceiling.
+- A second family repeats it: a 26B mixture of experts with 3.8B active served 5x its dense 31B sibling, and a dense 12B was slower than it at every load. (*What generalises*, point 1)
 - The catch: a batch touches most experts. Drawn as 8 experts with 2 chosen (the model has 128 with 8); measured on the memory bus: 39% busy at one request reading the active 3 GB, 77% at 128 in flight reading essentially all 29 GB. Plan on the loaded number. (*Two ceilings*, *Choosing a model to host*)
 - **PrefixCache, "reusing the KV cache, across turns and across engines".** Turn 2 resends turn 1. Nine of thirteen tokens were already read; prefix caching reuses the matching blocks.
 - The twist: the cache lives inside one engine; the balancer sends the next turn to the next engine. Measured 21% hits on eight engines.
 - A session cookie steering each conversation home: 75%, +14% throughput. Caching is a routing decision. (*Prefix caching is a routing decision*)
 - The other way out: blocks are content-hashed, so a connector can park evicted blocks in host RAM (per engine) or a shared store over the network that every engine reads (LMCache, Mooncake, Dynamo KVBM): a long document many users ask about, a shared system prompt, an agent's context between tool calls. Measured: a 32 GB host tier behind a 58 GB cache at 1.4x working set served zero hits; at 9x the cache, 79% of prompt tokens came back. The tier must outsize the churn.
 
-## 4. More than one GPU (6 min)
+## 4. More than one GPU (7 min)
 - **Parallelism.** A model too big for one card, four GPUs.
-- Tensor parallelism drawn: the same whole vector arrives on every GPU; each GPU holds a quarter of every matrix, multiplies (a quarter of the arithmetic, in parallel) and ends with partial sums for every output; the all-reduce adds them across GPUs. Once per pair of matrices in practice (the first split by columns keeps a slice of the intermediate and needs no exchange, the second split by rows produces partial sums and does): two per layer. Pipeline parallelism (whole layers per GPU, the token walks) exists for spanning machines and is mentioned in one sentence; not measured, not common inside one box. Makes it fit; does not make it faster. (*Tensor parallelism*)
+- Tensor parallelism drawn: the same whole vector arrives on every GPU; each GPU holds a quarter of every matrix, multiplies (a quarter of the arithmetic, in parallel) and ends with partial sums for every output; the all-reduce adds them across GPUs. Once per pair of matrices in practice (the first split by columns keeps a slice of the intermediate and needs no exchange, the second split by rows produces partial sums and does): two per layer. Pipeline parallelism (whole layers per GPU, the token walks) exists for spanning machines and is mentioned in one sentence; not measured, not common inside one box. On the timeline each GPU's share of the step (its weights read and arithmetic) shrinks to a quarter; the exchange, drawn as long as what the split saved, is the PCIe measurement. (*Tensor parallelism*)
+- TP=8 over PCIe: the share halves again, the exchange grows. Measured on this talk's model: TP=2 added nothing to prefill (22,685 to 21,665) where an independent engine added 43%. Over a slow link it makes the model fit and nothing more.
+- The same split over NVLink: the red segments shrink and the split step is shorter than the one-GPU step. Measured, a dense 31B in fp8 on eight H100s: one request 64, 97, 134 tokens/s at TP 1, 2, 4; two engines at TP=4 against eight at TP=1: +34% at 64 in flight, +26% at 128, −12% at 512. The exchange grows with the batch, the weights saving does not; the knee is about 32 requests per GPU. MoE not measured over NVLink. (*Tensor parallelism*, the NVLink paragraph)
 - Expert parallelism: whole experts placed on GPUs, tokens travel (all-to-all instead of all-reduce). Used when the model is too big for slicing alone (hundreds of experts across dozens of GPUs) and the batch keeps every GPU's experts busy. Measured at the small end, 235B on 8 GPUs: one request 108 tokens/s without, 86 with; 7 to 20% fewer requests/s under load. Some fp8 checkpoints need it to start at TP=8 (expert tile width).
-- Eight GPUs: one engine at TP=8, 13.4 requests/s. Two engines at TP=4, 22.5. Same model, same load. (*Topology*)
-- The rule: smallest degree that fits, then replicas. Lockstep is the third wall.
+- Eight GPUs: one engine at TP=8, 13.4 requests/s. Two engines at TP=4, 22.5. Same model, same load, 512 in flight. (*Topology*)
+- The rule: smallest degree that fits, then replicas; the exception is a dense model on NVLink below the knee. Lockstep is the third wall.
 
 ## 5. What precision costs in answers (7 min)
 - **Rounding.** The mechanism first. A weight is a number; fewer bits means fewer levels (8 on a unit stretch at 4-bit); every weight moves a little; every score moves a little; a sure position keeps its pick, a close call flips. So the cost is a flip rate on close calls, and it must be measured against a baseline that flips too.
 - **NoiseFloor.** Before any number: the same bf16 model deployed twice and scored twice. 3% of tool-call items flip, 27% of agent tasks, 12% of code fixes, 2% of extraction sentences. That is the flip rate of nothing. (*What quantisation costs an agent*)
 - Agent trajectories diverge on the first different token. Compare aggregates, same task list, repeat your baseline.
 - **PrecisionCost.** fp8 flips like the noise floor, gains equal losses, on every family. The 2x option is free. (*What quantisation costs in answers*)
-- 4-bit: about a point, one answer in twenty, losses ahead four to three. Small, real, the same for every format.
+- 4-bit: about a point, one answer in twenty, losses ahead four to three. Small, real, the same for every format, and the same for a publisher's quantisation-aware int4 on a fourth family (one answer in twelve to twenty). (*What quantisation costs in answers*, the Gemma 4 rows)
 - One build passed every chat benchmark and lost 27 points of tool-use judgement and 15 of 22 code fixes. Format is not the risk; the build is. Measure on your task.
 
 ## 6. The fleet (5 min)
@@ -50,20 +54,17 @@ that carries the measurement (the repository is named in this talk's README). Ti
 - Shape: independent engines behind a balancer. Replicas over parallelism past the degree that fits; a failure costs one engine; capacity in engine-sized steps. Edge concerns (TLS, keys) are ordinary web infrastructure, not the subject.
 - Adding an engine means getting a machine and loading tens of GB of weights: minutes in any stack (11 measured here). Size the fixed fleet for the peak; autoscale for trends. (*Autoscaling*)
 - The balancer sees latency; the engines know why: requests waiting, cache usage, preemptions. Scrape them. (*Engine metrics*)
-- Agents: tools in, structured calls out (the engine needs the parser); long steps that outlive proxy timeouts, so stream.
+- Agents: tools in, structured calls out (the engine needs the parser); long steps that outlive proxy timeouts, so stream. A thinking model with a small answer cap answers nothing while every graph looks healthy: size the cap for the chain of thought. (*Tool calling*, *Reasoning models*)
 
 ## 7. Where the industry is (4 min)
 - **Industry.** Every engine is a batching scheduler over prefill and decode. Six fronts, each an attack on one of the two costs, re-validated against vLLM, llm-d, NVIDIA Dynamo and NVIDIA's NVFP4 documentation (September 2026):
 - Disaggregated serving: separate pools per phase; buys independent TTFT and ITL tuning and isolation, not throughput per GPU by itself (vLLM's docs say so). Orchestration layers (Dynamo, llm-d) are built around it.
 - Caches with an address: KV-aware routers (llm-d endpoint picker, Dynamo KV router, about 2x TTFT reported) and tiered offloading (vLLM tiered KV offloading, Dynamo KVBM). Our campaign 8 is the caution: size the tier to the churn.
 - Sparse attention: a token scores a chosen subset of cached keys (DeepSeek V3.2 in vLLM), so the cache read stops growing with context.
-- Speculative decoding: EAGLE, MTP, suffix decoding, parallel drafting (P-EAGLE, DFlash); high gain at low load, medium at best when busy. Measured here +24 to +41% lightly loaded, nothing under heavy load.
-- 4-bit as arithmetic: Blackwell NVFP4 with a scale per 16 values; NVIDIA reports within a point of fp8 on calibrated builds.
-- Reasoning effort: tokens per answer as the capacity setting, 1.7 to 3.5x.
-
-## 7. Where the industry is (5 min)
-- **Industry.** Every engine is a batching scheduler over the two phases. The frontier is a list of attacks on them.
-- Disaggregated serving: prefill and decode on separate hardware. Prefix-aware routing: a router that knows which engine holds which cache. (*What this project does not do*)
-- Speculative decoding: +24 to 41% here, fading under load. 4-bit as native compute on Blackwell. Reasoning effort as the capacity setting. (*Speculative decoding with EAGLE-3*, *NVFP4*, *Reasoning models*)
+- Speculative decoding: EAGLE, MTP, suffix decoding, parallel drafting (P-EAGLE, DFlash). Measured here with a separate EAGLE-3 draft +24 to +41%, least at the prefill knee where verification competes with prefill; with a publisher's four-layer drafter that shares the target's cache, +107% single-stream, +88% at 8, +32% at 64 in flight on a dense 12B and +51% at 64 on a 26B MoE, no level lost. The condition is a decode-bound fleet, not light load. (*Speculative decoding with EAGLE-3*, the MTP paragraph)
+- 4-bit, two ways: a weight-only kernel unpacks to bf16 (decode +48 to 58% single-stream over fp8, prefill back to the bf16 rate); native NVFP4 keeps the fp8 compute rate and cuts bytes (+25% on one dense model, nothing on a MoE with narrow experts). Pick by the wall and the kernel the log names. (*4-bit is two different products on this GPU*)
+- Reasoning effort: tokens per answer as the capacity setting, 1.7 to 3.8x. (*Reasoning models*)
 - The spine again.
-- **Close.** Three lines, then the repository.
+- **Close.** Five lines, then the repository.
+
+Click count: 83 steps in 13 scenes (`bin/build.py` reports it).

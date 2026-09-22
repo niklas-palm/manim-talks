@@ -91,9 +91,12 @@ class Fleet(TalkSlide):
         a structured call back, so the engine needs a parser for that model's tool-call format, or the call comes back as plain
         text and the agent stalls without an error. Agent steps carry the whole trajectory, tens of thousands of tokens on a
         busy engine, so they run long, longer than the timeouts most proxies and gateways apply to a request that has not started
-        answering. Stream them. None of this changes the machine; it changes what the machine is asked to hold.""")
+        answering. Stream them. And if the model thinks, size the answer cap for its chain of thought: with thinking on and a
+        small cap, every answer was cut off inside the thought, the fleet looked healthy on every graph and answered nothing; a
+        tool call that cost 23 tokens with thinking off cost over a hundred with it on. None of this changes the machine; it
+        changes what the machine is asked to hold.""")
         # --- hand-over: the fleet gives way to the two phases every engine schedules
         from s08_industry import start_industry, TITLE_IND
         nxt = start_industry(self, add=False)
         t = handover(self, t, *TITLE_IND, leaving=[fleet, new, lb, links, newlink, cap], arriving=nxt["shown"])
-        self.finish("""The picture hands over. vLLM, SGLang, TensorRT-LLM: different code, the same shape. A prefill phase, a decode loop, a scheduler that decides which requests share each step. The frontier is not a new shape; it is a list of attacks on the two costs we started with. Here are the five that matter this year, placed on the part of the pipeline they attack.""")
+        self.finish("""The picture hands over. vLLM, SGLang, TensorRT-LLM: different code, the same shape. A prefill phase, a decode loop, a scheduler that decides which requests share each step. The frontier is not a new shape; it is a list of attacks on the two costs we started with. Here are the six that matter this year, placed on the part of the pipeline they attack.""")
