@@ -13,11 +13,12 @@ def layer_stack(n: int, width: float, color: str = WEIGHTS, op: float = 0.7, h: 
 
 
 def timeline(segments, unit: float, y: float, x0: float = -6.4):
-    """segments: list of (kind, length): kind 'c' compute (PROMPT) or 's' sync (HOT). Returns the bars and total width."""
+    """segments: list of (kind, length): kind 'c' one GPU's share of the step, the weights it reads and the arithmetic it
+    does (WEIGHTS), or 's' the exchange between GPUs (HOT). Returns the bars and total width."""
     bars = VGroup(); x = x0
     for kind, length in segments:
         w = unit * length
-        bars.add(Rectangle(width=w, height=0.28, fill_color=PROMPT if kind == "c" else HOT, fill_opacity=SOLID, stroke_width=0).move_to([x + w / 2, y, 0]))
+        bars.add(Rectangle(width=w, height=0.28, fill_color=WEIGHTS if kind == "c" else HOT, fill_opacity=SOLID, stroke_width=0).move_to([x + w / 2, y, 0]))
         x += w + 0.02
     return bars, x - x0
 
@@ -78,8 +79,8 @@ class Parallelism(TalkSlide):
         tl_y = -1.95
         step1, w1 = timeline([("c", 4.0)], 1.0, tl_y + 0.45)
         l1 = label("one GPU, one layer step (if it fitted)", 15, DIM).next_to(step1, RIGHT, buff=0.2)
-        step4, w4 = timeline([("c", 1.0), ("s", 0.6)], 1.0, tl_y)
-        l4 = label("TP = 4: a quarter of the arithmetic, then the exchange", 15, DIM).next_to(step4, RIGHT, buff=0.2)
+        step4, w4 = timeline([("c", 1.0), ("s", 3.0)], 1.0, tl_y)   # over PCIe the exchange takes about what the split saved (measured: TP=2 added nothing to prefill)
+        l4 = label("TP = 4: a quarter of the weights read, then the exchange", 15, DIM).next_to(step4, RIGHT, buff=0.2)
         self.play(FadeIn(step1), FadeIn(l1), FadeIn(step4), FadeIn(l4))
         self.next_slide("""Tensor parallelism: the whole vector to every GPU, a quarter of every matrix each, then exchange. Tensor parallelism is what engines do inside a machine: instead of splitting the stack of layers, split every
         matrix. Each GPU holds a quarter of every weight matrix in every layer, so all four GPUs work on every token at once.
@@ -92,17 +93,43 @@ class Parallelism(TalkSlide):
         Every layer of every token waits on it, and it needs a fast link between the GPUs, which is why this stays inside a
         node. The other way to divide a model, whole layers per GPU with the token walking from one GPU to the next, exists and
         is how a model is spread across machines; it exchanges almost nothing but leaves GPUs idle in turn, and it is not what
-        you meet inside a single box. On the timeline: the compute part of a step shrinks to a quarter, the red part is the
-        exchange, and it does not shrink when GPUs are added.""")
-        step8, w8 = timeline([("c", 0.5), ("s", 0.6)], 1.0, tl_y - 0.45)
-        l8 = label("TP = 8: less arithmetic, the same exchange", 15, DIM).next_to(step8, RIGHT, buff=0.2)
-        cap = swap_caption(self, cap, "It makes the model fit. It does not make a fitting model faster.")
+        you meet inside a single box. On the timeline: each GPU's share of the step, the weights it reads and the arithmetic it
+        does, shrinks to a quarter; the red part is the exchange, and over the PCIe links inside this box it takes about as
+        long as what the split saved.""")
+        step8, w8 = timeline([("c", 0.5), ("s", 3.7)], 1.0, tl_y - 0.45)
+        l8 = label("TP = 8: an eighth of the weights read, a larger exchange", 15, DIM).next_to(step8, RIGHT, buff=0.2)
+        cap = swap_caption(self, cap, "Over PCIe the exchange eats the saving: it fits, no more")
         self.play(FadeIn(step8), FadeIn(l8))
-        self.next_slide("""Go to eight GPUs and the arithmetic halves again while the exchange stays. Past the degree where the
-        model fits, each extra GPU buys less compute time and adds another participant to every exchange. This is the third
-        wall of the talk, after compute and bandwidth: lockstep. Tensor parallelism is a way to make a model fit, not a way to
-        make it fast.""")
-        tp_bits = VGroup(slices, copies, parts, x, xl, sync, sl2, step1, l1, step4, l4, step8, l8)
+        self.next_slide("""Go to eight GPUs and each GPU's share halves again while the exchange grows: one more participant in every
+        all-reduce. Over PCIe, the link inside a g7e, the exchange costs about what the split saved. Measured on this talk's model:
+        a second GPU at tensor parallel two added nothing to prefill, 22,700 to 21,700 prompt tokens per second, while the same
+        GPU as an independent engine added 43 percent; at tensor parallel four the model reached a lower fraction of its
+        bandwidth ceiling than on one GPU. This is the third wall of the talk, after compute and bandwidth: lockstep. Over a slow
+        link, tensor parallelism is a way to make a model fit, and nothing more.""")
+        # the same split over NVLink: the exchange shrinks, and the step is shorter than the one-GPU step
+        cap = swap_caption(self, cap, "Over NVLink the exchange is cheap: faster, below the knee")
+        nv = VGroup(label("measured: dense 31B, fp8, eight H100s over NVLink", 15, DIM, width=4.7),
+                    label("one request: 64, 97, 134 tokens/s at TP 1, 2, 4", 16, TEXT, width=4.7),
+                    label("64 in flight, 2 × TP 4: +34%;  at 512: −12%", 16, TEXT, width=4.7),
+                    ).arrange(DOWN, aligned_edge=LEFT, buff=0.08).move_to([1.4, tl_y - 0.05, 0], aligned_edge=LEFT)
+
+        def shorter(bars, lab, w=0.9):   # the red segment shrinks in place; its label follows
+            s_ = bars[1]; left = s_.get_left()[0]
+            return [s_.animate.stretch_to_fit_width(w).move_to([left + w / 2, s_.get_y(), 0]),
+                    lab.animate.move_to([left + w + 0.2, lab.get_y(), 0], aligned_edge=LEFT)]
+        self.play(*shorter(step4, l4), *shorter(step8, l8), run_time=0.8)   # first the picture moves, then the numbers arrive where it left room
+        self.play(FadeIn(nv), run_time=0.5)
+        self.next_slide("""Now the same split over a fast link. NVLink moves the partial sums in a fraction of the time PCIe takes, so
+        the red segments shrink and the split step is shorter than the one-GPU step. That is the spine again: a dense decode step
+        streams every weight, and a quarter of the weights per GPU is a quarter of the bytes on each GPU's bus. Measured on eight
+        H100s with a dense 31B in fp8: one request decoded at 64 tokens per second on one GPU, 97 on two, 134 on four. And with 64
+        requests in flight across the host, two engines at tensor parallel four served 34 percent more than eight independent
+        engines; at 128, 26 percent more. Then the knee: at 512 in flight they served 12 percent less. The exchange carries every
+        token's activations, so it grows with the batch, while the saving on the weights read is the same at any batch size; past
+        about 32 requests per GPU, eight independent batches win. So the rule has a shape. Below the knee on a fast link, splitting a
+        dense model buys latency and throughput; above it, and on any PCIe box, one engine per GPU. The mixture-of-experts case
+        was not measured over NVLink.""")
+        tp_bits = VGroup(slices, copies, parts, x, xl, sync, sl2, step1, l1, step4, l4, step8, l8, nv)
         # EP
         cap = swap_caption(self, cap, "Expert parallelism: whole experts on each GPU, tokens travel to them")
         self.play(FadeOut(tp_bits))
@@ -148,8 +175,8 @@ class Parallelism(TalkSlide):
         s_two_b, _ = timeline([("c", 1.0), ("s", 0.6)] * 2, 0.9, -2.15)
         l_two = label("2 × TP = 4: 22.5 requests/s", 18, OUTPUT).next_to(s_two_a, RIGHT, buff=0.25)
         self.play(ReplacementTransform(one, two), FadeIn(s_two_a), FadeIn(s_two_b), FadeIn(l_two))
-        self.next_slide("""The alternative: two independent engines, each at tensor parallel four, behind the load balancer. Each does more arithmetic per step and synchronises across four GPUs instead of eight, and the two never wait for each other. Same model, same hardware, same load: 22.5 requests per second against 13.4. Sixty-eight percent more work from the same eight GPUs, by dividing them differently. The rule that falls out: use the smallest tensor-parallel degree at which the model fits, and spend the rest of
-        the GPUs on more engines. One practical trap: block-quantised fp8 checkpoints refuse degrees that would split an
+        self.next_slide("""The alternative: two independent engines, each at tensor parallel four, behind the load balancer. Each does more arithmetic per step and synchronises across four GPUs instead of eight, and the two never wait for each other. Same model, same hardware, same load, 512 requests in flight, far above the knee: 22.5 requests per second against 13.4. Sixty-eight percent more work from the same eight GPUs, by dividing them differently. The rule that falls out: use the smallest tensor-parallel degree at which the model fits, and spend the rest of
+        the GPUs on more engines; the one exception is the last click's, a dense model on a fast link below the knee. One practical trap: block-quantised fp8 checkpoints refuse degrees that would split an
         expert's 128-wide tiles, so this 235B model would not start at TP=8 without expert parallelism. The engine tells you;
         the docs record which combinations ran.""")
         # --- hand-over: eight GPUs give way to one weight matrix, the question of what precision costs

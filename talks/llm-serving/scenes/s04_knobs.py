@@ -57,19 +57,24 @@ class Quantisation(TalkSlide):
         t = title_still(self, *TITLE_Q)
         p = start_quantisation(self)
         strip, gpu, bytes_, bl, fit, fl, rate, rl = p["strip"], p["gpu"], p["bytes_"], p["bl"], p["fit"], p["fl"], p["rate"], p["rl"]
-        bl2 = label("fp8: 1 byte per weight", 15, MUTED).move_to(bl, aligned_edge=LEFT)
+        bl2 = label("fp8: 1 byte per weight, and twice the arithmetic rate", 15, MUTED).move_to(bl, aligned_edge=LEFT)
         fl2 = label("about 80 conversations of 8k tokens (still 96 KB per token)", 15, MUTED).move_to(fl, aligned_edge=LEFT)
         self.play(gpu.set_weights(29), bytes_.to(29), FadeOut(bl), FadeIn(bl2), run_time=1.5)
         self.play(gpu.set_cache(60), fit.to(630000), FadeOut(fl), FadeIn(fl2), run_time=1.5)
         self.play(rate.to(16200), run_time=1.2)
         self.next_slide("""Store each weight in one byte instead of two. Every decode step now reads 29 GB instead of 57, so the
         bandwidth-bound loop runs nearly twice as fast, and the cache has about 58 GB instead of 30, so twice as many tokens
-        of context fit, about 630,000. Both gauges of the talk move at once. Measured: 16,200 input tokens per second per GPU,
-        twice the work per GPU, which is half the fleet for the same traffic. One config line.""")
+        of context fit, about 630,000. Both gauges of the talk move at once. The bottom number is the one to read carefully:
+        prefill doubled too, 7,900 to 16,200 prompt tokens per second per GPU, and that is not the bytes. Prefill is
+        compute-bound, and this GPU generation multiplies fp8 numbers at twice its bf16 rate, so fp8 buys the two phases through
+        two different mechanisms: half the bytes for decode, twice the arithmetic for prefill. Prefill has a ceiling of its own,
+        the mirror of the division in move one: the card's arithmetic rate over twice the active parameters, about 250 trillion
+        operations per second on this card at bf16 and roughly twice that at fp8. A dense 31B measured 4,300 and 8,100 prompt
+        tokens per second, right on it. Twice the work per GPU is half the fleet for the same traffic. One config line.""")
         fl3 = label("about 160 conversations of 8k tokens (48 KB per token in fp8)", 15, MUTED).move_to(fl, aligned_edge=LEFT)
         kl = label("the cache has its own precision, set separately", 15, CACHE).next_to(gpu, DOWN, buff=0.12)
         self.play(gpu.cache.animate.set_fill(CACHE, 1.0), gpu.set_cache(60), fit.to(1270000), FadeOut(fl2), FadeIn(fl3), FadeIn(kl), run_time=1.5)
-        self.next_slide("""The KV cache is a second, independent decision. Its entries can be stored in fp8 as well, which halves the bytes per cached token, 48 kilobytes instead of 96 for this model, so the same 58 GB holds about 1.27 million tokens; that last figure is what the engine reported at start on this card, the other two follow from the same arithmetic. On this GPU's attention kernels the fp8 cache also measured 12 percent faster decode. The two knobs are set separately and the right answer for one does not follow from the other: on H100s the same cache setting measured slower, because the kernels differ. The obvious question is what all this did to the answers. It gets its own move, five, because the answer has a mechanism worth seeing and a measurement worth trusting. The short version: fp8 costs nothing we could measure on any task; 4-bit costs a little, always. Hold the question until then.""")
+        self.next_slide("""The KV cache is a second, independent decision. Its entries can be stored in fp8 as well, which halves the bytes per cached token, 48 kilobytes instead of 96 for this model, so the same 58 GB holds about 1.27 million tokens; that last figure is what the engine reported at start on this card, the other two follow from the same arithmetic. On this GPU's attention kernels the fp8 cache also measured 12 percent faster decode. The two knobs are set separately and the right answer for one does not follow from the other: on H100s an fp8 cache can narrow the engine's choice of attention kernel to a slower one; for one model family the bf16 cache got the faster kernel and ran 28 to 69 percent faster on long prompts. The startup log names the kernel it chose; read it before trusting either setting. One more thing about the 96 kilobytes: it is this model's number, not the card's. Bytes of cache per token are set by the model's layers, its key-value heads and their width, and across the families measured they vary six-fold: 33 kilobytes per token for one 26B mixture of experts, 186 for a dense 31B, whose 262,000-token context needs 33 GB of cache for a single request. The cache decides how many requests fit, and the model decides the cache. The obvious question is what all this did to the answers. It gets its own move, five, because the answer has a mechanism worth seeing and a measurement worth trusting. The short version: fp8 costs nothing we could measure on any task; 4-bit costs a little, always. Hold the question until then.""")
         # --- hand-over: the weights bar grows into a stack of layers, the next knob's picture
         nxt = start_moe(self, add=False)
         wcopy = gpu.weights.copy()
@@ -121,7 +126,9 @@ class MixtureOfExperts(TalkSlide):
         self.play(FadeIn(key), run_time=0.5)
         self.next_slide("""same layers, same depth; a tenth of the bytes per token, so ten times the decode ceiling. So the two knobs so far both attack bytes per token: quantisation shrinks every weight, a mixture of experts
         reads fewer of them. Same depth, same stack of layers, a tenth of the bytes, ten times the decode ceiling from the last
-        scene. That is why this talk's model is one. Now the catch.""")
+        scene. That is why this talk's model is one. A second family repeated it: a 26B mixture of experts with 3.8B active
+        served five times the requests of its dense 31B sibling, and a dense 12B, a smaller model in total, was slower than it at
+        every load. Active parameters set the speed; total parameters only cost memory. Now the catch.""")
         key2 = label("the catch: eight tokens pick seven of eight experts", 17, MUTED).move_to(key)
         self.play(FadeOut(key), FadeIn(key2), run_time=0.5)
         toks = VGroup(*[Square(0.37, fill_color=OUTPUT, fill_opacity=SOLID, stroke_width=0) for _ in range(8)]).arrange(RIGHT, buff=0.06).next_to(layers, UP, buff=0.08)

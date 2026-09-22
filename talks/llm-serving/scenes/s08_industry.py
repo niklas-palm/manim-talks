@@ -73,12 +73,16 @@ class Industry(TalkSlide):
         f3 = front("speculative decoding", "a small draft proposes several tokens, the big model verifies them in one step", OUTPUT, RIGHT * 1.7 + DOWN * 0.15)
         self.next_slide("""Speculative decoding attacks the decode loop directly. A small draft proposes several tokens; the big model checks
         them all in one step, one read of the weights for several tokens, like a batch of one request with itself. The drafts
-        have become cheaper and more parallel, several tokens drafted at once rather than one after another. Measured here: 24
-        to 41 percent more tokens per second on a lightly loaded engine, fading to nothing under heavy load, because a full
-        batch already uses the read; the engine documentation says the same, high gain at low load, medium at best when busy.""")
-        f4 = front("4-bit as arithmetic", "Blackwell computes in NVFP4 natively; 4-bit stops being a decompression trick", OUTPUT, RIGHT * 1.7 + DOWN * 1.3)
-        f5 = front("reasoning effort", "tokens per answer becomes the capacity setting: 1.7 to 3.5 times", OUTPUT, RIGHT * 1.7 + DOWN * 2.45)
-        self.next_slide("""Two more on the decode side. Blackwell GPUs compute in four-bit floating point natively, with a scale per block of sixteen values, so NVFP4 weights stop being something the kernel decompresses and become something it multiplies: another 25 percent here, and the vendor's own numbers put the accuracy cost within a point of fp8 when the build is calibrated, which is exactly the caveat move five ended on. And reasoning models turn the number of tokens per answer into a knob, effort, which changes capacity by 1.7 to 3.5 times, more than any flag on the engine. Back to the spine: a model reads your prompt once and then writes one token at a time, and every item on this slide is an attack on one of those two costs.""")
+        have become cheaper and more parallel, several tokens drafted at once rather than one after another. Measured here with
+        a separate draft model: 24 to 41 percent more tokens per second, most on a lightly loaded engine and least at the prefill
+        knee, where verifying the drafts competes with prefill for the compute. Then a publisher's own drafter, four layers that
+        share the target's cache, on a dense 12B: twice the tokens per second for one request, plus 88 percent at eight in flight,
+        plus 32 at 64, and no level lost; plus 51 percent at 64 in flight on a 26B mixture of experts. So the condition is not
+        light load but a decode-bound fleet, and where decode is the wall this is the first setting to turn on. It has stopped
+        being a frontier and become a knob.""")
+        f4 = front("4-bit, two ways", "native FP4 arithmetic on Blackwell, or weights unpacked to bf16: pick by the wall you are at", OUTPUT, RIGHT * 1.7 + DOWN * 1.3)
+        f5 = front("reasoning effort", "tokens per answer becomes the capacity setting: 1.7 to 3.8 times", OUTPUT, RIGHT * 1.7 + DOWN * 2.45)
+        self.next_slide("""Two more on the decode side. Four-bit weights are two different products. A weight-only kernel unpacks int4 to bf16 and multiplies at the bf16 rate: half the bytes again, so one request decoded 48 to 58 percent faster than in fp8, and prefill fell back to the bf16 rate, half of fp8's. Blackwell GPUs also compute in four-bit floating point natively, with a scale per block of sixteen values, so NVFP4 keeps fp8's arithmetic rate and cuts the bytes: another 25 percent here on one dense model, and nothing over fp8 on a mixture of experts with narrow experts. So pick a 4-bit checkpoint by the wall you are at and by the kernel the startup log names, not by the bit count; what the two cost in answers was the same, the half point to two from move five, calibrated build or not. And reasoning models turn the number of tokens per answer into a knob, effort, which changes capacity by 1.7 to 3.8 times, more than any flag on the engine. Back to the spine: a model reads your prompt once and then writes one token at a time, and every item on this slide is an attack on one of those two costs.""")
         # --- hand-over: the fronts fade, the two phases shrink to the top, and the close begins on them
         grp = VGroup(pre, dec, arrow, loop)
         t = retitle(self, t, *TITLE_CLOSE, extra=[FadeOut(VGroup(f1, f2, f6, f3, f4, f5, cap)), grp.animate.scale(0.6).move_to([0, 2.0, 0])], run_time=1.2)
@@ -91,7 +95,7 @@ class Close(TalkSlide):
         start_close(self)
         lines = ["Measure one engine before sizing anything.",
                  "fp8 weights and fp8 cache: no measured cost, twice the work per GPU.",
-                 "Smallest degree that fits, then replicas.",
+                 "Smallest degree that fits, then replicas; NVLink below the knee excepted.",
                  "Route conversations home; a cache tier pays only if it outsizes the churn.",
                  "Score your own task, against your own baseline, knowing the noise."]
         col = VGroup(*[label(s, 28, TEXT) for s in lines]).arrange(DOWN, aligned_edge=LEFT, buff=0.35).shift(DOWN * 0.35)
