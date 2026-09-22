@@ -361,6 +361,31 @@ def travel(scene, path_from: Mobject, path_to: Mobject, color: str = A1, radius:
     scene.play(*anims)
 
 
+def route(scene, pts, color: str = A1, carry: Mobject = None, text: str = "", run_time: float = 0.8, keep: bool = False):
+    """A dot (or a copy of `carry`) travels along a path with corners, at constant speed: down a corridor, along a row,
+    into a box. Where `travel` cuts straight across the picture, this follows the lanes the layout left, so a journey
+    crosses nothing it should not. `text` rides above whatever travels. Returns the traveller when `keep` is set (it
+    stays where the path ended), else removes it."""
+    d = carry.copy() if carry is not None else Dot(color=color, radius=0.09)
+    d.move_to(pts[0])
+    scene.add(d)
+    lab = None
+    if text:                                   # the text follows the traveller; it is not part of the path
+        lab = label(text, 13, color).next_to(d, UP, buff=0.06)
+        lab.add_updater(lambda m: m.next_to(d, UP, buff=0.06))
+        scene.add(lab)
+    path = VMobject().set_points_as_corners([np.array(p, dtype=float) for p in pts])
+    scene.play(MoveAlongPath(d, path), run_time=run_time, rate_func=linear)
+    if lab is not None:
+        lab.clear_updaters()
+    if not keep:
+        scene.play(FadeOut(d), *([FadeOut(lab)] if lab is not None else []), run_time=0.15)
+        return None
+    if lab is not None:
+        scene.play(FadeOut(lab), run_time=0.15)
+    return d
+
+
 def dashed(a: Mobject, b: Mobject, text: str = "", color: str = MUTED) -> VGroup:
     """A dashed line between two objects' edges with a small label at its middle: a watch, a subscription, a
     heartbeat, any standing relation that is not a flow. Hub-and-spoke systems (a control plane, a broker) are drawn
