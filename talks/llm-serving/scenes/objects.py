@@ -71,13 +71,6 @@ def cache_at(gpu: GPU, gb: float, color: str = CACHE):
     return gpu
 
 
-def caption_still(scene, s: str, size: float = 22, color: str = TEXT) -> Text:
-    """The footnote caption as a still: what caption() draws, added without its fade-in."""
-    t = pin(scene, label(s, size, color=CAPTION if color == TEXT else color, width=12.8, thread=(color == TEXT)), buff=0.3)
-    scene.add(t)
-    return t
-
-
 def handover(scene, old_title, new_title: str, kicker: str, leaving, arriving, run_time: float = 1.2):
     """The last play of a scene: the title changes to the next scene's, what this scene drew fades out, and the next
     scene's still start fades in, all in one motion. `arriving` are the next scene's start objects, not yet added."""

@@ -272,6 +272,15 @@ def swap_caption(scene, old, s: str, size: float = 22, color: str = TEXT) -> Tex
     return t
 
 
+def caption_still(scene, s: str, size: float = 22, color: str = TEXT) -> Text:
+    """The caption as a still, for a scene's first frame: what caption() draws, added without its fade-in. A scene that
+    rebuilds the previous scene's last frame uses this, then changes the caption once with swap_caption() in its first
+    step; caption() there would count as a second change inside that step."""
+    t = pin(scene, label(s, size, color=CAPTION if color == TEXT else color, width=12.8, thread=(color == TEXT)), buff=0.3)
+    scene.add(t)
+    return t
+
+
 # ------------------------------------------------------------------------------------------------ objects
 
 def tokens(n: int, color: str = A1, side: float = 0.36, gap: float = 0.08) -> VGroup:
