@@ -105,6 +105,9 @@ experiences a deck: what they see first, then how it moves, then the words, then
 
 - [ ] Every step has a note: one paragraph, readable aloud, saying what is on screen, what changed, why it matters.
 - [ ] Notes carry the caveats, figures and sources; the picture carries the claim.
+- [ ] Every note stands alone: no reference to another talk, deck, post or sample (grep the scenes for "talk", "deck",
+      "post", "sample"); each keeps the thread, the problem, why it exists, the way out; the tone is technical and
+      educational, with no sales language and no flourish.
 - [ ] `script.md`: spine, moves with click counts, sources with URLs and dates, simplifications; first `# ` line is the title.
 - [ ] `README.md`: what the talk is, the moves with minutes, how to run it, decisions taken on purpose. A `-bright`
       sibling is exempt: three lines saying what it is and whose scenes it shares (AGENTS.md, "One deck, two styles").

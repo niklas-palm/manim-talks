@@ -70,6 +70,4 @@ class TheState(TalkSlide):
         self.finish("""The second remedy: summarisation. The oldest messages are replaced by one message that says what happened in
         them, written by a model call of its own, and the most recent messages stay word for word because that is where
         the model needs detail. The list is shorter and the door is still remembered, at the cost of a call and of whatever
-        the summary left out. Everything beyond this point, sessions, memory stores, retrieval, is a way of deciding what
-        goes into this list. That is the next talk. This one ends where it started: a model, a list of messages, and a
-        loop.""")
+        the summary left out. Everything beyond this point, sessions, memory stores, retrieval, is a way of deciding what goes into this list, and each is judged by the same two costs: what it drops and what it adds. The picture ends where it started: a model, a list of messages, and a loop.""")

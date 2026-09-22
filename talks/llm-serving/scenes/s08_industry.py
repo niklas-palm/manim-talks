@@ -57,7 +57,7 @@ class Industry(TalkSlide):
         among them, are organised around it. Be precise about what it buys: the engine projects say it does not raise throughput
         per GPU by itself; it lets time-to-first-token and time-per-token be tuned independently and stops a long prefill from
         stalling everyone's decode. For a homogeneous single-GPU fleet at moderate prompt lengths the transfer costs more than
-        it saves, which is why the companion stack does not do it.""")
+        it saves, which is why our stack does not do it.""")
         f2 = front("caches with an address", "routers that know which engine holds which blocks; tiers where evicted blocks live on", PROMPT, LEFT * 4.7 + DOWN * 1.3)
         self.next_slide("""The cache stops being one engine's private memory. Routers that score engines by the blocks they hold and the
         depth of their queue are now standard parts of the fleet layer, the grown-up version of the session cookie from knob

@@ -84,7 +84,6 @@ class ApplyRequest(TalkSlide):
         self.play(FadeOut(manifest), FadeOut(ml), FadeOut(bar), run_time=0.4)
         self.play(FadeIn(S.nodes), run_time=0.7)
         self.wait(0.3)
-        self.finish("""Here are the machines: three nodes, each with a kubelet, some memory already in use, empty slots for pods. And
-        here is the punchline of move one: nothing has happened to them. The API server did not talk to a node. kubectl
+        self.finish("""Here are the machines: three nodes, each with a kubelet, some memory already in use, empty slots for pods. And the point of move one: nothing has happened to them. The API server did not talk to a node. kubectl
         did not start anything. There is a record that says three, and a count of running pods that says zero. The whole
         of Kubernetes is what closes that gap, and it does it with loops.""")

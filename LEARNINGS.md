@@ -539,3 +539,14 @@ First principles that the passes confirmed, written to outlast the decks they ca
   the viewer read it as arriving on the wrong side of the runtime. Land at the recipient's edge first, then move the payload.
 - `caption_still` is in the library now: a scene that rebuilds the previous frame needs the caption as a still and one
   `swap_caption` in its first step, or the checker counts two caption changes. Three decks had copied the same six lines.
+
+## Every talk stands alone
+
+- Notes that lean on another talk ("the agents talk showed", "that is the next talk", "the sample behind this talk")
+  read fine to the author, who knows the other talk, and leave a room that has not seen it behind. Three decks had them,
+  in the places where one deck had been built from another. The rule is now in principles rule 13 and the review
+  checklist: a note carries its own explanation or leaves the point out, and it keeps the thread the picture has, the
+  problem, why, the way out.
+- Notes live in the scene sources and reach the pages through `media/notes/<Scene>.json`, written at render time. A
+  wording change does not need a re-render: edit the source and the JSON together, rebuild the pages with `bin/build.py
+  <talk> qh`, and re-render one scene to confirm the two agree.

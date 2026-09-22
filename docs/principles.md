@@ -173,6 +173,11 @@ Each step's note is one paragraph the speaker can read aloud: what the audience 
 why it matters, and the one fact or number that anchors it. Notes carry the nuance, the caveats, the measured
 figures and the sources. Write them as you write the step; notes written afterwards drift from the picture.
 
+Every talk is self-sufficient. A note never leans on another talk, deck, post or sample ("as the agents talk showed",
+"that is the next talk", "the sample behind this talk"): the room has seen none of them, so the note carries the
+explanation itself or leaves the point out. Notes are written for a technical audience: the problem, why it exists,
+the way out, the number that anchors it. No sales language, no praise of a product, no rhetorical flourish.
+
 ## 14. Teach, do not report
 
 The audience is engineers who want to understand a system, not an account of your experiments. Every example,
