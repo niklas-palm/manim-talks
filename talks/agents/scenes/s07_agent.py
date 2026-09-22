@@ -53,5 +53,4 @@ class TheAgent(TalkSlide):
         talk is one picture. A plain application with one model call, whose code decided what to fetch. The same process
         named as a tool, then several, and the model choosing. The application running the loop; a framework hiding it; the
         list as the only state, with its window. Generic tools, and the agent making its own. And every agent you will use or
-        build this year is this entity, inside some application, calling some model. What has to be built around it so that
-        it can run on its own is another talk; it starts from exactly this picture.""")
+        build this year is this entity, inside some application, calling some model. What has to be built around it so that it can run on its own, a place to act, a way to be woken, a record of what it did, attaches to this picture without changing it.""")

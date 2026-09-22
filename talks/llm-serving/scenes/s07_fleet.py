@@ -70,7 +70,7 @@ class Fleet(TalkSlide):
         self.play(FadeIn(new), rail.animate.put_start_and_end_on(rail.get_start(), [new.get_x(), rail_y, 0]), Create(newlink))
         self.next_slide("""Adding an engine means loading the model: minutes. Size for the peak, autoscale for the trend. Autoscaling is slower than people expect, for a reason that is not about any one stack. A new engine has to
         notice the load, get a machine with a GPU, pull an image, and load tens of gigabytes of weights before it answers its
-        first request; every stage is minutes, not seconds. In the companion stack the whole chain measured eleven minutes from
+        first request; every stage is minutes, not seconds. In our stack the whole chain measured eleven minutes from
         alarm to serving, and scale-in is slower still. So the fixed fleet is sized for the peak from the arithmetic above, and
         autoscaling is insurance against a trend that lasts longer than a coffee break, not a way to meet a burst.""")
         self.play(FadeOut(clock), FadeOut(bar), FadeOut(prog))
