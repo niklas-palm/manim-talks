@@ -525,3 +525,17 @@ First principles that the passes confirmed, written to outlast the decks they ca
 - `seams.py` saying "title only" is not proof the frame matches: a start rebuilt with a different row pattern passed. Rebuild
   the previous scene's end from the same list of kinds, and read the seam sheet.
 - A frozen counter shows the value it was built with, not the value set a moment before (docs/manim.md).
+- The pace that reads on a shot sheet is too fast in a room. Timings inside the principles' band (0.3 to 0.6 s a beat) still
+  drew "too fast to follow" from the first viewer; the fix was one factor in `objects.py` applied through wrappers of
+  `travel` and `route` and inside the deck's loop class, so the whole deck slowed by half again in one line. Put that factor
+  in from the start, and judge pace by watching clips, not frames.
+- Events move; relations stand. The mention and the invocation were drawn as travelling dots every time, and the viewer asked
+  for arrows: you -> Slack and Slack -> runtime are relations that hold, so they are drawn once, and only the token travels
+  along them. The test: a dot that repeats the same path in every step is an arrow.
+- Name the region, not only the nodes. Three well-aligned nodes floating at the right (an MCP server, an API, an identity
+  provider) read as clutter until a box named "your company" enclosed them; the same nodes then read as a place the agent
+  calls into. Ownership is a container.
+- A message lands on its addressee. The invocation's dot went straight to where its payload would be kept (the proxy), and
+  the viewer read it as arriving on the wrong side of the runtime. Land at the recipient's edge first, then move the payload.
+- `caption_still` is in the library now: a scene that rebuilds the previous frame needs the caption as a still and one
+  `swap_caption` in its first step, or the checker counts two caption changes. Three decks had copied the same six lines.

@@ -99,6 +99,7 @@ file order within a file. The scene name (CamelCase) is shown in the presenter a
 | `title_still(scene, s, move)` | the same title added without animation, for a scene whose first frame repeats the previous scene's last frame |
 | `retitle(scene, old, s, move, extra=[...])` | the title changes in place while the first change to the picture plays; the way every scene after the first announces its move |
 | `caption(scene, s)` / `swap_caption(scene, old, s)` | one quiet line pinned to the frame bottom. Set before the step's animation; swap only at a step boundary. Prefer labels next to objects. |
+| `caption_still(scene, s)` | the caption as a still, for a scene's first frame (the previous scene's last frame rebuilt); then one `swap_caption` in the first step. `caption()` there would be a second change in one step, which `bin/check.py` flags. |
 | `pin(scene, m, buff)` | keep any mobject at the frame bottom through camera zooms. |
 
 Text does not wrap by itself; use `width`. `Text.become()` with a different string produces garbage mid-animation:

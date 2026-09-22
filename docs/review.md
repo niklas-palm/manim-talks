@@ -27,6 +27,8 @@ experiences a deck: what they see first, then how it moves, then the words, then
       empty frame, and no third of the frame stays empty except in a scene's very first still.
 - [ ] Space that will be filled later is visibly reserved (an empty list inside its box, an empty rack) so growth has
       somewhere to go without rearranging.
+- [ ] Things that belong to one owner sit in one named box ("your company": its API, its identity provider). Nodes that
+      float without a container read as unorganised, however well aligned.
 - [ ] With `GUIDES=1`: fixed furniture sits on the column and row lines; nothing a little off.
 - [ ] Only three gaps: `GAP_TIGHT` label to object, `GAP` object to object, `GAP_WIDE` group to group; equal things
       have equal gaps and sizes (a column of boxes: one x, one width, one height).
@@ -48,6 +50,13 @@ experiences a deck: what they see first, then how it moves, then the words, then
 - [ ] Every step ends on a settled picture; nothing is mid-flight in the end frame (the shot sheet shows it).
 - [ ] No object flashes into existence and out again within a step (check the contact sheet, not only the shots).
 - [ ] Conveyors and timelines move at constant speed (`rate_func=linear`); time along x, width is duration.
+- [ ] The pace was judged by watching the clips, not the shot sheets, and is slow enough for a room: a step the audience
+      must follow (a token travelling, a result landing) takes seconds, not a fraction of one. Every motion's duration
+      goes through one factor per deck, so "slower" is one number, not fifty edits.
+- [ ] A relation that holds every time is a standing arrow, drawn once; only events move. A dot that repeats the same path
+      in every step is an arrow asking to be drawn.
+- [ ] A message arrives at its addressee before its payload travels on: an invocation lands on the runtime's edge, then
+      what it carried moves to where it is kept. Landing the dot where the payload ends up reads as the wrong recipient.
 - [ ] Nothing dragged back by a fade-in, nothing left behind by a group move: a member's change and its group's move
       are never in one play (the checker flags it).
 - [ ] The camera moves only when the movement is the point (a zoom to open something); the picture never jumps.
