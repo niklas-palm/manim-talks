@@ -510,3 +510,18 @@ First principles that the passes confirmed, written to outlast the decks they ca
 - Count what is drawn against what is said. A hand-over note promised "the five that matter" and the scene drew six.
 - When the source repository moves, diff its docs from the revision the deck cites and read every note against the diff;
   a claim that was true is the hardest kind of wrong to notice.
+
+## One picture for a short talk
+
+- A short talk that must support a speaker rather than carry the argument still wants one continuous picture; the estate is
+  spent by moving things, not by adding slides. Here the same box was "your laptop" and then "runtime, in the cloud", and one
+  glyph, a key for the token, told the story by where it sat: in the client beside the agent, in the agent's hands (alert),
+  nowhere, in a proxy. Find the one object whose position is the argument before drawing anything else.
+- Leave the lanes a journey will need. A corridor between the left column and the main box, and a gap between the box and
+  the row of services, let every sign-in, invocation and result travel with corners and cross nothing; `route()` is now in
+  the library for it, after two decks drew their own.
+- Things that accumulate (files on a disk) need a rule for leaving: per task on a laptop, per session in the cloud, or the
+  container overflows by the third scene. Place them by the real height of what is already there, not by index.
+- `seams.py` saying "title only" is not proof the frame matches: a start rebuilt with a different row pattern passed. Rebuild
+  the previous scene's end from the same list of kinds, and read the seam sheet.
+- A frozen counter shows the value it was built with, not the value set a moment before (docs/manim.md).

@@ -42,6 +42,11 @@ Manim Community Edition 0.21, Python 3.12, macOS, ffmpeg 7, no LaTeX. Each entry
 - **A live `Counter` and fades.** Its digit updater redraws the number every frame; it now keeps the digits' current
   opacity, so `FadeIn` and `FadeOut` work on a counter. For a still frame set `tracker.set_value()`; `counter.stop()`
   freezes the digits entirely.
+- **A frozen `Counter` shows the value it was built with.** `tracker.set_value(n)` takes effect on the next frame through the
+  updater; `stop()` before any frame has rendered removes that updater, and the digits still read the initial value. For a
+  still frame build the counter with its value (`Counter(name, n, ...)`) and then `stop()`.
+- **A label riding on a `MoveAlongPath`** must follow by updater, not by being grouped with the traveller: the path moves
+  the group's centre, so the dot sits off the path by half the label's height. `route()` does this.
 - **Updaters need a stable anchor.** A counter's digits anchored to their own initial position stayed behind when
   the group moved. Anchor to a sibling that moves with the group and recompute in the updater.
 - **Build geometry after the move it depends on.** Lines created from a column's position before the animation
