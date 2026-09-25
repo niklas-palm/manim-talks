@@ -553,13 +553,17 @@ First principles that the passes confirmed, written to outlast the decks they ca
 
 ## Drawing an algorithm that runs in rounds
 
-- Give the algorithm's invariant a fixed place on screen. A row of text that slides left so the newest token always
-  sits at the same slot made every round happen in the same lanes, and the audience watched the rule instead of
-  hunting for where it was applied this time.
-- A check reads best as motion to the thing checked: each prediction flies to the slot it predicts and either merges
-  with the guess there or replaces it, so the source and the destination of the comparison are both on screen.
-- Draw one round slowly over several clicks (guess, verify, check), then three rounds at speed with different outcomes
-  (all kept, none kept, some kept) in one click. The spread of outcomes is what makes an average believable.
-- A measured curve that needs a lot of room can take the place of parts whose job is done; fade them, keep one reminder
-  of the mechanism in view, and give the chart the band. A chart squeezed into a corner beside the mechanism was
-  unreadable at half size.
+- Parallel work is drawn as its structure, all at once, not as its outputs arriving. Outputs appearing one per slot read
+  as "it does more of the same"; the dependency pattern lit in one instant (which inputs each output may see) showed
+  both that the work is simultaneous and why one bad input voids exactly the outputs that saw it. When the audience has
+  already learned such a pattern earlier in the talk, reuse it: the second use costs nothing to explain.
+- Give the algorithm's invariant a fixed place on screen (a write head that stays put while the history moves), so every
+  round happens in the same spot and the audience watches the rule, not the search for where it applies.
+- A comparison is two things side by side before the verdict: bring the candidate next to what it is checked against,
+  pause, then merge or replace. Flying one onto the other hides the moment the check is made.
+- One round slowly over several clicks, then several rounds at speed in one click with different outcomes (all pass,
+  none pass, some pass). The spread of outcomes is what makes an average believable.
+- End a step on its result and clean up at the start of the next. A step that ended by clearing its own picture left the
+  held frame, the one the speaker talks over, empty.
+- A chart that needs room may take the place of parts whose job is done; fade them, keep one reminder of the mechanism
+  in view and give the chart the band. Squeezed into a corner beside the mechanism, it was unreadable at half size.
