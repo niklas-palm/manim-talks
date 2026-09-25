@@ -119,8 +119,8 @@ talks/transformers-bright/
 
 Every tool takes its name like any other talk, and it keeps its own `media/`, its own two pages and its own PowerPoint
 export, so both styles can exist rendered at the same time. Never copy the scenes to make a variant: two copies of a
-drawing drift within a day. The samples are rendered dark; their `-bright` siblings are rendered at preview quality, and
-`bin/render.sh <talk>-bright qh` promotes one when it is going into a room.
+drawing drift within a day. Every sample and its `-bright` sibling are rendered at presentation quality (`qh`), so either style can go into a
+room as it is.
 
 **Editing a style.** Change `themes/dark.json` or `themes/bright.json` and run `bin/themes.py check`. It refuses a
 theme whose body text is under 7:1 against its background, whose accents are under 3:1, or whose accents are within 22
