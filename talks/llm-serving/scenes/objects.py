@@ -1,14 +1,14 @@
-"""This talk's vocabulary on top of the shared library: the five meanings its colours carry, the nouns that are
+"""This talk's vocabulary on top of the shared library: the six meanings its colours carry, the nouns that are
 coloured wherever they appear, and the one drawing every scene shares, the GPU.
 
   PROMPT (A1, cool)  tokens that came in        WEIGHTS (A3, deep)   the model's parameters
   OUTPUT (A2, warm)  tokens the model wrote     CACHE (A4, fresh)    the KV cache, working memory per request
-  HOT (ALERT)        saturated or wrong
+  DRAFT (A5, growth) a guess from the draft     HOT (ALERT)          saturated or wrong
 """
 from lib.palette import *
 
-PROMPT, OUTPUT, WEIGHTS, CACHE, HOT = A1, A2, A3, A4, ALERT
-set_thread({"prefill": PROMPT, "decode": OUTPUT, "weights": WEIGHTS, "weight": WEIGHTS, "cache": CACHE, "caching": CACHE})
+PROMPT, OUTPUT, WEIGHTS, CACHE, DRAFT, HOT = A1, A2, A3, A4, A5, ALERT
+set_thread({"draft": DRAFT, "prefill": PROMPT, "decode": OUTPUT, "weights": WEIGHTS, "weight": WEIGHTS, "cache": CACHE, "caching": CACHE})
 
 
 class GPU(VGroup):

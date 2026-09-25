@@ -1,12 +1,12 @@
-"""Move 3: three knobs that change how many bytes a decode step reads and how many requests fit. Each scene keeps a
+"""Move 3, knobs one to three: how many bytes a decode step reads and how many requests fit (knob four is s04b). Each scene keeps a
 bytes-per-step counter on screen, because bytes per step is the quantity that decides decode speed."""
 from lib.palette import *
 from objects import *
 
 
-TITLE_Q = ("Knob one: quantisation, fewer bytes per weight", "3  three knobs: weights, experts, cache")
-TITLE_MOE = ("Knob two: dense versus mixture of experts", "3  three knobs: weights, experts, cache")
-TITLE_PREFIX = ("Knob three: reusing the KV cache, across turns and across engines", "3  three knobs: weights, experts, cache")
+TITLE_Q = ("Knob one: quantisation, fewer bytes per weight", "3  four knobs: weights, experts, cache, drafts")
+TITLE_MOE = ("Knob two: dense versus mixture of experts", "3  four knobs: weights, experts, cache, drafts")
+TITLE_PREFIX = ("Knob three: reusing the KV cache, across turns and across engines", "3  four knobs: weights, experts, cache, drafts")
 
 
 def start_quantisation(scene, add: bool = True) -> dict:
@@ -260,10 +260,10 @@ class PrefixCache(TalkSlide):
         Behind an API gateway that holds one cookie jar, stickiness would pin the whole gateway to one engine. Turn it on only
         when clients keep a cookie per end-user conversation, or have the gateway replay it per session; or use a router that
         looks at the prefix itself, which move seven comes back to.""")
-        # --- hand-over: the fleet of engines gives way to the model that does not fit one GPU
-        from s05_parallelism import start_parallelism, TITLE_PAR
-        nxt = start_parallelism(self, add=False)
+        # --- hand-over: the fleet of engines gives way to one model writing one answer, the start of knob four
+        from s04b_speculative import start_speculative, TITLE_SPEC
+        nxt = start_speculative(self, add=False)
         spills[home].remove(spills[home][0])
         leaving = [q2, lb, hits, engines, caches, host, store, tiers, ex, *spills.values(), copies[1], copies[2]]
-        t = handover(self, t, *TITLE_PAR, leaving=leaving, arriving=nxt["shown"])
-        self.finish("""The picture hands over. 236 GB of weights and no GPU that holds them: divide the model, and pay at the seams. Some models do not fit one card. A 235B mixture of experts in fp8 is 236 GB of weights; the largest single GPU we can rent holds 96. So the model has to be divided over several GPUs, and how it is divided shows up as time.""")
+        t = handover(self, t, *TITLE_SPEC, leaving=leaving, arriving=nxt["shown"])
+        self.finish("""The picture hands over. Back to one engine and one answer. At the top, the prompt as five tokens; under it the target model, the model being served, as one wide box, because every pass through it reads all of its weights; under the box, the row where a pass puts what it predicts. Two counters, passes of the model and tokens written, and the two gauges, bus and compute. The three knobs so far changed what a step reads or what a request brings with it. The fourth changes how many tokens one step writes.""")

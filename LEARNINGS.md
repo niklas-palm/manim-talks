@@ -550,3 +550,16 @@ First principles that the passes confirmed, written to outlast the decks they ca
 - Notes live in the scene sources and reach the pages through `media/notes/<Scene>.json`, written at render time. A
   wording change does not need a re-render: edit the source and the JSON together, rebuild the pages with `bin/build.py
   <talk> qh`, and re-render one scene to confirm the two agree.
+
+## Drawing an algorithm that runs in rounds
+
+- Give the algorithm's invariant a fixed place on screen. A row of text that slides left so the newest token always
+  sits at the same slot made every round happen in the same lanes, and the audience watched the rule instead of
+  hunting for where it was applied this time.
+- A check reads best as motion to the thing checked: each prediction flies to the slot it predicts and either merges
+  with the guess there or replaces it, so the source and the destination of the comparison are both on screen.
+- Draw one round slowly over several clicks (guess, verify, check), then three rounds at speed with different outcomes
+  (all kept, none kept, some kept) in one click. The spread of outcomes is what makes an average believable.
+- A measured curve that needs a lot of room can take the place of parts whose job is done; fade them, keep one reminder
+  of the mechanism in view, and give the chart the band. A chart squeezed into a corner beside the mechanism was
+  unreadable at half size.

@@ -1,8 +1,8 @@
 # Serving open-weight LLMs: what the GPU is doing, and what that decides
 
 One line per step (each `next_slide()` in the scenes), with the section of the companion repository's `docs/tuning.md`
-that carries the measurement (the repository is named in this talk's README; last read 2026-09-22 at its commit 59d00ed,
-which added a fourth model family measured on one g7e and on eight H100s). Timings are targets for a 45-minute slot.
+that carries the measurement (the repository is named in this talk's README; last read 2026-09-25 at its commit 6685bc8,
+which added how speculative decoding works to the EAGLE-3 and MTP measurements). Timings are targets for a 50-minute slot.
 
 ## Opening (folded into move 1)
 - No title slide. The deck opens on the sentence, and the first note introduces the talk: who it is for, the spine
@@ -20,7 +20,7 @@ which added a fourth model family measured on one g7e and on eight H100s). Timin
 - The limit is the cache. Every request's context lives in the memory left after the weights. Full means preemption: evicted and recomputed. Lost work. (*Engine metrics*, *gpuMemoryUtilization*)
 - So what is left after the weights decides how many fit. Shrink the weights and more fit. Bridge to move 3.
 
-## 3. Three knobs (8 min)
+## 3. Four knobs (13 min)
 - **Quantisation, "fewer bytes per weight".** Every quantity named on screen: 30B parameters at 2 bytes is 57 GB read per decode step, leaving room for about 330,000 tokens of context across all requests (about 40 conversations of 8k tokens, 96 KB per token; one request at the model's full 262k). fp8: 29 GB, about 630,000 tokens; an fp8 cache at 48 KB per token: 1.27 million (the engine's own figure at start). (*Quantisation*)
 - Measured: 7,900 against 16,200 prompt tokens prefilled per second, one GPU, inside an eight-second latency budget. Half the fleet for the same work. The prefill doubling is not the bytes: prefill is compute-bound and this GPU multiplies fp8 at twice the bf16 rate; the prefill ceiling is about 250 TFLOPS over twice the active parameters at bf16, twice that at fp8 (a dense 31B measured 4,300 and 8,100). (*Every weight option, measured*, *Quantisation is two independent decisions*, *Which wall are you at?*)
 - Two independent decisions: the weights' precision and the cache's. The cache precision can decide which attention kernel the engine gets (a bf16 cache 28 to 69% faster on long prompts for one family on H100s); KV bytes per token are the model's and vary six-fold (33 KiB to 186 KiB). What it costs in answers comes in move 5. (*`kvCacheDtype: fp8`*, *Will my model fit?*)
@@ -31,6 +31,10 @@ which added a fourth model family measured on one g7e and on eight H100s). Timin
 - The twist: the cache lives inside one engine; the balancer sends the next turn to the next engine. Measured 21% hits on eight engines.
 - A session cookie steering each conversation home: 75%, +14% throughput. Caching is a routing decision. (*Prefix caching is a routing decision*)
 - The other way out: blocks are content-hashed, so a connector can park evicted blocks in host RAM (per engine) or a shared store over the network that every engine reads (LMCache, Mooncake, Dynamo KVBM): a long document many users ask about, a shared system prompt, an agent's context between tool calls. Measured: a 32 GB host tier behind a 58 GB cache at 1.4x working set served zero hits; at 9x the cache, 79% of prompt tokens came back. The tier must outsize the churn.
+
+- **Speculative, "several tokens per pass".** One picture: the text as tokens at the top, the target model as one wide box, the row where a pass puts its predictions under it; the newest token always at the same slot, older text sliding left under a mask. A pass predicts the next token at every position it reads (prefill: five positions, the first four repeat the prompt, 'mat' is new). Decode computes one position per pass: one token per read of the weights, bus full, compute idle; the latency ceiling of move 2, which batching cannot raise for one request. A small draft model guesses four tokens, one after another, one continuation. One target pass over the newest token and the four guesses: one read of the weights, five positions of arithmetic. Each prediction flies to the slot it predicts: kept while it matches, the first miss takes the target's own token, the rest is discarded; four tokens from one pass, and the text is the target's own (greedy drawn; the sampling rule min(1, p/q) with a residual resample keeps the target's distribution). Three rounds at speed: five tokens (a bonus), one, four; the engine's mean acceptance length counts the target's own token: 3.1 per pass for Gemma 4 12B with four guesses, 2.2 for EAGLE-3 with three on the 30B. (*How speculative decoding works, and when it pays*; vLLM `v1/spec_decode/metrics.py` for the definition)
+- Where guesses come from: n-gram (copies a match from the text; measured −58% on open-ended answers), a draft model (EAGLE-3, trained on the target's features), MTP (draft layers shipped with the model; Gemma 4's drafter reads the target's KV cache). Variants in the note: tree verification, layer skipping, parallel drafting. (Leviathan et al. 2023, Chen et al. 2023, EAGLE-3, DeepSeek-V3, Gemma 4 report sec. 2.6, vLLM speculative decoding docs; `resources` holds the list with URLs)
+- The cost, measured as gain in requests/s against the same engine without a draft, unique 1,000-token prompts: dense 12B with its own drafter +107, +88, +79, +54, +32% at 1, 8, 16, 32, 64 in flight (no level lost; the 26B MoE +51% at 64); 120B MoE with EAGLE-3 and three guesses always +44, +47, +8, −27% at 8 to 64: verification takes compute the batch and prefill need. The schedule (3 guesses to 16, 1 to 32, none above), one engine: +23, +27, +17, −6% at 8 to 64. Draft is specific to its target; warm every batch level (a 30 s compile the first time). (*Speculative decoding with EAGLE-3*, the schedule and MTP paragraphs)
 
 ## 4. More than one GPU (7 min)
 - **Parallelism.** A model too big for one card, four GPUs.
@@ -61,10 +65,10 @@ which added a fourth model family measured on one g7e and on eight H100s). Timin
 - Disaggregated serving: separate pools per phase; buys independent TTFT and ITL tuning and isolation, not throughput per GPU by itself (vLLM's docs say so). Orchestration layers (Dynamo, llm-d) are built around it.
 - Caches with an address: KV-aware routers (llm-d endpoint picker, Dynamo KV router, about 2x TTFT reported) and tiered offloading (vLLM tiered KV offloading, Dynamo KVBM). Our campaign 8 is the caution: size the tier to the churn.
 - Sparse attention: a token scores a chosen subset of cached keys (DeepSeek V3.2 in vLLM), so the cache read stops growing with context.
-- Speculative decoding: EAGLE, MTP, suffix decoding, parallel drafting (P-EAGLE, DFlash). Measured here with a separate EAGLE-3 draft +24 to +41%, least at the prefill knee where verification competes with prefill; with a publisher's four-layer drafter that shares the target's cache, +107% single-stream, +88% at 8, +32% at 64 in flight on a dense 12B and +51% at 64 on a 26B MoE, no level lost. The condition is a decode-bound fleet, not light load. (*Speculative decoding with EAGLE-3*, the MTP paragraph)
+- Parallel drafting: the draft proposes a whole block in one pass (P-EAGLE: +10 to 36% over EAGLE-3 in vLLM; DFlash, a block-diffusion drafter: up to 2.5x EAGLE-3; both reported, not measured here). Speculative decoding itself moved to knob four. (arXiv 2602.01469, 2602.06036; vLLM `parallel_drafting`, `dflash`)
 - 4-bit, two ways: a weight-only kernel unpacks to bf16 (decode +48 to 58% single-stream over fp8, prefill back to the bf16 rate); native NVFP4 keeps the fp8 compute rate and cuts bytes (+25% on one dense model, nothing on a MoE with narrow experts). Pick by the wall and the kernel the log names. (*4-bit is two different products on this GPU*)
 - Reasoning effort: tokens per answer as the capacity setting, 1.7 to 3.8x. (*Reasoning models*)
 - The spine again.
-- **Close.** Five lines, then the repository.
+- **Close.** Six lines, then the repository.
 
-Click count: 83 steps in 13 scenes (`bin/build.py` reports it).
+Click count: 94 steps in 14 scenes (`bin/build.py` reports it).
