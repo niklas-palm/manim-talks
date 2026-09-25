@@ -33,6 +33,7 @@ from manim import *
 # the repository's .theme, else themes/dark.json). Scenes name meanings, never hues: a talk maps its nouns onto
 # the accent slots in its objects.py, so the same deck renders in any theme without touching a scene.
 from lib import theme as _theme
+from lib import encoding as _encoding   # noqa: F401  the encoder for large-screen renders, when CRF is set
 
 THEME = _theme.load()
 MODE = THEME["mode"]                          # "dark" or "light"; identity() needs it, a scene should not

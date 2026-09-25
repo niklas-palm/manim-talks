@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
 # Render one talk's scenes, one clip per step, then build its two pages.
-# Usage: bin/render.sh <talk> [ql|qm|qh] [SceneName ...]     default quality qm, all scenes in file order
+# Usage: bin/render.sh <talk> [ql|qm|qh|qp] [SceneName ...]     default quality qm, all scenes in file order
+# qp is the export quality: 1440p60 with a sharper encode, for the PowerPoint and PDF on a large screen. The pages stay
+# on the quality they were built at (qh), because a page must load fast; qp renders clips and builds nothing.
 # Never run two renders of the SAME talk at once: they share its rasterised-text cache under media/ and one will
 # delete a file the other is about to read. Different talks, including a talk and its -bright sibling, are safe.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-TALK=${1:?usage: bin/render.sh <talk> [ql|qm|qh] [Scene ...]}; Q=${2:-qm}; shift; shift || true
-# Validate before Manim sees it: manim itself accepts -qp and -qk, which would render for tens of minutes into a folder
-# no tool in this repository reads, and only bin/build.py at the end would say the quality was wrong.
-case $Q in ql|qm|qh) ;; *) echo "quality must be ql, qm or qh, not $Q"; exit 1;; esac
+TALK=${1:?usage: bin/render.sh <talk> [ql|qm|qh|qp] [Scene ...]}; Q=${2:-qm}; shift; shift || true
+# Validate before Manim sees it: manim itself accepts -qk too, which would render for hours into a folder no tool in this
+# repository reads, and only bin/build.py at the end would say the quality was wrong.
+case $Q in ql|qm|qh|qp) ;; *) echo "quality must be ql, qm, qh or qp, not $Q"; exit 1;; esac
+# Manim encodes at a rate factor of 23 whatever the resolution; the export quality asks for less compression (lib/encoding.py).
+if [[ $Q == qp ]]; then export CRF=${CRF:-16}; fi
 # The talk folder and the style both come from the library, so every tool answers these two questions the same way.
 # The name is passed as an argument, never interpolated into the program: a talk name is user input.
 DIR=$(.venv/bin/python -c "import sys; sys.path.insert(0,'.'); from lib.talks import dir_of; print(dir_of(sys.argv[1]))" "$TALK")
@@ -42,4 +46,8 @@ for line in "${PAIRS[@]}"; do
   IFS=$'\t' read -r stem scene <<< "$line"
   .venv/bin/manim -$Q --save_sections --disable_caching --media_dir "$DIR/media" "$DIR/scenes/$stem.py" "$scene"
 done
-.venv/bin/python bin/build.py "$TALK" "$Q"
+if [[ $Q == qp ]]; then
+  echo "$TALK: export clips rendered at 1440p60; the pages are unchanged. bin/export_pptx.py $TALK qp for the PowerPoint"
+else
+  .venv/bin/python bin/build.py "$TALK" "$Q"
+fi

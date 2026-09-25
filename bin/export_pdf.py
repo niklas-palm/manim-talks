@@ -7,7 +7,7 @@ Why the last frame of each scene: a move is one picture that grows, so its final
 drew. With --steps every step's end frame becomes a page instead (the frame the presenter holds on), for a fuller
 record at the price of many near-identical pages.
 
-Usage: bin/export_pdf.py <talk> [ql|qm|qh] [out.pdf] [--steps]   output <talk folder>/<talk>.pdf;
+Usage: bin/export_pdf.py <talk> [ql|qm|qh|qp] [out.pdf] [--steps]   output <talk folder>/<talk>.pdf;
 the quality is inferred when the talk has only one rendered.
 Requires ffmpeg (the frames) and Pillow (the PDF), which manim already brings."""
 import os, subprocess, sys, tempfile

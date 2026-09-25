@@ -20,7 +20,7 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOTS = ["out", "talks"]
 
 
-RES = {"ql": "480p15", "qm": "720p30", "qh": "1080p60"}   # the folder Manim renders into, per quality flag
+RES = {"ql": "480p15", "qm": "720p30", "qh": "1080p60", "qp": "1440p60"}   # the folder Manim renders into, per quality flag
 
 SCENE_RE = r"^class (\w+)\(TalkSlide\)"                 # what a scene is, in one place: the tools disagreed before
 

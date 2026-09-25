@@ -4,7 +4,7 @@ Scenes are separate videos, so this is where a deck can cut to a fresh picture; 
 first frame of a scene must be the last frame of the previous one, and the title changes in place as the picture
 starts to change. Writes <talk>/media/seams/seams.png and prints a mean pixel difference per seam (0 is identical;
 under 4 is a title change on an unchanged picture; more means the picture jumped).
-Usage: bin/seams.py <talk> [ql|qm|qh]   the quality is inferred when the talk has only one rendered"""
+Usage: bin/seams.py <talk> [ql|qm|qh|qp]   the quality is inferred when the talk has only one rendered"""
 import os, subprocess, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

@@ -53,10 +53,18 @@ The PowerPoint file is generated, never committed: `talks/*/*.pptx` is in `.giti
 everything under `out/` is ignored wholesale.
 Render the deck first, then export; regenerate after every render, since the file embeds the clips.
 
+The pages and the exports want different clips. A page streams its clips and must start quickly, so it plays the
+1080p60 render (`qh`). A PowerPoint file is copied to a laptop and shown on whatever screen the room has, often larger
+than 1080p, where a 1080p clip is scaled up and Manim's fixed compression (x264 at a rate factor of 23) shows as soft
+text. `qp` renders the export clips at 1440p60 with less compression (lib/encoding.py sets the rate factor to 16), and
+builds no pages, so the two renders live side by side and the pages keep the fast ones. The export's poster frames are
+taken at the clip's own resolution.
+
 ```bash
 .venv/bin/pip install python-pptx                 # once
-bin/render.sh <talk> qh                           # the clips the export embeds
-.venv/bin/python bin/export_pptx.py <talk> qh   # -> <talk folder>/<talk>.pptx  (a minute or two; 12 to 45 MB per deck)
+bin/render.sh <talk> qp                           # the clips the export embeds: 1440p60, sharper encode, pages untouched
+.venv/bin/python bin/export_pptx.py <talk> qp   # -> <talk folder>/<talk>.pptx  (a few minutes; about 2.5 times the qh size)
+.venv/bin/python bin/export_pptx.py <talk> qh   # from the page clips instead, when there is no qp render
 .venv/bin/python bin/export_pptx.py <talk> qh out.pptx --click   # elsewhere, and clips that wait for a click instead of starting
 ```
 

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Contact sheets for reviewing a talk's scenes as images: one frame every N seconds, tiled 5 wide.
-# Usage: bin/review.sh <talk> [ql|qm|qh] [seconds=2]   -> <talk folder>/media/review/<Scene>.png
+# Usage: bin/review.sh <talk> [ql|qm|qh|qp] [seconds=2]   -> <talk folder>/media/review/<Scene>.png
 # bin/shots.py (the frame each step holds on) is the first review; this one shows every layout a scene passes through.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-TALK=${1:?usage: bin/review.sh <talk> [ql|qm|qh] [seconds]}; Q=${2:-}; N=${3:-2}
+TALK=${1:?usage: bin/review.sh <talk> [ql|qm|qh|qp] [seconds]}; Q=${2:-}; N=${3:-2}
 [[ $N =~ ^[1-9][0-9]*$ ]] || { echo "seconds must be a whole number, 1 or more, not $N"; exit 1; }
 # One call for all of it, so this script uses the same talk lookup, the same quality names, the same "is it rendered"
 # rule, the same clip probe and the same sheet colour as every other tool: the folder, the padding, then one line per

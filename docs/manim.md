@@ -118,6 +118,13 @@ Manim Community Edition 0.21, Python 3.12, macOS, ffmpeg 7, no LaTeX. Each entry
 - **`Counter(decimals=1)`** when a value like 1.8 must not round to 2. Show "1.60" rather than switch decimals
   mid-deck.
 
+## Encoding
+
+- **Manim's encode is fixed.** Every clip is x264 at a constant rate factor of 23, 4:2:0, whatever the resolution, with
+  no setting to change it. For a page that streams it is the right trade; scaled up on a large display, thin text rings.
+  `lib/encoding.py` substitutes the rate factor (with x264's animation tuning) when `CRF` is set, which `bin/render.sh
+  <talk> qp` does. Verify an encode by the settings string x264 writes into the file: `strings clip.mp4 | grep crf=`.
+
 ## The web player
 
 - **Hold a few frames before a step boundary.** The player's hold loop checks the video time once per animation frame, so

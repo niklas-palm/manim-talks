@@ -567,3 +567,12 @@ First principles that the passes confirmed, written to outlast the decks they ca
   held frame, the one the speaker talks over, empty.
 - A chart that needs room may take the place of parts whose job is done; fade them, keep one reminder of the mechanism
   in view and give the chart the band. Squeezed into a corner beside the mechanism, it was unreadable at half size.
+
+## Pages and exports want different clips
+
+- A page streams and must start at once; an exported file is carried to a room and shown on its screen, often larger
+  than the render. One render cannot serve both well, so render twice: the page quality at the usual compression and an
+  export quality at a higher resolution with less compression, side by side, and let each consumer pick its own. The
+  second render builds no pages, so it can never slow them down.
+- Check what an export embeds besides the clip. A poster frame saved smaller than the clip was on screen around every
+  step and read as the whole file being low resolution.
