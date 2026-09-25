@@ -1,6 +1,6 @@
 # LLM serving, the talk
 
-A 45-minute talk on how open-weight LLMs are served and what the hosting decisions actually do, built as
+A 50-minute talk on how open-weight LLMs are served and what the hosting decisions actually do, built as
 animated diagrams with [Manim Community Edition](https://github.com/ManimCommunity/manim), the engine
 behind 3Blue1Brown's videos. Every number in the scenes was measured in the companion project,
 [llm-serving](https://github.com/niklas-palm/llm-serving), whose `docs/tuning.md` is the source.
@@ -12,7 +12,7 @@ hosting decision is about which of those two you are paying for.** Seven moves h
 |---|---|---|
 | 1. Two jobs, two costs | `Mechanics` (one continuous picture: text, tokens, a layer up close, prefill, decode, text), `DecodeCeiling` (a dense model's ceiling first, then this model's) | 9 |
 | 2. Why the engine batches | `Batching` (decode as a timeline of steps: one request, four sharing each read, continuous batching; then the measured curve) | 7 |
-| 3. Three knobs: weights, experts, cache | `Quantisation`, `MixtureOfExperts`, `PrefixCache` (routing and offloading) | 8 |
+| 3. Four knobs: weights, experts, cache, drafts | `Quantisation`, `MixtureOfExperts`, `PrefixCache` (routing and offloading), `Speculative` (a draft guesses, one pass of the model checks every guess; what it gains as the batch grows) | 13 |
 | 4. More than one GPU | `Parallelism` (the whole vector on every GPU, a slice of every matrix each, the all-reduce animated between the GPUs; then the step timelines over PCIe and over NVLink) | 7 |
 | 5. What precision costs in answers | `Rounding` (the mechanism: fewer levels, small shifts, close calls flip), `NoiseFloor`, `PrecisionCost` | 7 |
 | 6. The fleet | `Fleet` (first principles: engines add up, a new engine must load the model, the balancer sees latency but not why) | 5 |
@@ -52,7 +52,7 @@ occurrence of a mechanism is slow enough to follow and repetitions play at speed
 invisible: the last step of every scene hands over to the next one (the stage folds into the GPU drawing, the measured
 GPU becomes the 96 GB card, the weights bar grows into the dense stack, the grid of questions is cleared for the next
 comparison, the two phases shrink to the top for the close), and the title changes in place as the picture changes.
-`bin/seams.py llm-serving` reports every seam as identical or title only. 83 steps in 13 scenes.
+`bin/seams.py llm-serving` reports every seam as identical or title only. 94 steps in 14 scenes.
 
 ## Style rules
 

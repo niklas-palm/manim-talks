@@ -71,6 +71,9 @@ Manim Community Edition 0.21, Python 3.12, macOS, ffmpeg 7, no LaTeX. Each entry
   by `z_index` only among themselves. So `FadeIn(box.set_z_index(-1))` covers the boxes it was meant to sit behind, and
   whether it happens depends on where a live counter or an earlier `retitle` left the first moving mobject in the list.
   Something that must appear behind existing objects is placed, not animated: `scene.add(g); scene.bring_to_back(g)`.
+  The same rule the other way round: a still mask with a high `z_index` is drawn under every moving mobject, so a row
+  sliding under it shows through. Put the mask in the play too (`mask.animate.shift(ORIGIN)`) and it is sorted with the
+  movers.
 - **`set_opacity` fills hollow shapes.** It sets fill and stroke opacity together, so a stroke-only cell becomes a
   filled one. Hide scrolling things under a background-coloured mask with a higher `z_index` instead.
 - **`rate_func=linear` on the play** makes a conveyor move at constant speed; the default smooth easing makes it

@@ -18,7 +18,7 @@ scene. They are short and every rule in them was paid for.
 
 The look is chosen before anything is drawn: read "Choosing the look, before you draw" below first.
 
-Then study `talks/llm-serving`, the reference deck: 83 steps, 13 scenes, every pattern in the library in use.
+Then study `talks/llm-serving`, the reference deck: 94 steps, 14 scenes, every pattern in the library in use.
 Read a scene file next to its shots (`talks/llm-serving/media/shots/<Scene>.png` after rendering) to see how
 code becomes picture. The other talks under `talks/` are shorter examples built with the same rules: `dns` (a
 name becomes an address), `kubernetes` (desired state and the loops that chase it), `kafka` (a log you can replay),

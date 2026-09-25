@@ -223,7 +223,7 @@ class Mechanics(TalkSlide):
         self.next_slide("""This talk is for engineers who will host a model, or buy hosting, and want to know what they are paying for.
         No product, no vendor; one stack we built to measure things, and the numbers it produced. One sentence carries the
         whole talk: a model reads your prompt once, then writes one token at a time, and every hosting decision is about which
-        of those two you are paying for. Seven moves: two jobs and their costs, why the engine batches, three knobs, more than
+        of those two you are paying for. Seven moves: two jobs and their costs, why the engine batches, four knobs, more than
         one GPU, what precision costs in answers, the fleet, and where the industry is. Start from actual text: a prompt someone typed. Five words. We follow them through the machine and out the
         other side, on one picture that only grows. Everything later in the talk is a consequence of what happens on this
         picture, so it is worth twenty minutes.""")

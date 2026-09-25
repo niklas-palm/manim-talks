@@ -20,7 +20,7 @@ themes/bright.json
 bin/                 render.sh, build.py, shots.py, seams.py, review.sh, check.py, serve.sh, serve.py, export_pptx.py,
                      export_pdf.py, themes.py
 talks/_template/     copy this to start a talk: a worked example scene, a second scene that continues it, objects.py, script.md
-talks/llm-serving/   the reference deck: 45 minutes on how open-weight LLMs are served, 82 steps, 13 scenes
+talks/llm-serving/   the reference deck: 50 minutes on how open-weight LLMs are served, 94 steps, 14 scenes
 talks/<others>/      shorter example decks built with the same rules: dns, kubernetes, kafka, transformers, agents
 talks/<talk>-bright/ the same deck in the bright style: a .theme and symlinks to the talk's scenes, nothing copied
 out/<slug>/          talks for an audience rather than for this repository; git ignores the whole folder
