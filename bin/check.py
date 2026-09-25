@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Structural checks for a talk, the things a review should not have to find by eye. Usage: .venv/bin/python bin/check.py <talk> [ql|qm|qh]   (the quality is inferred when only one is rendered)
+"""Structural checks for a talk, the things a review should not have to find by eye. Usage: .venv/bin/python bin/check.py <talk> [ql|qm|qh|qp]   (the quality is inferred when only one is rendered)
 Reports, per talk: the style it presents in and whether that style is fit to present (contrast, accents that can be
 told apart, fonts installed); any colour a scene names itself instead of taking from objects.py; the files a talk must
 have; that objects.py declares its vocabulary with set_thread; that every scene class wrote as many notes as it

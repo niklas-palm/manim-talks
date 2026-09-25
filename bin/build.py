@@ -5,7 +5,7 @@ and presenter.html, the speaker's window with notes, a timer and the controls.
 Playback is one continuous video per scene with pause points at the step boundaries, not one clip per step: swapping a
 video's source between clips redraws the element and flickers, while pausing and resuming a single source is seamless.
 Scene changes swap between two stacked video elements, the next one already loaded, so they do not flicker either.
-Boundaries come from the per-step durations Manim writes into the section index. Usage: bin/build.py <talk> [ql|qm|qh]; writes <talk folder>/present.html and presenter.html. The quality is
+Boundaries come from the per-step durations Manim writes into the section index. Usage: bin/build.py <talk> [ql|qm|qh|qp]; writes <talk folder>/present.html and presenter.html. The quality is
 inferred when the talk has only one rendered."""
 import html, json, os, sys
 

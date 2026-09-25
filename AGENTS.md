@@ -174,6 +174,7 @@ at 1080p60, test the presenter and audience windows in a browser, and commit. De
 ```bash
 python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt   # once; ffmpeg, cairo and pango via Homebrew
 bin/render.sh <talk> ql [Scene ...]      # preview render (480p), then the pages; qm 720p, qh 1080p60 for the talk
+bin/render.sh <talk> qp                  # 1440p60, sharper encode, for the PowerPoint and PDF exports; builds no pages
 bin/review.sh <talk> ql                  # a frame every two seconds per scene, for motion and collisions mid-step
 bin/serve.sh <talk>                      # one local server for the repository; opens the talk's presenter window
 P=.venv/bin/python                       # the Python tools want the project's interpreter, as the wrappers above do

@@ -8,7 +8,7 @@ Manim writes with --save_sections are the natural unit; the JSON index gives the
 is the timing tree PowerPoint itself writes for a video set to "Start: Automatically"; python-pptx has no API for it,
 so the XML is inserted after the movie is added.
 
-Usage: bin/export_pptx.py <talk> [ql|qm|qh] [out.pptx] [--click]   output <talk folder>/<talk>.pptx;
+Usage: bin/export_pptx.py <talk> [ql|qm|qh|qp] [out.pptx] [--click]   output <talk folder>/<talk>.pptx;
 the quality is inferred when the talk has only one rendered;
 --click leaves the clips to start on click instead of automatically
 Requires python-pptx (pip install python-pptx) and ffmpeg (poster frames)."""
@@ -52,7 +52,8 @@ AUTOPLAY = """<p:timing xmlns:p="%s"><p:tnLst><p:par><p:cTn id="1" dur="indefini
 
 
 def poster(clip: str, png: str):
-    subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", clip, "-frames:v", "1", "-vf", "scale=1280:-1", png], check=True)
+    # At the clip's own resolution: the poster is on screen before and around every clip, and a smaller one is soft on a large display.
+    subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", clip, "-frames:v", "1", png], check=True)
 
 
 prs = Presentation()

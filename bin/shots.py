@@ -3,7 +3,7 @@
 and one tiled sheet per scene, <Scene>.png. The presenter holds on exactly these frames, so this is what the audience
 sits with while the speaker talks: the fastest review of captions, spacing and colour there is. Frames are taken 0.08 s
 before each step ends, so a fade that is the step's last animation is finished; end every step on a settled picture.
-Usage: bin/shots.py <talk> [ql|qm|qh]   the quality is inferred when the talk has only one rendered"""
+Usage: bin/shots.py <talk> [ql|qm|qh|qp]   the quality is inferred when the talk has only one rendered"""
 import glob, os, subprocess, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
