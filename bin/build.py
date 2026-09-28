@@ -32,7 +32,8 @@ for stem, scene, video, index, notes_path in items:
     ends, t = [], 0.0
     for sec in read_index(index):
         t += float(sec["duration"]); ends.append(round(t, 3))
-    scenes.append({"name": scene, "src": os.path.relpath(video, root), "ends": ends,   # relative to the talk folder, where the pages live
+    loop = len(ends) == 1 and read_index(index)[0].get("type") == "talk.loop"   # a one-step scene that plays on repeat
+    scenes.append({"name": scene, "src": os.path.relpath(video, root), "ends": ends, "loop": loop,   # relative to the talk folder, where the pages live
                    "notes": [notes[i] if i < len(notes) else "" for i in range(len(ends))]})
 steps = [{"scene": s["name"], "si": i, "k": k, "note": s["notes"][k]} for i, s in enumerate(scenes) for k in range(len(s["ends"]))]
 # Two escapes, not one: "</" would close the element, and "<!--" followed by "<script" puts the HTML tokenizer into its
@@ -50,13 +51,16 @@ function show(k){                     // play from the start of step k to its en
   if(!prev||prev.si!==st.si){            // new scene: bring up the preloaded element, but only once it shows the right frame
     const v=vids[other()];if(v.dataset.si!==String(st.si))load(v,st.si);
     let done=false;const go=()=>{if(done)return;done=true;cur=1-cur;vids[cur].style.zIndex=2;vids[1-cur].style.zIndex=1;
-      v.play().catch(()=>{});hold(v,end);if(S[st.si+1])load(vids[1-cur],st.si+1);};
+      vids[1-cur].pause();run(v,end,sc.loop);if(S[st.si+1])load(vids[1-cur],st.si+1);};
     if(v.readyState>=2&&Math.abs(v.currentTime-start)<0.04)go();
     else{v.addEventListener('seeked',go,{once:true});v.currentTime=start;setTimeout(go,600);}   // a swap before the seek lands would flash the element's old frame
-  }else{const v=vids[cur];if(Math.abs(v.currentTime-start)>0.25)v.currentTime=start;v.play().catch(()=>{});hold(v,end);}
+  }else{const v=vids[cur];if(Math.abs(v.currentTime-start)>0.25)v.currentTime=start;run(v,end,sc.loop);}
   onstep&&onstep(k);
 }
 let holdId=0;
+// A looping scene is one step whose last frame is its first: the element repeats it until the next click; any other
+// step plays to its end and holds.
+function run(v,end,loop){v.loop=!!loop;v.play().catch(()=>{});if(loop)cancelAnimationFrame(holdId);else hold(v,end);}
 // Stop a few frames before the boundary: the check runs once per animation frame, so playback can overshoot into the
 // next step's first frame by the time it is seen, and a seek to end-0.001 can snap onto that frame too. Steps end on a
 // settled picture, so 0.06 s (four frames at 60 fps) before the boundary is the same picture.

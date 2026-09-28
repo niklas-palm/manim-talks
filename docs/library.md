@@ -89,6 +89,12 @@ class MyScene(TalkSlide):
 class becomes one continuous video with pause points; scenes play in file order (`s00_`, `s01_`, ...), classes in
 file order within a file. The scene name (CamelCase) is shown in the presenter as the section name.
 
+`finish(note, loop=True)` makes a scene a backdrop: its one step plays on repeat until the next click, in the pages and
+in the PowerPoint export, for a picture that should keep moving while the speaker talks or takes questions. Only a
+scene of a single step may loop (it raises otherwise), and it must end on the frame it starts on: build the start from
+the same function that built the previous scene's end, return every object you touched to that state, and fade out
+whatever you added. `bin/seams.py` lists the loop's own seam, its last frame against its first.
+
 ## Text
 
 | helper | what it does |

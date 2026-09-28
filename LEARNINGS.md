@@ -576,3 +576,16 @@ First principles that the passes confirmed, written to outlast the decks they ca
   second render builds no pages, so it can never slow them down.
 - Check what an export embeds besides the clip. A poster frame saved smaller than the clip was on screen around every
   step and read as the whole file being low resolution.
+
+## A short talk for people who will never see the machinery
+
+- Decide the one sentence the room should repeat afterwards, and cut everything that does not draw it. For an audience
+  of decision-makers the mechanism is the loop, the example is work they would delegate, and the one caveat worth a beat
+  is where they stay in control; the vocabulary (the pieces engineers name) stays off the screen entirely.
+- Start from what they already know and show the difference: the familiar thing once, then the new thing as the same
+  object placed in a new structure. The box that answered a question moved into the loop and changed its one line of
+  description; nothing had to be re-introduced.
+- Put the description inside the thing it describes. Labels under stations on a ring collided with the ring; two lines
+  in each box (a name, and in plain words what happens there) needed no placement at all.
+- A backdrop that keeps moving while the speaker talks must return exactly to its first frame. Build its start and
+  its end from the same stage function, and fade out anything the loop added rather than leaving it where it ended.
