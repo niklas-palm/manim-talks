@@ -153,9 +153,18 @@ class TalkSlide(MovingCameraScene):
         self._notes.append(" ".join(note.split()))
         self.next_section()
 
-    def finish(self, note: str = ""):
+    def finish(self, note: str = "", loop: bool = False):
+        """End the scene. loop=True makes its one step a backdrop that plays on repeat until the next click, in the pages
+        and in the PowerPoint export. Only a scene of a single step may loop, and its last frame must be its first, so
+        the repeat has no seam (bin/seams.py measures it)."""
         self._notes.append(" ".join(note.split()))
-        self.wait(0.4)
+        if not loop:
+            self.wait(0.4)
+            return
+        sections = self.renderer.file_writer.sections
+        if len(sections) != 1:
+            raise ValueError(f"{type(self).__name__}: loop=True is for a scene of one step, this one has {len(sections)}")
+        sections[0].type_ = "talk.loop"
 
     def tear_down(self):
         super().tear_down()

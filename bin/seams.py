@@ -3,13 +3,14 @@
 Scenes are separate videos, so this is where a deck can cut to a fresh picture; the rule is that it never does. The
 first frame of a scene must be the last frame of the previous one, and the title changes in place as the picture
 starts to change. Writes <talk>/media/seams/seams.png and prints a mean pixel difference per seam (0 is identical;
-under 4 is a title change on an unchanged picture; more means the picture jumped).
+under 4 is a title change on an unchanged picture; more means the picture jumped). A scene that loops (finish(loop=True))
+has a seam of its own, its last frame against its first, where the repeat would jump.
 Usage: bin/seams.py <talk> [ql|qm|qh|qp]   the quality is inferred when the talk has only one rendered"""
 import os, subprocess, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib import theme as _theme
-from lib.talks import duration, from_argv, rendered_or_exit, report_unrendered, scenes_of
+from lib.talks import duration, from_argv, read_index, rendered_or_exit, report_unrendered, scenes_of
 
 talk, root, Q = from_argv(__doc__)
 PAD = _theme.sheet_rgb(root)
@@ -33,6 +34,12 @@ for (a, va), (b, vb) in zip(scenes, scenes[1:]):
     frame(va, max(0.0, duration(va) - 0.08), last)
     frame(vb, 0.0, first)      # the very first frame: the retitle may start at once, so 0.05 s would already be mid-change
     pairs.append((a, b, last, first))
+for _, scene, video, index, _ in items:          # a loop's own seam: where it starts over
+    if read_index(index)[0].get("type") == "talk.loop":
+        last, first = f"{out_dir}/loop-{scene}-last.png", f"{out_dir}/loop-{scene}-first.png"
+        frame(video, max(0.0, duration(video) - 0.08), last)
+        frame(video, 0.0, first)
+        pairs.append((scene, "(loops)", last, first))
 
 from PIL import Image, ImageChops, ImageStat
 rows = []

@@ -77,7 +77,10 @@ with tempfile.TemporaryDirectory() as tmp:            # the poster frames are th
             movie = slide.shapes.add_movie(clip, 0, 0, prs.slide_width, prs.slide_height, poster_frame_image=png, mime_type="video/mp4")
             spid = movie.shape_id
             if not CLICK:
-                timing = etree.fromstring(AUTOPLAY % (NS, int(float(sec["duration"]) * 1000), spid, spid))
+                xml = AUTOPLAY % (NS, int(float(sec["duration"]) * 1000), spid, spid)
+                if sec.get("type") == "talk.loop":   # PowerPoint's "Loop until stopped": the backdrop repeats until the click
+                    xml = xml.replace('<p:cTn id="7" fill="hold"', '<p:cTn id="7" repeatCount="indefinite" fill="hold"')
+                timing = etree.fromstring(xml)
                 old = slide.element.find(f"{{{NS}}}timing")   # python-pptx already wrote a bare media timing node for the movie
                 if old is not None:                           # two p:timing elements make the file invalid; replace, do not append
                     slide.element.replace(old, timing)

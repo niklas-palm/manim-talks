@@ -29,6 +29,10 @@ reason.
 - **Two stacked `<video>` elements**, the next scene preloaded in the hidden one; a scene change swaps their
   z-index. Without this the first frame of each scene arrived late as a black flash.
 - **A third, paused video for the next-step preview**, seeked to the next boundary minus a few milliseconds.
+- **A looping step is the video element's own `loop`**, set for a scene that `finish(loop=True)` marked (a section type
+  in the index, `talk.loop`) and cleared on the way out. A loop is always a whole one-step scene, so the repeat is the
+  element starting its file again, the smoothest repeat a browser does; a seek back to the middle of a longer video
+  would stutter on a keyframe. The PowerPoint export sets the same clip to "Loop until stopped".
 - **The two windows talk over a `BroadcastChannel` and a direct `postMessage`** to the window the presenter opened.
   Two `file://` pages have opaque origins and may not share a channel, so the pages must be served over http.
 - **One server for all talks.** `bin/serve.sh` serves the repository root and opens the talk's page under
