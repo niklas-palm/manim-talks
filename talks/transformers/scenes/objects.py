@@ -20,7 +20,7 @@ TOKEN, QUERY, KEY, VALUE, WEIGHTS, ATTN, MASK = A1, A2, A4, A5, A3, A6, ALERT
 set_thread({"token": TOKEN, "tokens": TOKEN, "query": QUERY, "queries": QUERY, "key": KEY, "keys": KEY,
             "value": VALUE, "values": VALUE, "attention": ATTN, "weights": WEIGHTS, "weight": WEIGHTS})
 
-WORDS = ["The", "cat", "sat", "on", "the", "mat"]
+WORDS = ["the", "cat", "sat", "on", "the", "mat"]
 XS = [-4.75 + 1.9 * i for i in range(6)]  # the six token columns, symmetric about x = 0, used by every scene that shows the sentence
 ROW_Y = 1.85                              # the persistent row of token vectors is centred here; its word labels clear the title
 D = 8                                     # cells drawn per vector; the real model has 512 (a named simplification)
@@ -63,7 +63,7 @@ def layer_glyph(w: float = 4.2, h: float = 0.74) -> VGroup:
 # Every scene after the first starts on the previous scene's last frame, rebuilt with these. The producing scene uses
 # the same builders for the objects that survive to its end, so both frames agree to the pixel.
 
-VEC_Y = -1.0                              # where the embedding vectors sit under their tokens (move 2)
+VEC_Y = -1.0                              # where the embedding vectors sit under their tokens (move 1)
 SCORES = [1.2, 0.4, 2.1, 0.2, 0.9, 2.6]   # illustrative match strengths for "mat"; the mechanism is exact, the numbers are chosen
 QBIG_POS = [5.4, ROWS[2] - 0.7, 0]        # the chosen query, right of the "mat" bar; its label sits to its right, so the fan to the keys crosses nothing
 OUT_POS = [5.4, ROWS[4] + 0.45, 0]
@@ -71,37 +71,20 @@ PIPE_Y = -1.25                            # the centre line of the layer and pre
 
 
 def big_tokens(side: float = 1.3, y: float = ROWS[1]) -> VGroup:
-    """The six tokens as squares with their words inside (move 1 at 1.3, move 2 at 1.0)."""
+    """The six tokens as squares with their words inside (move 1, at 1.0)."""
     toks = VGroup(*[VGroup(Square(side, fill_color=TOKEN, fill_opacity=SOLID * 0.94, stroke_width=0), label(w, 28 if side > 1.1 else 22, ink_on(TOKEN))) for w in WORDS])
     for g, x in zip(toks, XS):
         g.move_to([x, y, 0]); g[1].move_to(g[0])
     return toks
 
 
-def all_edges(toks: VGroup) -> VGroup:
-    """Every token connected to every other, arcs bowing below the tokens (the n squared picture of move 1)."""
-    edges = VGroup()
-    for a in range(6):
-        for b in range(6):
-            if a != b:
-                edges.add(ArcBetweenPoints(toks[a][0].get_bottom(), toks[b][0].get_bottom(), angle=PI / 2.2 if a < b else -PI / 2.2,
-                                           color=ATTN, stroke_width=sw(0.8), stroke_opacity=0.6))
-    return edges
-
-
-def sequential_counters(steps: int = 1, conns: int = 30) -> tuple:
-    a = Counter("sequential steps to read the sentence", steps, "", VALUE, size=30).move_to([COLS[0], ROWS[4], 0], aligned_edge=LEFT)
-    b = Counter("connections: every token to every other", conns, "", ATTN, size=30).move_to([COLS[2], ROWS[4], 0], aligned_edge=LEFT)
-    return a, b
-
-
 def sentence_label() -> Text:
-    return label("The cat sat on the mat", 34, TOKEN).move_to([0, ROWS[0], 0])
+    return label("the cat sat on the mat", 34, TOKEN).move_to([0, ROWS[0], 0])
 
 
 def embed_vectors(solid: bool = False) -> VGroup:
-    """One vector under each token (move 2). solid=True is the state after the position vector was added."""
-    g = VGroup(*[vector(20 + k, TOKEN, cell=0.22).move_to([XS[k], VEC_Y, 0]) for k in range(6)])
+    """One vector under each token (move 1). solid=True is the state after the position vector was added."""
+    g = VGroup(*[vector(20 + WORDS.index(w), TOKEN, cell=0.22).move_to([XS[k], VEC_Y, 0]) for k, w in enumerate(WORDS)])   # one vector per token: both "the" share it
     if solid:
         for v in g:
             v.set_fill(TOKEN, 1.0)
@@ -113,7 +96,7 @@ def position_label() -> Text:
 
 
 def triples(vecs) -> VGroup:
-    """Every token's query, key and value under its vector (move 3)."""
+    """Every token's query, key and value under its vector (move 2)."""
     return VGroup(*[VGroup(column(3, QUERY, 0.2), column(3, KEY, 0.2), column(3, VALUE, 0.2)).arrange(RIGHT, buff=0.05).next_to(vecs[k], DOWN, buff=GAP) for k in range(6)])
 
 
@@ -128,7 +111,7 @@ def softmax_bars() -> tuple:
 
 
 def attention_result() -> tuple:
-    """The chosen query and the new vector for "mat", at the right (move 3's last frame). Returns (qbig, qbl, out, outl)."""
+    """The chosen query and the new vector for "mat", at the right (move 2's last frame). Returns (qbig, qbl, out, outl)."""
     qbig = column(3, QUERY, 0.28).move_to(QBIG_POS)
     qbl = label('query\nof "mat"', 18, QUERY).next_to(qbig, RIGHT, buff=GAP_TIGHT)
     out = column(3, ATTN, 0.28, op=0.95).move_to(OUT_POS)
@@ -137,7 +120,7 @@ def attention_result() -> tuple:
 
 
 def head_tiles() -> VGroup:
-    """Three attention heads side by side, each with its own query, key, value and output (move 3, second scene)."""
+    """Three attention heads side by side, each with its own query, key, value and output (move 2, second scene)."""
     heads = VGroup()
     for hh in range(3):
         tile = VGroup(RoundedRectangle(corner_radius=rad(0.8), width=3.9, height=1.5, stroke_color=ATTN, stroke_width=sw(0.8), fill_color=ATTN, fill_opacity=FILL * 0.7),
@@ -165,7 +148,7 @@ def projection_parts(filled: bool = False) -> tuple:
 
 
 def layer_stack() -> tuple:
-    """The layer repeated, as miniatures, with the count beside it (move 4's last frame). Returns (stack, label)."""
+    """The layer repeated, as miniatures, with the count beside it (move 3's last frame). Returns (stack, label)."""
     stack = VGroup(*[layer_glyph(5.0, 0.58) for _ in range(5)]).arrange(DOWN, buff=0.08).move_to([COLS[2] - 0.6, -0.8, 0])   # top at 0.81, clear of the token row
     nl = label("N layers:\n6 in 2017,\n30 to 100 today", 20, WEIGHTS).move_to([COLS[3], -0.8, 0], aligned_edge=LEFT)
     return stack, nl

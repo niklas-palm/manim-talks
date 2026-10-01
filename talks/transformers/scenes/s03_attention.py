@@ -1,4 +1,4 @@
-"""Move 3, the heart: self-attention. Opens on move 2's last frame; the six vectors rise to become the token row that
+"""Move 2, the heart: self-attention. Opens on move 1's last frame; the six vectors rise to become the token row that
 stays across the top for the rest of the deck, and the sentence and squares go. Below the row, large: three learned
 matrices turn one token's vector into a query, a key and a value; every token gets its triple; the last token's
 query is scored against every key (the fan); softmax turns the scores into weights (bars); and the values, each
@@ -12,8 +12,8 @@ FOCUS = 5   # the token we follow: "mat", the last
 
 class Attention(TalkSlide):
     def construct(self):
-        # --- move 2's last frame, rebuilt
-        t = title_still(self, "From words to vectors", "2  words become vectors")
+        # --- move 1's last frame, rebuilt
+        t = title_still(self, "From words to vectors", "1  words become vectors")
         sentence = sentence_label()
         toks = big_tokens(1.0)
         old = embed_vectors(solid=True)
@@ -21,7 +21,7 @@ class Attention(TalkSlide):
         self.add(sentence, toks, old, pl)
         # --- the boundary: the vectors rise into the row that carries the rest of the talk; the text has done its job
         row, vecs = token_row(0.16)
-        t = retitle(self, t, "Every token reads every other", "3  attention",
+        t = retitle(self, t, "Every token reads every other", "2  attention",
                     extra=[FadeOut(sentence), FadeOut(toks), FadeOut(pl), *[ReplacementTransform(o, v) for o, v in zip(old, vecs)],
                            *[FadeIn(g[1]) for g in row]], run_time=0.9)
         self.next_slide("""The six vectors rise to the top and stay there for the rest of the talk; the text has done its job. Each carries
@@ -56,14 +56,16 @@ class Attention(TalkSlide):
         self.play(work.animate.set_opacity(0.3), run_time=0.5)   # the matrices stay, faded: the band does not go empty
         self.play(LaggedStart(*[FadeIn(g, shift=UP * 0.1) for g in tri], lag_ratio=0.06), run_time=0.9)
         self.next_slide("""The same three matrices run on every token, all at once, giving each its own query, key and value. That "all at
-        once" is the parallel step from move one. Now the read: we follow one token's query, the last, "mat", and let it
+        once" is what sets the transformer apart: the networks before it read a sentence one token after another, each step
+        waiting for the last, so the work could not be spread over a GPU; here every position is computed at the same time.
+        Now the read: we follow one token's query, the last, "mat", and let it
         gather from the rest.""")
         # --- the chosen query, large at the right, scored against every key: the fan
         self.play(FadeOut(work), run_time=0.4)
         qbig_t, qbl, out_t, outl = attention_result()
         qbig = tri[FOCUS][0].copy()
         self.play(qbig.animate.scale(0.28 / 0.2).move_to(QBIG_POS), run_time=0.6)
-        self.remove(qbig); self.add(qbig_t)   # the exact object move 3's second scene rebuilds
+        self.remove(qbig); self.add(qbig_t)   # the exact object move 2's second scene rebuilds
         self.play(FadeIn(qbl), run_time=0.3)
         keys = [tri[j][1] for j in range(6)]
         lines = VGroup(*[Line(qbig_t.get_left(), kc.get_bottom(), color=MUTED, stroke_width=sw(0.72), stroke_opacity=0.65) for kc in keys])   # from the query's left edge up to each key's bottom: the fan stays under the triples and left of the query's label
