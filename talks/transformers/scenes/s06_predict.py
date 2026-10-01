@@ -1,4 +1,4 @@
-"""Move 5: from the last vector to the next word, and the loop. Opens on the stack of layers with the small vector
+"""Move 4: from the last vector to the next word, and the loop. Opens on the stack of layers with the small vector
 under it; the stack goes and the vector grows into the one we read the next word from. The row across the top is the
 sentence itself: its last token, "mat", is what we are about to predict, so it leaves the row first and comes back as
 the sampled word. The vocabulary matrix, the scores, the distribution as tall bars, the sampled word rejoining the
@@ -13,8 +13,8 @@ Y = PIPE_Y
 
 class Predict(TalkSlide):
     def construct(self):
-        # --- move 4's last frame, rebuilt
-        t = title_still(self, "Then the token thinks on its own", "4  the token thinks alone, many times")
+        # --- move 3's last frame, rebuilt
+        t = title_still(self, "Then the token thinks on its own", "3  the token thinks alone, many times")
         row, vecs = token_row(0.16)
         stack, nl = layer_stack()
         tiny = tiny_token(stack)
@@ -22,10 +22,10 @@ class Predict(TalkSlide):
         # --- the boundary: the stack goes, the small vector grows into the one we read from; "mat" leaves the row (we predict it)
         vec = vector(30, TOKEN, cell=0.24).move_to([COLS[2], Y, 0])
         vll = label('final vector\nof the last token', 17, TOKEN).next_to(vec, UP, buff=GAP)
-        t = retitle(self, t, "From the last vector to the next word", "5  one token at a time",
+        t = retitle(self, t, "From the last vector to the next word", "4  one token at a time",
                     extra=[FadeOut(stack), FadeOut(nl), ReplacementTransform(tiny, vec), FadeIn(vll), FadeOut(row[5])], run_time=0.9)
         self.next_slide("""The stack is done and one vector falls out of it. Look at the row: "mat" has stepped out, because that is the
-        word the model has not seen yet; the sentence it has is "The cat sat on the", and the last position, "the", has been
+        word the model has not seen yet; the sentence it has is "the cat sat on the", and the last position, "the", has been
         shaped by the entire sentence and carries everything the model knows about what should come next. We only need this
         one vector: whatever the last token has become is the model's summary of "what word follows".""")
         # --- vocabulary matrix -> a score per vocab entry, by the same sweep

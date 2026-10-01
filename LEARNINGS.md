@@ -589,3 +589,14 @@ First principles that the passes confirmed, written to outlast the decks they ca
   in each box (a name, and in plain words what happens there) needed no placement at all.
 - A backdrop that keeps moving while the speaker talks must return exactly to its first frame. Build its start and
   its end from the same stage function, and fade out anything the loop added rather than leaving it where it ended.
+
+## Facts on screen come from the real tool, and the drawing obeys them
+
+- A label stated that two tokens shared an id while the ids printed beside them differed, and the ids came from two
+  different tokenizers. Numbers that stand for real data (ids, sizes, counts) are produced by the real tool in the
+  session, from one source, and the source is named in the script.
+- Then make every derived drawing follow the fact: the same id selects the same table row and gets the same vector. A
+  picture whose seeds or positions were chosen per slot quietly contradicts the claim it illustrates.
+- Check the small print of the domain before simplifying it away: a tokenizer's token includes its case and its leading
+  space, so "The", "the" and " the" are three tokens. Either show the detail or choose an example where it does not change
+  the claim, and say which in the note.

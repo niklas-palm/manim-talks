@@ -1,4 +1,4 @@
-"""Move 3 finished: two things attention needs. Opens on the weighted sum's last frame under the token row; the bars,
+"""Move 2 finished: two things attention needs. Opens on the weighted sum's last frame under the token row; the bars,
 the query and the new vector give way to the grid of who-attends-to-whom, whose last row is what we just computed;
 the mask blanks the grid's upper triangle; then three heads side by side, their outputs concatenated and projected
 back to the token's size. The token row stays across the top throughout.
@@ -11,8 +11,8 @@ N = 6
 
 class MaskAndHeads(TalkSlide):
     def construct(self):
-        # --- move 3's last frame, rebuilt
-        t = title_still(self, "Every token reads every other", "3  attention")
+        # --- move 2's last frame, rebuilt
+        t = title_still(self, "Every token reads every other", "2  attention")
         row, vecs = token_row(0.16)
         tri = triples(vecs)
         bars, wlabels, bl = softmax_bars()
@@ -30,7 +30,7 @@ class MaskAndHeads(TalkSlide):
         # the bars become the grid's last row: the weights of "mat" over every token
         lastrow = VGroup(*[gridg[N * (N - 1) + j] for j in range(N)])
         upper = VGroup(*[gridg[i] for i in range(N * (N - 1))])
-        t = retitle(self, t, "Don't read the future; use many views", "3  attention",
+        t = retitle(self, t, "Don't read the future; use many views", "2  attention",
                     extra=[FadeOut(tri), FadeOut(wlabels), FadeOut(bl), FadeOut(qbig), FadeOut(qbl), FadeOut(out), FadeOut(outl),
                            *[ReplacementTransform(b, c) for b, c in zip(bars, lastrow)], FadeIn(upper),
                            FadeIn(rowl), FadeIn(rk), FadeIn(ck)], run_time=1.0)

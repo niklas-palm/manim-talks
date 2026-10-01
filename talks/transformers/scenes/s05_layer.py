@@ -1,4 +1,4 @@
-"""Move 4: after gathering from its neighbours, each token is transformed on its own, and the whole layer repeats.
+"""Move 3: after gathering from its neighbours, each token is transformed on its own, and the whole layer repeats.
 Opens on the attention output for "mat" from the previous frame; that vector is what the feed-forward works on. It
 expands the vector, zeroes the negatives, contracts it; the residual connection adds that update to the input, cell
 by cell, rather than replacing it; and the layer is stacked, drawn as the same layer picture repeated smaller with the
@@ -14,7 +14,7 @@ Y = PIPE_Y
 class Layer(TalkSlide):
     def construct(self):
         # --- the previous frame, rebuilt
-        t = title_still(self, "Don't read the future; use many views", "3  attention")
+        t = title_still(self, "Don't read the future; use many views", "2  attention")
         row, vecs = token_row(0.16)
         heads = head_tiles()
         joined, jl, proj, pl, result, rl = projection_parts(filled=True)
@@ -22,7 +22,7 @@ class Layer(TalkSlide):
         # --- the boundary: the heads and the projection go; the attention output for "mat" becomes the vector we work on
         vec = vector(30, TOKEN, cell=0.24).move_to([COLS[2], Y, 0])
         vl = label('"mat" after attention', 18, TOKEN).next_to(vec, UP, buff=GAP)
-        t = retitle(self, t, "Then the token thinks on its own", "4  the token thinks alone, many times",
+        t = retitle(self, t, "Then the token thinks on its own", "3  the token thinks alone, many times",
                     extra=[FadeOut(heads), FadeOut(joined), FadeOut(jl), FadeOut(proj), FadeOut(pl), FadeOut(rl), ReplacementTransform(result, vec), FadeIn(vl)], run_time=0.9)
         self.next_slide("""Attention let every token gather from the others; its output for "mat" comes to the centre. The second half of a
         layer does the opposite: it works on each token entirely by itself, the same small network applied to every position
