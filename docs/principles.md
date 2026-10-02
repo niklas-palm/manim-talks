@@ -178,6 +178,20 @@ Every talk is self-sufficient. A note never leans on another talk, deck, post or
 explanation itself or leaves the point out. Notes are written for a technical audience: the problem, why it exists,
 the way out, the number that anchors it. No sales language, no praise of a product, no rhetorical flourish.
 
+The voice is an experienced engineer teaching the rest of the engineering organisation how a system works: brief,
+precise and plain. Two to four sentences a click, about twenty to forty seconds read aloud. Use the real names of
+mechanisms and the real numbers with their units, and give each term a one-clause definition the first time it
+appears, so an engineer from a neighbouring field, or a technical manager, follows without slowing the specialist
+down. Say why, not only what: the cause, the consequence, the trade-off. Declarative sentences; no hooks or
+catchphrases ("here's the kicker", "the magic", "game-changer"), no rhetorical questions as filler, no exclamation
+marks, no superlatives. The note points at the picture ("the queue on the left fills") rather than describing what
+the audience can already see.
+
+A note that sells: "And this is where it gets really exciting! Speculative decoding is a game-changer that makes
+your model up to 3x faster." A note that teaches: "A small draft model proposes four tokens; the large model checks
+all four in one forward pass, the same cost as generating one. Each accepted token is a forward pass saved; on
+this workload about three in four are accepted, so each pass yields close to three tokens."
+
 ## 14. Teach, do not report
 
 The audience is engineers who want to understand a system, not an account of your experiments. Every example,

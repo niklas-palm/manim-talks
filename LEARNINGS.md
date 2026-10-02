@@ -600,3 +600,12 @@ First principles that the passes confirmed, written to outlast the decks they ca
 - Check the small print of the domain before simplifying it away: a tokenizer's token includes its case and its leading
   space, so "The", "the" and " the" are three tokens. Either show the detail or choose an example where it does not change
   the claim, and say which in the note.
+
+## The notes teach; they do not sell
+- A note's voice decides whether a room of engineers trusts the talk. Excitement, hooks and superlatives ("a
+  game-changer", "this is where it gets exciting") read as marketing and cost credibility, however good the picture.
+- Write as an experienced engineer explaining a system to colleagues: two to four plain sentences a click, the real
+  term with a one-clause definition the first time, the cause and the trade-off, one number with its unit. A reader
+  from a neighbouring field follows; the specialist is not slowed down.
+- Let the note point at the picture and say why it moves, rather than retell what is visible. The illustration shows
+  how the thing works; the screen keeps its words to labels, so attention stays on the picture and the speaker.

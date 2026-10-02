@@ -104,6 +104,8 @@ experiences a deck: what they see first, then how it moves, then the words, then
 ## 6. Notes and script
 
 - [ ] Every step has a note: one paragraph, readable aloud, saying what is on screen, what changed, why it matters.
+- [ ] Every note teaches: two to four plain sentences in an engineer's voice, real terms defined once, the cause and the
+      trade-off; no hooks, catchphrases, exclamation marks or superlatives.
 - [ ] Notes carry the caveats, figures and sources; the picture carries the claim.
 - [ ] Every note stands alone: no reference to another talk, deck, post or sample (grep the scenes for "talk", "deck",
       "post", "sample"); each keeps the thread, the problem, why it exists, the way out; the tone is technical and
